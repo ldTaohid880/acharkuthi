@@ -1,0 +1,601 @@
+/* Home: customer reviews section. Extracted from the design's Main/Mobile pages. */
+.page-home {
+  .vc {
+    position: relative;
+  }
+  .vc.is-open {
+    min-height: var(--vcmin);
+  }
+  /* Artboard: the home's `.hp :lang(bn)` rule sets Bengali text here to the UI face (Anek Bangla). */
+  .vc-h {
+    font: 400 var(--vch)/1.35 var(--font-ui-bn);
+    margin: 12px 0 0;
+    color: var(--ink);
+  }
+  .vc-lede {
+    font: 400 18px/1.8 var(--font-ui-bn);
+    color: var(--ink-muted);
+    margin: 14px 0 0;
+  }
+  .vc-cta {
+    margin-top: 28px;
+  }
+  .vc-cta .ak-btn {
+    min-height: 52px;
+    padding: 0 26px;
+    justify-content: center;
+  }
+  .vc-nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 32px;
+  }
+  .vc-nav button {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-control);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    padding: 0;
+    color: var(--ink);
+  }
+  .vc-nav button .ak-i {
+    width: 18px;
+    height: 18px;
+  }
+  .vc-nav button.p .ak-i {
+    transform: scaleX(-1);
+  }
+  .vc-nav button[aria-disabled="true"] {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+  .vc-nav button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .vc-pos {
+    font: 500 14px/1 var(--font-ui);
+    color: var(--ink-muted);
+    min-width: 56px;
+    text-align: center;
+  }
+  .vc-st {
+    position: relative;
+    display: inline-block;
+    font: 400 18px/1 var(--font-ui);
+    letter-spacing: 2px;
+    white-space: nowrap;
+  }
+  .vc-st .b {
+    color: var(--line-control);
+  }
+  .vc-st .f {
+    position: absolute;
+    left: 0;
+    top: 0;
+    overflow: hidden;
+    color: var(--sun-deep, #c98a00);
+  }
+  .vc-q {
+    margin: 14px 0 0;
+    font: 400 var(--vcq)/1.75 var(--font-ui-bn);
+    color: var(--ink);
+    overflow-wrap: anywhere;
+  }
+  .vc-by {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 20px;
+  }
+  .vc-by b {
+    display: block;
+    font: 600 15px/1.4 var(--font-ui-bn);
+  }
+  .vc-by .vc-d {
+    font: 400 13px/1.4 var(--font-ui);
+    color: var(--ink-muted);
+    margin-right: 10px;
+  }
+  .vc-vf {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font: 500 12px/1.4 var(--font-ui);
+    color: var(--brand);
+  }
+  .vc-vf::before {
+    content: "";
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: inset 0 0 0 3px var(--bg);
+  }
+  .vc-av {
+    position: relative;
+    width: 60px;
+    height: 56px;
+    flex: none;
+    z-index: 0;
+    font: 400 24px/1 var(--font-display);
+    color: var(--brand);
+  }
+  .vc-av::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    transform: translate(6px, 5px);
+    background: var(--sun);
+    border-radius: var(--blot-3);
+    z-index: -1;
+  }
+  .vc-av .in {
+    position: absolute;
+    inset: 0;
+    display: grid;
+    place-items: center;
+    background: var(--surface);
+    border-radius: var(--blot-2);
+    overflow: hidden;
+  }
+  .vc-av svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .vc-by {
+    gap: 16px;
+  }
+  .vc-rest .vc-vf::before {
+    box-shadow: inset 0 0 0 3px var(--bg-band);
+  }
+  .vc-ph {
+    width: 56px;
+    height: 56px;
+    border-radius: 12px;
+    flex: none;
+    position: relative;
+    background: var(--surface);
+    overflow: hidden;
+  }
+  .vc-ph svg {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+  .vc-feat {
+    position: relative;
+    background: var(--surface);
+    border-radius: 44px 44px 14px 14px;
+    padding: 52px 48px 40px;
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .vc-feat::before {
+    content: "";
+    position: absolute;
+    left: 48px;
+    top: -9px;
+    width: 96px;
+    height: 18px;
+    border-radius: 9px 9px 4px 4px;
+    background: var(--brand);
+  }
+  .vc-feat .vc-q {
+    font-size: var(--vcfq);
+  }
+  .vc-feat .vc-vf::before {
+    box-shadow: inset 0 0 0 3px var(--surface);
+  }
+  .vc-rest {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: var(--vcg);
+    margin-top: 32px;
+  }
+  .vc-rest li {
+    list-style: none;
+    background: var(--bg-band);
+    border-radius: 44px 14px 44px 14px;
+    padding: 34px 32px 28px;
+  }
+  .vc-rest li:nth-child(2) {
+    border-radius: 14px 44px 14px 44px;
+  }
+  .vc-rest {
+    gap: 24px;
+    margin-top: 28px;
+  }
+  .vc-rest {
+    padding: 0;
+  }
+  .vc-dlg {
+    position: relative;
+    background: var(--surface);
+    color: var(--ink);
+    border-radius: var(--shoulder-soft);
+    width: 100%;
+    max-width: 560px;
+    box-sizing: border-box;
+    padding: var(--vcdp);
+    box-shadow: var(--shadow-lift);
+  }
+  .vc-ov {
+    position: absolute;
+    inset: 0;
+    z-index: 40;
+    background: rgba(52, 57, 43, 0.5);
+    display: flex;
+    align-items: var(--vcai);
+    justify-content: center;
+    padding: var(--vcop);
+    overflow: auto;
+    box-sizing: border-box;
+  }
+  .vc-x {
+    position: absolute;
+    right: 8px;
+    top: 8px;
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    border: 0;
+    background: none;
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+    color: var(--ink);
+    padding: 0;
+  }
+  .vc-x .ak-i {
+    width: 20px;
+    height: 20px;
+  }
+  .vc-x:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
+  }
+  .vc-dt {
+    font: 400 28px/1.4 var(--font-display-bn);
+    margin: 6px 0 0;
+    padding-right: 36px;
+  }
+  .vc-note {
+    font: 400 14px/1.7 var(--font-ui-bn);
+    color: var(--ink-muted);
+    margin: 6px 0 0;
+  }
+  .vc-fg {
+    display: grid;
+    gap: 18px;
+    margin-top: 18px;
+  }
+  .vc-dlg .ak-field > span,
+  .vc-l {
+    font: 600 15px/1.3 var(--font-ui-bn);
+    display: block;
+  }
+  .vc-dlg .ak-field > span em,
+  .vc-l em {
+    font-style: normal;
+    color: var(--error);
+    margin-left: 4px;
+  }
+  .vc-l small {
+    font: 400 13px/1 var(--font-ui-bn);
+    color: var(--ink-muted);
+    margin-left: 6px;
+  }
+  .vc-dlg .ak-input {
+    width: 100%;
+    box-sizing: border-box;
+    font: 400 16px/1.4 var(--font-ui-bn);
+    outline: none;
+    min-height: 50px;
+  }
+  .vc-dlg textarea.ak-input {
+    display: block;
+    min-height: 120px;
+    padding: 14px 18px;
+    resize: vertical;
+  }
+  .vc-dlg .ak-input:focus {
+    border-color: var(--focus);
+    box-shadow:
+      0 0 0 3px var(--surface),
+      0 0 0 5px var(--focus);
+  }
+  .vc-dlg .ak-input.is-error {
+    border-color: var(--error);
+  }
+  .vc-dlg .ak-help {
+    font: 400 14px/1.45 var(--font-ui-bn);
+    color: var(--ink-muted);
+  }
+  .vc-dlg .ak-help.is-error {
+    display: flex;
+    gap: 8px;
+    align-items: flex-start;
+    color: var(--ink);
+  }
+  .vc-dlg .ak-help.is-error::before {
+    content: "!";
+    flex: none;
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: var(--error);
+    color: #e8e5d5;
+    font: 700 12px/18px var(--font-ui);
+    text-align: center;
+    margin-top: 1px;
+  }
+  .vc-rate {
+    display: flex;
+    gap: 2px;
+    margin-top: 4px;
+  }
+  .vc-rate button {
+    width: 48px;
+    height: 48px;
+    border: 0;
+    background: none;
+    font: 400 32px/1 var(--font-ui);
+    color: var(--line-control);
+    cursor: pointer;
+    border-radius: 10px;
+    padding: 0;
+  }
+  .vc-rate button.on {
+    color: var(--sun-deep, #c98a00);
+  }
+  .vc-rate button:hover {
+    background: var(--bg);
+  }
+  .vc-rate button:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 1px;
+  }
+  .vc-up {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+  .vc-up .ak-btn {
+    min-height: 46px;
+  }
+  .vc-act {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 22px;
+  }
+  .vc-act .ak-btn {
+    min-height: 52px;
+    justify-content: center;
+  }
+  .vc-alert {
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background: var(--bg);
+    box-shadow: inset 3px 0 0 var(--error);
+    font: 400 14px/1.6 var(--font-ui-bn);
+  }
+  .vc-alert b {
+    display: block;
+    font: 600 15px/1.5 var(--font-ui-bn);
+  }
+  .vc-spin {
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    border: 2.5px solid rgba(43, 65, 3, 0.3);
+    border-top-color: var(--on-sun);
+    animation: vc-spin 900ms linear infinite;
+    margin-right: 10px;
+    flex: none;
+  }
+  .vc-ok {
+    text-align: center;
+    padding: 12px 0 4px;
+  }
+  .vc-ok .eb {
+    width: 80px;
+    height: 76px;
+    margin: 0 auto 14px;
+    background: var(--sun);
+    display: grid;
+    place-items: center;
+    color: var(--on-sun);
+  }
+  .vc-ok .eb svg {
+    width: 36px;
+    height: 36px;
+  }
+  .vc-ok .vc-dt {
+    padding-right: 0;
+  }
+  .vc-ok p {
+    margin: 8px auto 18px;
+    color: var(--ink-muted);
+    font: 400 16px/1.7 var(--font-ui-bn);
+    max-width: 30em;
+  }
+  .vc {
+    --vch: 56px;
+    --vcq: 19px;
+    --vcfq: 28px;
+    --vcp: 40px;
+    --vcg: 40px;
+    --vcdp: 36px;
+    --vcai: center;
+    --vcop: 32px;
+    --vcmin: 900px;
+  }
+  .vc.sec {
+    padding: 24px 0 128px;
+  }
+  .vc-grid {
+    display: grid;
+    grid-template-columns: 4fr 8fr;
+    gap: 72px;
+    align-items: start;
+  }
+}
+@keyframes vc-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@media (max-width: 720px) {
+  .page-home {
+    .vc-feat {
+      background: var(--surface);
+      border-radius: var(--shoulder-soft);
+      padding: var(--vcp);
+    }
+    .vc-rest li {
+      list-style: none;
+      border-top: 1px solid var(--line-control);
+      padding-top: 20px;
+    }
+    .vc {
+      --vch: 36px;
+      --vcq: 20px;
+      --vcfq: 20px;
+      --vcp: 0px;
+      --vcg: 0px;
+      --vcdp: 24px 20px 24px;
+      --vcai: flex-start;
+      --vcop: 12px;
+      --vcmin: 1100px;
+    }
+    .vc.sec {
+      padding: 8px 0 72px;
+    }
+    .vc-h {
+      margin-top: 8px;
+    }
+    .vc-lede {
+      font-size: 16px;
+      margin-top: 10px;
+    }
+    .vc-mq {
+      position: relative;
+      margin-top: 36px;
+      padding: 40px 22px 26px;
+      background: var(--surface);
+      border-radius: 40px 40px 14px 14px;
+      box-shadow: inset 0 0 0 1px var(--line);
+    }
+    .vc-mq::before {
+      content: "";
+      position: absolute;
+      left: 28px;
+      top: -9px;
+      width: 80px;
+      height: 18px;
+      border-radius: 9px 9px 4px 4px;
+      background: var(--brand);
+    }
+    .vc-mq .vc-q {
+      margin-top: 12px;
+    }
+    .vc-mq .vc-vf::before {
+      box-shadow: inset 0 0 0 3px var(--surface);
+    }
+    .vc-nav {
+      justify-content: space-between;
+      margin-top: 16px;
+    }
+    .vc-nav button {
+      width: 52px;
+      height: 52px;
+    }
+    .vc-dots {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .vc-dots i {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--line-control);
+      display: block;
+    }
+    .vc-dots i.on {
+      width: 22px;
+      border-radius: 4px;
+      background: var(--brand);
+    }
+    .vc-cta .ak-btn {
+      width: 100%;
+      box-sizing: border-box;
+      min-height: 54px;
+    }
+    .vc-rate button {
+      width: 44px;
+    }
+    .vc-act .ak-btn {
+      flex: 1 1 100%;
+    }
+    .vc-dlg .ak-btn {
+      box-sizing: border-box;
+    }
+    .vc-dt {
+      font-size: 24px;
+    }
+  }
+}
+
+.page-home .vc-ov {
+  position: fixed;
+}
+.page-home .vc.is-open {
+  min-height: 0;
+}
+.page-home .vc-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--bg-band);
+  color: var(--ink-muted-on-field);
+  font: 500 12px/1 var(--font-ui);
+  white-space: nowrap;
+}
+.page-home .vc-sample {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  margin: 24px 0 0;
+  font: 500 12px/1.4 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-home .vc-mob {
+  display: none;
+}
+@media (max-width: 720px) {
+  .page-home .vc-desk {
+    display: none;
+  }
+  .page-home .vc-mob {
+    display: block;
+    /* Same 20px phone gutter as .wrap; the mobile block has no .wrap of its own. */
+    padding: 0 20px;
+  }
+}

@@ -1,40 +1,27 @@
-import babelParser from "@babel/eslint-parser";
 import js from "@eslint/js";
 import eslintConfigPrettier from "eslint-config-prettier";
 import turboPlugin from "eslint-plugin-turbo";
 import onlyWarn from "eslint-plugin-only-warn";
+import tseslint from "typescript-eslint";
 
 /**
- * A shared ESLint configuration for the repository.
+ * Shared ESLint configuration for the repository.
  *
  * @type {import("eslint").Linter.Config[]}
  * */
 export const config = [
   js.configs.recommended,
+  ...tseslint.configs.strict,
+  ...tseslint.configs.stylistic,
   eslintConfigPrettier,
   {
-    languageOptions: {
-      parser: babelParser,
-      parserOptions: {
-        requireConfigFile: false,
-        babelOptions: {
-          presets: ["@babel/preset-typescript"],
-        },
-      },
-    },
-    plugins: {
-      turbo: turboPlugin,
-    },
+    plugins: { turbo: turboPlugin },
     rules: {
       "turbo/no-undeclared-env-vars": "warn",
+      "@typescript-eslint/consistent-type-imports": "error",
+      "@typescript-eslint/no-unused-vars": ["error", { argsIgnorePattern: "^_" }],
     },
   },
-  {
-    plugins: {
-      onlyWarn,
-    },
-  },
-  {
-    ignores: ["dist/**"],
-  },
+  { plugins: { onlyWarn } },
+  { ignores: ["dist/**", "drizzle/**", "coverage/**"] },
 ];

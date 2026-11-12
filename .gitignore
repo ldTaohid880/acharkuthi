@@ -36,3 +36,10 @@ yarn-error.log*
 # Misc
 .DS_Store
 *.pem
+
+# Playwright
+playwright-report
+test-results
+
+# Review photos (dev storage)
+apps/storefront/public/uploads/

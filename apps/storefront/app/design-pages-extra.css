@@ -1,0 +1,138 @@
+/* Hand-written additions on top of the generated design-pages.css. */
+/* Our story: show the desktop or phone markup. */
+.page-story .story-mob {
+  display: none;
+}
+.page-story .g {
+  padding: 0 20px;
+}
+@media (max-width: 720px) {
+  .page-story .story-desk {
+    display: none;
+  }
+  .page-story .story-mob {
+    display: block;
+  }
+}
+
+/* Breadcrumb used on the policy, FAQ and contact pages. */
+.page-doc .crumbs,
+.page-contact .crumbs {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+  font: 500 14px/1 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-doc .crumbs a,
+.page-contact .crumbs a {
+  color: var(--ink-muted);
+  text-decoration: none;
+  display: inline-flex;
+  min-height: 36px;
+  align-items: center;
+}
+.page-doc .crumbs a:hover,
+.page-contact .crumbs a:hover {
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.page-doc .crumbs [aria-current],
+.page-contact .crumbs [aria-current] {
+  color: var(--ink);
+}
+
+/* Contact: global .ok (add-to-basket tick) must not leak into the success panel; chips used on the page. */
+.page-contact .ok {
+  display: block;
+  font: inherit;
+  color: inherit;
+  gap: 0;
+}
+.page-contact .ok::before {
+  content: none;
+}
+.page-contact .ph-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0 10px;
+  border-radius: 999px;
+  background: var(--bg-band);
+  color: var(--ink-muted-on-field);
+  font: 500 12px/1 var(--font-ui);
+  white-space: nowrap;
+}
+.page-contact .fgrid .ak-field.full {
+  grid-column: 1 / -1;
+}
+.page-contact .fgrid {
+  position: relative;
+}
+/* Owner override: the contact headline uses the UI Bangla face (Anek Bangla), not Tiro Bangla. */
+.page-contact .intro .h1-bn {
+  font-family: var(--font-ui-bn);
+  font-weight: 500;
+}
+.page-contact .h2-bn {
+  font: 400 36px/1.4 var(--font-display-bn);
+  margin: 0;
+}
+@keyframes ak-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* 404: desktop and phone markup differ in the design; show one. */
+.page-notfound .nf-mob {
+  display: none;
+}
+.page-notfound .g {
+  padding: 0 20px;
+}
+@media (max-width: 720px) {
+  .page-notfound .nf-desk {
+    display: none;
+  }
+  .page-notfound .nf-mob {
+    display: block;
+  }
+}
+
+/* Contact on phones: the intro band has no two-column wrapper on the phone board. */
+@media (max-width: 720px) {
+  .page-contact .intro-in {
+    display: block;
+    margin-top: 0;
+  }
+  .page-contact .h1-bn {
+    white-space: normal;
+  }
+  .page-contact .intro .wrap,
+  .page-contact .main .wrap {
+    padding: 0;
+  }
+}
+
+/* Shop: "You have seen X of Y" footer with the progress bar and Load more (Shop artboard, .more). */
+.page-shop .more {
+  display: grid;
+  justify-items: center;
+  gap: 14px;
+  padding-top: 72px;
+}
+.page-shop .more .pg {
+  width: 220px;
+  height: 3px;
+  border-radius: 2px;
+  background: var(--line);
+}
+.page-shop .more .pg span {
+  display: block;
+  height: 100%;
+  border-radius: 2px;
+  background: var(--brand);
+}

@@ -1,0 +1,1 @@
+ALTER TABLE `products` ADD `search_terms` varchar(500);

@@ -1,0 +1,1255 @@
+/* Acharkuthi design system. tokens.css and components/bundle.css copied verbatim from the design; icons point at /icons/*.svg. */
+/* Acharkuthi — generated from tokens.json */
+:root,
+[data-theme="linen"] {
+  --linen: #e8e5d5; /* Olive Poetry 1. Unbleached muslin. The page ground. */
+  --linen-raised: #f3f1e6; /* Paper held up to the sun. Cards, inputs, sheets on linen. */
+  --linen-deep: #dcd8c3; /* Shade under the veranda. Alternate section bands. Muted text on it: moss-deep, never moss (4.1:1). */
+  --pale-olive: #c4c3a5; /* Olive Poetry 2. Soft sweeping fields and image stages. Text on it: forest-shadow 6.6:1, kacha 6.3:1, moss-deep 4.6:1. */
+  --sage-olive: #8f9670; /* Olive Poetry 3. Illustration fills, second-layer fields, decorative lines. 2.45:1 on linen: never text. */
+  --moss: #5e6848; /* Olive Poetry 4. Secondary text on linen (4.7:1) and linen-raised (5.2:1); control borders (3:1+). */
+  --moss-deep: #4a5236; /* Secondary text on tinted fields: linen-deep and pale-olive (4.6:1+). */
+  --forest-shadow: #34392b; /* Olive Poetry 5. Primary ink for headings and body (9.4:1 on linen). Icon ink. */
+  --kacha: #2b4103; /* Raw-mango green. Brand fields, primary dark actions, focus ring. Carries linen 8.9:1 and mustard 8.0:1. */
+  --leaf: #556c1b; /* The jar mark's green. Logo world, leaves in illustration, icons 24px+. 3.7:1 on linen: no small text. */
+  --mustard: #f5d84c; /* Shorshe. The sun: one sun field and one sun action per view. Text on it: kacha or forest-shadow. */
+  --chili: #a8432a; /* Dried chili. Heat, sale, error. 4.7:1 on linen, 5.3:1 on linen-raised. A few percent of any screen. */
+  --tamarind: #3b2a22; /* Tetul brown. Handwritten notes, pull quotes, spice specks in illustration (10.8:1 on linen). */
+  --bg: var(--linen); /* Page background. */
+  --bg-band: var(--linen-deep); /* Alternate section band, footer, quiet strips. */
+  --surface: var(--linen-raised); /* Cards, inputs, sheets, menus on bg. */
+  --field: var(--pale-olive); /* Organic fields behind content, product stages, selected chips. */
+  --field-2: var(--sage-olive); /* Second field layered behind field. Decorative only. */
+  --ink: var(--forest-shadow); /* Headings, body, icons on bg, surface, field and sun. */
+  --ink-muted: var(--moss); /* Meta, captions, translations on bg and surface. */
+  --ink-muted-on-field: var(--moss-deep); /* Meta and captions on bg-band and field. */
+  --ink-hand: var(--tamarind); /* Handwritten notes and pull quotes on bg and surface. */
+  --brand: var(--kacha); /* Brand fields, dark buttons, links, selected state, badges. */
+  --on-brand: var(--linen); /* Text and icons on brand. */
+  --on-brand-accent: var(--mustard); /* Shout headlines on brand fields. */
+  --sun: var(--mustard); /* The sun: the one primary action and the sun field. */
+  --on-sun: var(--kacha); /* Text and icons on sun. */
+  --heat: var(--chili); /* Heat pods, sale price, error text and borders. */
+  --line: var(--pale-olive); /* Decorative hairlines and dividers that carry no meaning. */
+  --line-control: var(
+    --moss
+  ); /* Borders of inputs, outline buttons, steppers (3:1+ on bg and surface). */
+  --focus: var(--kacha); /* 2px solid focus ring with 3px offset on every light ground. */
+  --success: var(--kacha); /* Success text and icon, always with a word ("Added"). */
+  --error: var(--chili); /* Error text, border and icon, always with a message. */
+  --shadow-rest:
+    0 1px 0 rgba(52, 57, 43, 0.06), 0 10px 24px -16px rgba(52, 57, 43, 0.28); /* Cards and the header at rest. */
+  --shadow-lift:
+    0 2px 0 rgba(52, 57, 43, 0.06), 0 22px 36px -18px rgba(52, 57, 43, 0.36); /* Hovered cards, open menus. */
+  --shadow-sun: 18px 24px 30px -14px rgba(52, 57, 43, 0.32); /* Cut-out jars and produce: the long winter-sun cast. */
+}
+:root {
+  --space-1: 4px; /* Icon to label, pod gaps. */
+  --space-2: 8px; /* Tight groups: price and unit, chip rows. */
+  --space-3: 12px; /* Button icon gap, field label to input. */
+  --space-4: 16px; /* Mobile gutter, card padding on mobile. */
+  --space-6: 24px; /* Desktop gutter, card padding. */
+  --space-8: 32px; /* Heading to content. */
+  --space-12: 48px; /* Between blocks inside a section. */
+  --space-16: 64px; /* Section padding on mobile. */
+  --space-24: 96px; /* Section padding on desktop. */
+  --space-32: 128px; /* Hero breathing room and before the footer. */
+  --radius-s: 8px; /* Image corners inside cards, small tags. */
+  --radius-soft: 14px; /* Inputs, bands, lower corners of jar-shoulder containers. */
+  --radius-shoulder: 44px; /* Upper corners of jar-shoulder containers. */
+  --radius-pill: 999px; /* Buttons, chips, search, steppers. */
+  --dur-quick: 140ms; /* Press, hover colour, checkbox. */
+  --dur-base: 240ms; /* Lid twist, card lift, chip select. */
+  --dur-slow: 480ms; /* Jar drop into basket, sheet open. */
+  --dur-drift: 9000ms; /* Ambient: blot breathing, leaf sway. */
+  --ease-settle: cubic-bezier(0.2, 0.8, 0.2, 1); /* Things arriving and settling: lifts, sheets. */
+  --ease-lid: cubic-bezier(
+    0.34,
+    1.4,
+    0.64,
+    1
+  ); /* The small overshoot of a lid twist or jar landing. */
+  --ease-breathe: cubic-bezier(0.45, 0, 0.55, 1); /* Ambient loops. */
+  --font-shout: "Baloo 2", "Baloo Da 2", system-ui, sans-serif;
+  --font-shout-bn: "Baloo Da 2", "Baloo 2", "Noto Sans Bengali", sans-serif;
+  --font-aside: Fraunces, Georgia, serif;
+  --font-ui: "Instrument Sans", "Anek Bangla", system-ui, sans-serif;
+  --font-ui-bn: "Anek Bangla", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-hand: Caveat, "Galada", cursive;
+  --font-hand-bn: Galada, Caveat, "Noto Sans Bengali", cursive;
+  --text-shout-xl: 800 96px/0.95 var(--font-shout); /* Hero only, once per page. 56px on mobile. */
+  --text-shout-xl-bn: 800 88px/1.15 var(--font-shout-bn); /* Bengali hero shout. 52px on mobile. */
+  --text-shout-l: 800 56px/1 var(--font-shout); /* Section headlines on the homepage and campaigns. 36px on mobile. */
+  --text-shout-l-bn: 800 50px/1.2 var(--font-shout-bn); /* Bengali section headlines. 34px on mobile. */
+  --text-shout-m: 700 32px/1.1 var(--font-shout); /* Page titles on calmer pages, card features. 26px on mobile. */
+  --text-aside-l: italic 400 28px/1.25 var(--font-aside); /* The human voice beside a shout. Fraunces italic, SOFT 100. */
+  --text-aside: italic 400 18px/1.4 var(--font-aside); /* English translations under Bengali product names, captions. */
+  --text-hand: 500 30px/1.05 var(--font-hand); /* Handwritten margin notes. Max one per view, never more than 8 words, rotated -3 to -6deg. */
+  --text-hand-bn: 400 28px/1.3 var(--font-hand-bn); /* Bengali handwritten note, same rules as hand. */
+  --text-title: 600 20px/1.3 var(--font-ui); /* Card and panel titles, checkout steps. */
+  --text-product-bn: 600 22px/1.4 var(--font-ui-bn); /* Bengali product names in cards and lists. */
+  --text-body-l: 400 18px/1.6 var(--font-ui); /* Intro paragraphs, story copy. */
+  --text-body: 400 16px/1.6 var(--font-ui); /* Default body and UI text. */
+  --text-body-bn: 400 16px/1.75 var(--font-ui-bn); /* Bengali body: same size, more leading. */
+  --text-small: 400 14px/1.5 var(--font-ui); /* Meta, helper text, card details. */
+  --text-price: 700 22px/1 var(--font-ui); /* Prices. Tabular figures. */
+  --text-label: 600 12px/1.3 var(--font-ui); /* Eyebrows and tags, Latin only. Bengali eyebrows use hand-bn instead. */
+  --text-button: 700 16px/1 var(--font-ui); /* Button labels, sentence case. */
+}
+.shout-xl {
+  font-family: var(--font-shout);
+  font-size: 96px;
+  line-height: 0.95;
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+.shout-xl-bn {
+  font-family: var(--font-shout-bn);
+  font-size: 88px;
+  line-height: 1.15;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.shout-l {
+  font-family: var(--font-shout);
+  font-size: 56px;
+  line-height: 1;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.shout-l-bn {
+  font-family: var(--font-shout-bn);
+  font-size: 50px;
+  line-height: 1.2;
+  font-weight: 800;
+  letter-spacing: 0;
+}
+.shout-m {
+  font-family: var(--font-shout);
+  font-size: 32px;
+  line-height: 1.1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.aside-l {
+  font-family: var(--font-aside);
+  font-size: 28px;
+  line-height: 1.25;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-style: italic;
+  font-variation-settings: "opsz" 48;
+}
+.aside {
+  font-family: var(--font-aside);
+  font-size: 18px;
+  line-height: 1.4;
+  font-weight: 400;
+  letter-spacing: 0;
+  font-style: italic;
+  font-variation-settings: "opsz" 18;
+}
+.hand {
+  font-family: var(--font-hand);
+  font-size: 30px;
+  line-height: 1.05;
+  font-weight: 500;
+  letter-spacing: 0;
+}
+.hand-bn {
+  font-family: var(--font-hand-bn);
+  font-size: 28px;
+  line-height: 1.3;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.title {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.product-bn {
+  font-family: var(--font-ui-bn);
+  font-size: 22px;
+  line-height: 1.4;
+  font-weight: 600;
+  letter-spacing: 0;
+}
+.body-l {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1.6;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.body-bn {
+  font-family: var(--font-ui-bn);
+  font-size: 16px;
+  line-height: 1.75;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.small {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  line-height: 1.5;
+  font-weight: 400;
+  letter-spacing: 0;
+}
+.price {
+  font-family: var(--font-ui);
+  font-size: 22px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.label {
+  font-family: var(--font-ui);
+  font-size: 12px;
+  line-height: 1.3;
+  font-weight: 600;
+  letter-spacing: 0.2em;
+}
+.button {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  line-height: 1;
+  font-weight: 700;
+  letter-spacing: 0;
+}
+
+/* Acharkuthi · Roddur (calm) — component styles. Colours, spacing, radii, shadows and timing come from tokens.css (var(--…)). */
+
+:root {
+  --font-display: Fraunces, Georgia, serif;
+  --font-display-bn: "Anek Bangla", "Noto Sans Bengali", system-ui, sans-serif; /* Owner override 2026-11-08: tokens.json says Tiro Bangla. */
+  --font-accent: "Baloo 2", "Baloo Da 2", system-ui, sans-serif;
+  --font-accent-bn: "Baloo Da 2", "Baloo 2", "Noto Sans Bengali", sans-serif;
+  --font-shout: var(--font-accent);
+  --font-shout-bn: var(--font-accent-bn);
+  --font-aside: Fraunces, Georgia, serif;
+  --font-ui: "Instrument Sans", "Anek Bangla", system-ui, sans-serif;
+  --font-ui-bn: "Anek Bangla", "Noto Sans Bengali", system-ui, sans-serif;
+  --font-hand: Caveat, Galada, cursive;
+  --font-hand-bn: Galada, Caveat, "Noto Sans Bengali", cursive;
+  /* hand-cut shapes: 8-value radii, never two alike on one screen */
+  --blot-1: 58% 42% 55% 45% / 47% 56% 44% 53%;
+  --blot-2: 44% 56% 41% 59% / 56% 43% 57% 44%;
+  --blot-3: 52% 48% 63% 37% / 42% 58% 42% 58%;
+  --shoulder-hand: 48px 40px 16px 12px / 42px 50px 14px 18px;
+  --shoulder-hand-2: 40px 50px 12px 18px / 50px 40px 18px 12px;
+  --shoulder-soft: 26px 22px 10px 8px / 22px 26px 8px 10px;
+  /* masks */
+  --mask-brush: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 200 14' preserveAspectRatio='none'%3E%3Cpath d='M3 9C40 4 80 6 118 5s58 1 79 4c-30 1-62 2-96 3-35 1-66 0-98-3z'/%3E%3C/svg%3E");
+  --mask-oil: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1200 40' preserveAspectRatio='none'%3E%3Cpath d='M0 22C120 8 220 30 360 20s240-16 380-4 260 14 460-2V40H0z'/%3E%3C/svg%3E");
+  --mask-deckle: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 600 20' preserveAspectRatio='none'%3E%3Cpath d='M0 12l14-3 9 4 17-5 12 6 20-4 11 3 18-6 15 5 13-2 19 4 16-5 10 3 22-4 12 5 18-3 14 2 16-6 11 5 19-2 15 3 13-4 20 5 9-3 17 2 14-5 16 4 12-2 21 3 10-4 18 5 15-3 11 2 19-5 13 4 20-2 12 3 16-4L600 12V20H0z'/%3E%3C/svg%3E");
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 .2 0 0 0 0 .22 0 0 0 0 .17 0 0 0 .55 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+}
+
+/* ---------- base ---------- */
+.ak {
+  background: var(--bg);
+  color: var(--ink);
+  font: 400 16px/1.6 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+}
+.ak :lang(bn),
+.ak .bn {
+  font-family: var(--font-ui-bn);
+  line-height: 1.75;
+}
+.ak-grain {
+  position: relative;
+  isolation: isolate;
+}
+.ak-grain::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--grain);
+  opacity: 0.22;
+  mix-blend-mode: multiply;
+  pointer-events: none;
+  border-radius: inherit;
+  z-index: 1;
+}
+
+/* ---------- type ---------- */
+.ak-display-xl {
+  font: 300 60px/1.08 var(--font-display);
+  font-variation-settings:
+    "opsz" 144,
+    "SOFT" 50;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+  margin: 0;
+}
+.ak-display-l {
+  font: 300 40px/1.15 var(--font-display);
+  font-variation-settings:
+    "opsz" 96,
+    "SOFT" 50;
+  color: var(--ink);
+  margin: 0;
+}
+.ak-display-m {
+  font: 400 26px/1.25 var(--font-display);
+  font-variation-settings:
+    "opsz" 48,
+    "SOFT" 50;
+  color: var(--ink);
+  margin: 0;
+}
+.ak-display-xl:lang(bn) {
+  font: 400 52px/1.35 var(--font-display-bn);
+  letter-spacing: 0;
+}
+.ak-display-l:lang(bn) {
+  font: 400 36px/1.4 var(--font-display-bn);
+}
+.ak-display-m:lang(bn) {
+  font: 400 24px/1.45 var(--font-display-bn);
+}
+.ak-accent {
+  font: 800 28px/1 var(--font-accent);
+  color: var(--brand);
+}
+.ak-accent:lang(bn) {
+  font-family: var(--font-accent-bn);
+  line-height: 1.2;
+}
+.ak-eyebrow {
+  display: block;
+  font: 500 11px/1.4 var(--font-ui);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ak-eyebrow:lang(bn) {
+  letter-spacing: 0;
+  text-transform: none;
+  font: 500 14px/1.5 var(--font-ui-bn);
+}
+.ak-lede {
+  font: 400 16px/1.7 var(--font-ui);
+  color: var(--ink-muted);
+  max-width: 560px;
+}
+/* legacy names, kept so older markup still renders */
+.ak-shout,
+.ak-shout-bn {
+  font: 300 60px/1.08 var(--font-display);
+  color: var(--ink);
+}
+.ak-shout-l,
+.ak-shout-l-bn {
+  font: 300 40px/1.15 var(--font-display);
+  color: var(--ink);
+}
+.ak-shout-m {
+  font: 400 26px/1.25 var(--font-display);
+  color: var(--ink);
+}
+.ak-aside-l {
+  font: italic 400 22px/1.4 var(--font-aside);
+  font-variation-settings:
+    "SOFT" 100,
+    "opsz" 48;
+  color: var(--ink-muted);
+}
+.ak-aside {
+  font: italic 400 18px/1.4 var(--font-aside);
+  font-variation-settings:
+    "SOFT" 100,
+    "opsz" 18;
+  color: var(--ink-muted);
+}
+.ak-hand {
+  font: 500 26px/1.05 var(--font-hand);
+  color: var(--ink-hand);
+  display: inline-block;
+  transform: rotate(-4deg);
+}
+.ak-hand-bn {
+  font: 400 24px/1.3 var(--font-hand-bn);
+  color: var(--ink-hand);
+  display: inline-block;
+  transform: rotate(-3deg);
+}
+.ak-label {
+  font: 500 11px/1.4 var(--font-ui);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  color: var(--ink-muted);
+}
+.ak-price {
+  font: 600 20px/1 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+}
+.ak-brush {
+  position: relative;
+  display: inline-block;
+  isolation: isolate;
+}
+.ak-brush::after {
+  content: "";
+  position: absolute;
+  left: -3%;
+  right: -3%;
+  bottom: 0.02em;
+  height: 0.22em;
+  background: var(--sun);
+  -webkit-mask: var(--mask-brush) center/100% 100% no-repeat;
+  mask: var(--mask-brush) center/100% 100% no-repeat;
+  z-index: -1;
+}
+
+/* ---------- shapes ---------- */
+.ak-blot {
+  border-radius: var(--blot-1);
+}
+.ak-blot.v2 {
+  border-radius: var(--blot-2);
+}
+.ak-blot.v3 {
+  border-radius: var(--blot-3);
+}
+.ak-blot.breathe {
+  animation: ak-breathe var(--dur-drift) var(--ease-breathe) infinite alternate;
+}
+@keyframes ak-breathe {
+  from {
+    border-radius: var(--blot-1);
+  }
+  to {
+    border-radius: var(--blot-2);
+  }
+}
+.ak-shoulder {
+  border-radius: var(--shoulder-hand);
+}
+.ak-shoulder.v2 {
+  border-radius: var(--shoulder-hand-2);
+}
+.ak-oil {
+  height: 40px;
+  background: var(--field);
+  -webkit-mask: var(--mask-oil) 0 0/100% 100%;
+  mask: var(--mask-oil) 0 0/100% 100%;
+}
+.ak-deckle {
+  height: 14px;
+  background: var(--bg-band);
+  -webkit-mask: var(--mask-deckle) 0 0/600px 100% repeat-x;
+  mask: var(--mask-deckle) 0 0/600px 100% repeat-x;
+}
+
+/* ---------- icons: recolourable via mask; set --i to an icon's url ---------- */
+.ak-i {
+  display: inline-block;
+  flex: none;
+  width: 22px;
+  height: 22px;
+  background: currentColor;
+  -webkit-mask: var(--i) center/contain no-repeat;
+  mask: var(--i) center/contain no-repeat;
+}
+
+/* ---------- buttons ---------- */
+.ak-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-3);
+  min-height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: var(--radius-pill);
+  font: 600 14px/1 var(--font-ui);
+  letter-spacing: 0.01em;
+  cursor: pointer;
+  text-decoration: none;
+  transition:
+    transform var(--dur-base) var(--ease-lid),
+    background-color var(--dur-quick),
+    box-shadow var(--dur-base) var(--ease-settle);
+}
+/* Owner decision (2026-11-09): buttons never tilt. The design system's hover rotate(-0.8deg) and
+   active rotate(1deg) are removed; the press scale stays. */
+.ak-btn:active {
+  transform: scale(0.97);
+  transition-duration: var(--dur-quick);
+}
+.ak-btn:focus-visible,
+.ak-btn.is-focus {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.ak-btn .ak-ico {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  margin-right: -12px;
+}
+.ak-btn--sun {
+  background: var(--sun);
+  color: var(--on-sun);
+  min-height: 48px;
+  padding: 0 24px;
+}
+.ak-btn--sun .ak-ico {
+  background: var(--on-sun);
+  color: var(--sun);
+}
+.ak-btn .ak-ico .ak-i {
+  width: 18px;
+  height: 18px;
+}
+.ak-btn--brand {
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.ak-btn--brand:hover {
+  box-shadow: var(--shadow-rest);
+}
+.ak-btn--line {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 1px var(--line-control);
+}
+.ak-btn--line:hover {
+  background: var(--surface);
+}
+.ak-btn--text {
+  background: none;
+  padding: 0 2px;
+  min-height: 44px;
+  color: var(--brand);
+  border-radius: 4px;
+  position: relative;
+}
+.ak-btn--text::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 10px;
+  height: 4px;
+  background: var(--brand);
+  -webkit-mask: var(--mask-brush) center/100% 100% no-repeat;
+  mask: var(--mask-brush) center/100% 100% no-repeat;
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-settle);
+}
+.ak-btn--text:hover {
+  transform: none;
+}
+.ak-btn--text:hover::after {
+  transform: scaleX(1.08);
+}
+.ak-btn--round {
+  width: 44px;
+  min-height: 44px;
+  padding: 0;
+  background: var(--brand);
+  color: var(--on-brand);
+}
+.ak-btn[disabled],
+.ak-btn.is-disabled {
+  background: var(--disabled);
+  color: var(--on-disabled);
+  box-shadow: none;
+  cursor: not-allowed;
+  transform: none;
+}
+
+/* ---------- heat ---------- */
+.ak-heat {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  font: 500 13px/1 var(--font-ui);
+  color: var(--ink-muted);
+}
+.ak-heat .pods {
+  display: inline-flex;
+  gap: 3px;
+}
+.ak-heat .pods i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--heat);
+  display: block;
+}
+.ak-heat .pods i.off {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.2px var(--heat);
+}
+/* interim: the final heat mark comes from the designer brief (Designer concept prompts) */
+
+/* ---------- badges ---------- */
+/* Hang tag: a jar label with a notched end and a punched hole. Colour via --tag / --tag-ink. */
+.ak-tag {
+  --tag: var(--brand);
+  --tag-ink: var(--on-brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 24px;
+  padding: 4px 10px 5px 20px;
+  background: var(--tag);
+  color: var(--tag-ink);
+  font: 600 12px/1.1 var(--font-ui);
+  letter-spacing: 0.02em;
+  white-space: nowrap;
+  clip-path: polygon(
+    10px 0,
+    calc(100% - 4px) 0,
+    100% 4px,
+    100% calc(100% - 4px),
+    calc(100% - 4px) 100%,
+    10px 100%,
+    0 50%
+  );
+  -webkit-mask: radial-gradient(circle 3px at 12px 50%, transparent 97%, #000);
+  mask: radial-gradient(circle 3px at 12px 50%, transparent 97%, #000);
+  transform: rotate(-2deg);
+  transform-origin: 12px 50%;
+}
+.ak-tag .ak-i {
+  width: 14px;
+  height: 14px;
+}
+.ak-tag--sun {
+  --tag: var(--sun);
+  --tag-ink: var(--on-sun);
+}
+.ak-tag--field {
+  --tag: var(--field);
+  --tag-ink: var(--ink);
+}
+.ak-tag--heat {
+  --tag: var(--heat);
+  --tag-ink: var(--on-heat);
+}
+.ak-tag--paper {
+  --tag: var(--paper);
+  --tag-ink: var(--ink-on-paper);
+}
+
+/* Seal: a hand-cut sun disc with a muslin-stitch ring and optional arc text. */
+.ak-seal {
+  --seal: var(--sun);
+  --seal-ink: var(--on-sun);
+  position: relative;
+  display: inline-grid;
+  place-items: center;
+  width: 104px;
+  height: 104px;
+  text-align: center;
+  color: var(--seal-ink);
+  transform: rotate(-8deg);
+  isolation: isolate;
+}
+.ak-seal::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: -1;
+  background: var(--seal);
+  border-radius: var(--blot-1);
+}
+.ak-seal::after {
+  content: "";
+  position: absolute;
+  inset: 8px;
+  border: 1.5px dashed currentColor;
+  border-radius: var(--blot-2);
+  opacity: 0.5;
+}
+.ak-seal > svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.ak-seal > svg text {
+  fill: currentColor;
+  font: 700 8.5px var(--font-ui);
+  letter-spacing: 0.26em;
+}
+.ak-seal b {
+  display: block;
+  font: 800 26px/1 var(--font-accent);
+}
+.ak-seal span {
+  display: block;
+  font: 600 11px/1.15 var(--font-ui);
+  margin-top: 2px;
+}
+.ak-seal--brand {
+  --seal: var(--brand);
+  --seal-ink: var(--on-brand-accent);
+}
+.ak-seal--paper {
+  --seal: var(--surface);
+  --seal-ink: var(--brand);
+}
+.ak-seal--paper::before {
+  box-shadow: inset 0 0 0 2px var(--brand);
+}
+.ak-seal--s {
+  width: 84px;
+  height: 84px;
+}
+.ak-seal--s b {
+  font-size: 24px;
+}
+.ak-seal--s span {
+  font-size: 11px;
+}
+.ak-seal--s::after {
+  inset: 6px;
+}
+
+/* Attribute: a quiet promise with a hand-drawn icon, no fill. */
+.ak-attr {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font: 600 14px/1.2 var(--font-ui-bn);
+  color: var(--ink);
+}
+.ak-attr .ak-i {
+  width: 22px;
+  height: 22px;
+  color: var(--accent-icon);
+}
+.ak-attr small {
+  display: block;
+  font: italic 400 13px/1.2 var(--font-aside);
+  color: var(--ink-muted);
+}
+
+/* Status: order and stock states, always a word plus a seed dot. */
+.ak-status {
+  --dot: var(--brand);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 30px;
+  padding: 0 12px 0 10px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-band);
+  color: var(--ink);
+  font: 600 13px/1 var(--font-ui-bn);
+}
+.ak-status::before {
+  content: "";
+  width: 9px;
+  height: 11px;
+  border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+  background: var(--dot);
+  transform: rotate(-20deg);
+}
+.ak-status--progress {
+  --dot: var(--sun);
+}
+.ak-status--progress::before {
+  box-shadow: 0 0 0 1.5px var(--on-sun);
+}
+.ak-status--alert {
+  --dot: var(--heat);
+}
+.ak-status--muted {
+  --dot: transparent;
+  color: var(--ink-muted-on-field);
+}
+.ak-status--muted::before {
+  box-shadow: inset 0 0 0 1.5px var(--ink-muted-on-field);
+}
+
+/* Count: the basket number. */
+.ak-count {
+  display: inline-grid;
+  place-items: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 5px;
+  border-radius: 10px 10px 10px 4px;
+  background: var(--brand);
+  color: var(--on-brand);
+  font: 700 11px/1 var(--font-ui);
+}
+
+/* Filter chip */
+.ak-chip {
+  border: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: var(--space-2);
+  min-height: 40px;
+  padding: 0 16px;
+  border-radius: var(--radius-pill);
+  background: var(--surface);
+  box-shadow: inset 0 0 0 1px var(--line);
+  color: var(--ink);
+  font: 500 14px/1 var(--font-ui);
+  cursor: pointer;
+  transition:
+    background-color var(--dur-quick),
+    transform var(--dur-base) var(--ease-lid);
+}
+.ak-chip small {
+  font: 500 12px/1 var(--font-ui);
+  color: var(--ink-muted);
+}
+.ak-chip:hover {
+  box-shadow: inset 0 0 0 1px var(--line-control);
+}
+.ak-chip:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.ak-chip.is-on {
+  background: var(--brand);
+  color: var(--on-brand);
+  box-shadow: none;
+  padding-left: 14px;
+}
+.ak-chip.is-on::before {
+  content: "";
+  width: 10px;
+  height: 10px;
+  border-radius: var(--blot-1);
+  background: var(--on-brand-accent);
+}
+.ak-chip.is-on small {
+  color: var(--on-brand-accent);
+}
+
+/* ---------- cards ---------- */
+.ak-card {
+  position: relative;
+  background: var(--surface);
+  border-radius: var(--shoulder-soft);
+  box-shadow: inset 0 0 0 1px var(--line);
+  transition:
+    transform var(--dur-base) var(--ease-settle),
+    box-shadow var(--dur-base) var(--ease-settle);
+}
+.ak-card:hover {
+  transform: translateY(-2px);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    var(--shadow-lift);
+}
+.ak-card .stage {
+  position: relative;
+  height: 168px;
+  margin: 10px 10px 0;
+  background: var(--field);
+  border-radius: var(--shoulder-soft);
+}
+.ak-card .stage .blot {
+  position: absolute;
+  left: 50%;
+  top: 20px;
+  width: 140px;
+  height: 134px;
+  margin-left: -70px;
+  background: var(--field);
+  border-radius: var(--blot-1);
+}
+.ak-card .stage .jar {
+  position: absolute;
+  left: 50%;
+  top: -34px;
+  width: 124px;
+  transform: translateX(-50%);
+  filter: drop-shadow(12px 16px 12px rgba(52, 57, 43, 0.18));
+  transition: transform var(--dur-base) var(--ease-lid);
+}
+.ak-card:hover .stage .jar {
+  transform: translateX(-50%) translateY(-4px);
+}
+.ak-card .body {
+  padding: 16px 20px 18px;
+}
+.ak-card .name {
+  font: 400 20px/1.25 var(--font-display);
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
+}
+.ak-card .name:lang(bn) {
+  font: 400 19px/1.45 var(--font-display-bn);
+}
+.ak-card .tr {
+  font: 400 13px/1.5 var(--font-ui-bn);
+  color: var(--ink-muted);
+  margin-top: 2px;
+}
+.ak-card .tr:lang(en) {
+  font: italic 400 15px/1.3 var(--font-aside);
+  font-variation-settings: "SOFT" 100;
+  color: var(--ink-muted);
+}
+.ak-card .row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 12px;
+}
+.ak-card .unit {
+  font: 400 14px/1 var(--font-ui);
+  color: var(--ink-muted);
+  margin-left: 6px;
+}
+.ak-card .fav {
+  border: 0;
+  cursor: pointer;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: transparent;
+  display: grid;
+  place-items: center;
+  z-index: 2;
+}
+.ak-card .fav {
+  color: var(--ink);
+}
+.ak-card .ak-tag {
+  position: absolute;
+  top: 22px;
+  left: 18px;
+  z-index: 2;
+}
+
+/* ---------- inputs ---------- */
+.ak-field {
+  display: grid;
+  gap: var(--space-2);
+}
+.ak-field > span {
+  font: 600 14px/1.3 var(--font-ui);
+}
+.ak-input {
+  min-height: 48px;
+  padding: 0 18px;
+  border-radius: var(--radius-soft);
+  background: var(--surface);
+  border: 1px solid var(--line-control);
+  font: 400 15px/1 var(--font-ui);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.ak-input::placeholder,
+.ak-input .ph {
+  color: var(--ink-muted);
+}
+.ak-input.is-focus {
+  border-color: var(--focus);
+  box-shadow:
+    0 0 0 3px var(--bg),
+    0 0 0 5px var(--focus);
+}
+.ak-input.is-error {
+  border-color: var(--error);
+}
+.ak-help {
+  font: 400 14px/1.4 var(--font-ui);
+  color: var(--ink-muted);
+}
+.ak-help.is-error {
+  color: var(--error);
+}
+.ak-search {
+  border-radius: var(--radius-pill);
+}
+.ak-stepper {
+  display: inline-flex;
+  align-items: center;
+  min-height: 48px;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px var(--line-control);
+  background: var(--surface);
+}
+.ak-stepper button {
+  width: 48px;
+  height: 48px;
+  border: 0;
+  background: none;
+  color: var(--ink);
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  border-radius: 50%;
+}
+.ak-stepper output {
+  min-width: 32px;
+  text-align: center;
+  font: 700 18px/1 var(--font-ui);
+}
+
+/* ---------- taste profile (product detail only) ---------- */
+.ak-taste {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 10px 16px;
+  align-items: center;
+  max-width: 360px;
+}
+.ak-taste dt {
+  font: 600 14px/1.2 var(--font-ui);
+  color: var(--ink);
+}
+.ak-taste dd {
+  margin: 0;
+  display: flex;
+  gap: 6px;
+}
+.ak-taste dd i {
+  width: 14px;
+  height: 14px;
+  border-radius: var(--blot-1);
+  background: var(--line);
+}
+.ak-taste dd i.on {
+  background: var(--brand);
+}
+.ak-taste .heat i.on {
+  background: var(--heat);
+}
+.ak-taste .w {
+  font: 400 13px/1 var(--font-ui);
+  color: var(--ink-muted);
+  min-width: 64px;
+  text-align: right;
+}
+
+/* ---------- language toggle ---------- */
+.ak-toggle {
+  display: inline-flex;
+  padding: 3px;
+  border-radius: var(--radius-pill);
+  background: var(--bg-band);
+}
+.ak-toggle button {
+  border: 0;
+  background: none;
+  min-width: 40px;
+  height: 34px;
+  padding: 0 12px;
+  border-radius: var(--radius-pill);
+  font: 600 13px/1 var(--font-ui);
+  color: var(--ink-muted-on-field);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.ak-toggle button[aria-pressed="true"] {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: var(--shadow-rest);
+}
+.ak-toggle button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+.ak-toggle .ak-i {
+  width: 16px;
+  height: 16px;
+}
+
+/* ---------- logo ---------- */
+.ak-logo {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  text-decoration: none;
+}
+.ak-logo img {
+  display: block;
+  height: 100%;
+  width: auto;
+}
+
+/* ---------- recipe card ---------- */
+.ak-recipe {
+  display: grid;
+  gap: 12px;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ak-recipe .ph {
+  aspect-ratio: 4 / 3;
+  background: var(--field);
+  border-radius: var(--shoulder-soft);
+  overflow: hidden;
+  position: relative;
+}
+.ak-recipe .ph img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+  transition: transform var(--dur-slow) var(--ease-settle);
+}
+.ak-recipe:hover .ph img {
+  transform: scale(1.03);
+}
+.ak-recipe h3 {
+  margin: 0;
+  font: 400 22px/1.25 var(--font-display);
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 50;
+}
+.ak-recipe h3:lang(bn) {
+  font: 400 21px/1.45 var(--font-display-bn);
+}
+.ak-recipe .meta {
+  display: flex;
+  gap: 14px;
+  font: 400 13px/1 var(--font-ui);
+  color: var(--ink-muted);
+}
+.ak-recipe .with {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font: 500 13px/1 var(--font-ui);
+  color: var(--brand);
+}
+
+/* ---------- testimonial (calm) ---------- */
+.ak-quote {
+  text-align: center;
+  max-width: 620px;
+  margin: 0 auto;
+}
+.ak-quote .faces {
+  display: flex;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+.ak-quote .faces span {
+  width: 48px;
+  height: 48px;
+  border-radius: var(--blot-2);
+  background: var(--field);
+  opacity: 0.55;
+}
+.ak-quote .faces span.on {
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px var(--bg),
+    0 0 0 3px var(--brand);
+}
+.ak-quote q {
+  display: block;
+  quotes: none;
+  font: italic 400 22px/1.5 var(--font-display);
+  font-variation-settings:
+    "opsz" 36,
+    "SOFT" 100;
+  color: var(--ink);
+}
+.ak-quote q:lang(bn) {
+  font: 400 21px/1.6 var(--font-display-bn);
+}
+.ak-quote cite {
+  display: block;
+  margin-top: 18px;
+  font-style: normal;
+}
+
+/* ---------- reduced motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ak *,
+  .ak-btn,
+  .ak-card,
+  .ak-card .stage .jar {
+    transition-duration: 1ms !important;
+    animation: none !important;
+  }
+  .ak-btn:hover,
+  .ak-card:hover {
+    transform: none;
+  }
+}
+
+/* icons */
+.i-arrow {
+  --i: url(/icons/arrow.svg);
+}
+.i-basket {
+  --i: url(/icons/basket.svg);
+}
+.i-chat {
+  --i: url(/icons/chat.svg);
+}
+.i-chili {
+  --i: url(/icons/chili.svg);
+}
+.i-close {
+  --i: url(/icons/close.svg);
+}
+.i-heart {
+  --i: url(/icons/heart.svg);
+}
+.i-jar {
+  --i: url(/icons/jar.svg);
+}
+.i-leaf {
+  --i: url(/icons/leaf.svg);
+}
+.i-mango {
+  --i: url(/icons/mango.svg);
+}
+.i-minus {
+  --i: url(/icons/minus.svg);
+}
+.i-plus {
+  --i: url(/icons/plus.svg);
+}
+.i-pot {
+  --i: url(/icons/pot.svg);
+}
+.i-search {
+  --i: url(/icons/search.svg);
+}
+.i-sun {
+  --i: url(/icons/sun.svg);
+}
+.i-truck {
+  --i: url(/icons/truck.svg);
+}
+.i-user {
+  --i: url(/icons/user.svg);
+}
+.i-menu {
+  --i: url(/icons/menu.svg);
+}

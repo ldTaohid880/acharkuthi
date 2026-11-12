@@ -1,0 +1,198 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* Scan the admin app and the shared shadcn components for class names. */
+@source "../**/*.{ts,tsx}";
+@source "../../../packages/ui/src/**/*.{ts,tsx}";
+
+/*
+ * Admin theme. Values are copied exactly from the admin canvas's project/admin.css
+ * (shadcn new-york neutral, olive primary). The admin does NOT use the storefront
+ * design system (packages/ui/src/styles/acharkuthi.css).
+ */
+:root {
+  --background: #ffffff;
+  --foreground: #0a0a0a;
+  --card: #ffffff;
+  --card-foreground: #0a0a0a;
+  --popover: #ffffff;
+  --popover-foreground: #0a0a0a;
+  --primary: #3d4a12;
+  --primary-foreground: #ffffff;
+  --primary-hover: #323d0f;
+  --primary-soft: #f1f3ea;
+  --secondary: #f5f5f5;
+  --secondary-foreground: #0a0a0a;
+  --muted: #f5f5f5;
+  --muted-foreground: #737373;
+  --accent: #f5f5f5;
+  --accent-foreground: #0a0a0a;
+  --destructive: #dc2626;
+  --destructive-soft: #fef2f2;
+  /* Destructive text links/buttons (sign out, "অন্য সব থেকে বের হোন"). */
+  --danger-text: #b91c1c;
+  --border: #e5e5e5;
+  --input: #e5e5e5;
+  --ring: rgba(61, 74, 18, 0.3);
+  --sidebar: #fafafa;
+  /* Phone page background (.phone) and soft panels. */
+  --subtle: #fafafa;
+  /* Sidebar item hover / active backgrounds and text (Sidebar.dc.html). */
+  --sidebar-hover: #f0f0f0;
+  --sidebar-active: #ececec;
+  --sidebar-foreground: #404040;
+  --ak-shadow-xs: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --ak-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --ak-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+  --ak-shadow-bar: 0 -4px 12px rgba(0, 0, 0, 0.05);
+  --notify: #dc2626;
+
+  /* Order status chips (admin.css .st-*): background / text / border. */
+  --st-new-bg: #fef3c7;
+  --st-new-fg: #92400e;
+  --st-new-bd: #fde68a;
+  --st-conf-bg: #dbeafe;
+  --st-conf-fg: #1e40af;
+  --st-conf-bd: #bfdbfe;
+  --st-pack-bg: #ede9fe;
+  --st-pack-fg: #5b21b6;
+  --st-pack-bd: #ddd6fe;
+  --st-book-bg: #eef2ff;
+  --st-book-fg: #3730a3;
+  --st-book-bd: #c7d2fe;
+  --st-transit-bg: #4338ca;
+  --st-transit-fg: #ffffff;
+  --st-transit-bd: #4338ca;
+  --st-deliv-bg: #dcfce7;
+  --st-deliv-fg: #166534;
+  --st-deliv-bd: #bbf7d0;
+  --st-settled-bg: #15803d;
+  --st-settled-fg: #ffffff;
+  --st-settled-bd: #15803d;
+  --st-cancel-bg: #f5f5f5;
+  --st-cancel-fg: #525252;
+  --st-cancel-bd: #e5e5e5;
+  --st-return-bg: #fee2e2;
+  --st-return-fg: #991b1b;
+  --st-return-bd: #fecaca;
+  --st-partial-bg: #fff7ed;
+  --st-partial-fg: #9a3412;
+  --st-partial-bd: #fed7aa;
+
+  /* Badges (admin.css .badge-*). */
+  --badge-warn-bg: #fef3c7;
+  --badge-warn-fg: #92400e;
+  --badge-danger-bg: #fee2e2;
+  --badge-danger-fg: #991b1b;
+  --badge-ok-bg: #dcfce7;
+  --badge-ok-fg: #166534;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-primary-hover: var(--primary-hover);
+  --color-primary-soft: var(--primary-soft);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-soft: var(--destructive-soft);
+  --color-danger-text: var(--danger-text);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-sidebar: var(--sidebar);
+  --color-subtle: var(--subtle);
+  --color-sidebar-hover: var(--sidebar-hover);
+  --color-sidebar-active: var(--sidebar-active);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-notify: var(--notify);
+
+  --color-st-new-bg: var(--st-new-bg);
+  --color-st-new-fg: var(--st-new-fg);
+  --color-st-new-bd: var(--st-new-bd);
+  --color-st-conf-bg: var(--st-conf-bg);
+  --color-st-conf-fg: var(--st-conf-fg);
+  --color-st-conf-bd: var(--st-conf-bd);
+  --color-st-pack-bg: var(--st-pack-bg);
+  --color-st-pack-fg: var(--st-pack-fg);
+  --color-st-pack-bd: var(--st-pack-bd);
+  --color-st-book-bg: var(--st-book-bg);
+  --color-st-book-fg: var(--st-book-fg);
+  --color-st-book-bd: var(--st-book-bd);
+  --color-st-transit-bg: var(--st-transit-bg);
+  --color-st-transit-fg: var(--st-transit-fg);
+  --color-st-transit-bd: var(--st-transit-bd);
+  --color-st-deliv-bg: var(--st-deliv-bg);
+  --color-st-deliv-fg: var(--st-deliv-fg);
+  --color-st-deliv-bd: var(--st-deliv-bd);
+  --color-st-settled-bg: var(--st-settled-bg);
+  --color-st-settled-fg: var(--st-settled-fg);
+  --color-st-settled-bd: var(--st-settled-bd);
+  --color-st-cancel-bg: var(--st-cancel-bg);
+  --color-st-cancel-fg: var(--st-cancel-fg);
+  --color-st-cancel-bd: var(--st-cancel-bd);
+  --color-st-return-bg: var(--st-return-bg);
+  --color-st-return-fg: var(--st-return-fg);
+  --color-st-return-bd: var(--st-return-bd);
+  --color-st-partial-bg: var(--st-partial-bg);
+  --color-st-partial-fg: var(--st-partial-fg);
+  --color-st-partial-bd: var(--st-partial-bd);
+  --color-badge-warn-bg: var(--badge-warn-bg);
+  --color-badge-warn-fg: var(--badge-warn-fg);
+  --color-badge-danger-bg: var(--badge-danger-bg);
+  --color-badge-danger-fg: var(--badge-danger-fg);
+  --color-badge-ok-bg: var(--badge-ok-bg);
+  --color-badge-ok-fg: var(--badge-ok-fg);
+
+  /* admin.css radii: badge 6, button/input 8, popover/toast 10, card 12, sheet 16. */
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 10px;
+  --radius-xl: 12px;
+  --radius-2xl: 16px;
+
+  --shadow-xs: var(--ak-shadow-xs);
+  --shadow-md: var(--ak-shadow-md);
+  --shadow-lg: var(--ak-shadow-lg);
+  --shadow-bar: var(--ak-shadow-bar);
+
+  /* Inter for Latin, Anek Bangla for Bangla, in one stack (admin.css .ak). */
+  --font-sans: var(--font-inter), var(--font-anek), ui-sans-serif, system-ui, sans-serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+/* Admin breakpoints (owner decision): phone < 768, rail 768–1023, full sidebar >= 1024. */
+@theme {
+  --breakpoint-tab: 768px;
+  --breakpoint-desk: 1024px;
+  --breakpoint-wide: 1440px;
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+  html {
+    font-size: 16px;
+  }
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+    font-size: 14px;
+    line-height: 20px;
+  }
+}
+
+@utility tabular {
+  font-variant-numeric: tabular-nums;
+}

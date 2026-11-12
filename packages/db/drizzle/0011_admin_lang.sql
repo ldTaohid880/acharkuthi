@@ -1,0 +1,1 @@
+ALTER TABLE `user` ADD `admin_lang` varchar(2) DEFAULT 'bn' NOT NULL;
