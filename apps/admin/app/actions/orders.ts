@@ -170,14 +170,15 @@ export async function cancelOrder(input: unknown): Promise<{ ok: boolean }> {
   return { ok };
 }
 
-/** "ডেলিভারি ট্র্যাকিং" auto-save: courier name, tracking number, expected date. */
+/** Auto-save for "ডেলিভারি ট্র্যাকিং" (courier, tracking number, date) and the courier note. */
 export async function updateTracking(input: unknown): Promise<void> {
   await requireAdmin();
-  const { id, courierName, trackingRef, etaDate } = orderTrackingInput.parse(input);
+  const { id, courierName, trackingRef, etaDate, courierNote } = orderTrackingInput.parse(input);
   const set: Partial<typeof schema.orders.$inferInsert> = {};
   if (courierName !== undefined) set.courierName = courierName || null;
   if (trackingRef !== undefined) set.trackingRef = trackingRef || null;
   if (etaDate !== undefined) set.etaDate = etaDate || null;
+  if (courierNote !== undefined) set.courierNote = courierNote || null;
   if (Object.keys(set).length === 0) return;
   await db.update(schema.orders).set(set).where(eq(schema.orders.id, id));
   revalidatePath(`/orders/${id}`);

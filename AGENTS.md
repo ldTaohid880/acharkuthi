@@ -63,7 +63,11 @@ design system or `design*.css`.
   are sticky inside their scroll area. Split views scroll each pane on its own.
 - Put a max height on `viewportClassName`, not on the ScrollArea root. The bar is thin and only
   shows while scrolling (the shared component's defaults); don't restyle it per page.
-- Phones (below 768px) keep normal page scrolling with the sticky page header and fixed bottom nav.
+- Phones (below 768px) follow the same rule (owner, 2026-11-13): the page itself never scrolls.
+  The page header, filters/chips and action or save bars stay put above the fixed bottom nav; only
+  the list or the page body scrolls, in a ScrollArea. Pages with fixed parts use a
+  `flex h-full flex-col` layout with the list in `ScrollArea className="min-h-0 flex-1"`; simple
+  pages can rely on the shell's ScrollArea with the sticky `PhoneHeader`.
 
 0. **The canvas and the design system are read-only references.**
    - Never publish, upload, edit or comment on them.

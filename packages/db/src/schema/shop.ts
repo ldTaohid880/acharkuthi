@@ -186,6 +186,8 @@ export const orders = mysqlTable(
     cancelNote: text("cancel_note"),
     // Order tracking (Track.dc.html). Filled by admin once known; the page shows a fallback until then.
     courierName: varchar("courier_name", { length: 80 }),
+    /** "কুরিয়ারের জন্য নোট": printed on the packing slip and label; sent to Steadfast later. */
+    courierNote: text("courier_note"),
     trackingRef: varchar("tracking_ref", { length: 80 }),
     etaDate: date("eta_date", { mode: "string" }),
     ...timestamps,

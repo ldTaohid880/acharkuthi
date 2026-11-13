@@ -11,6 +11,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/pop
 import { cn } from "@repo/ui/lib/utils";
 import type { AdminLang } from "@repo/validators";
 import { CalendarDays, CircleX, Copy, Ellipsis, Printer, Truck } from "lucide-react";
+import type { Route } from "next";
+import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
 import {
   addOrderNote,
@@ -149,9 +151,8 @@ export function OrderActions({
         <DropdownMenuItem className={item} onSelect={() => copy(order.address, d.addressCopied)}>
           {d.copyAddress}
         </DropdownMenuItem>
-        {/* Packing slip is A5 (/orders/[id]/print), not built yet. */}
-        <DropdownMenuItem className={item} disabled>
-          {t.slip}
+        <DropdownMenuItem asChild className={item}>
+          <Link href={`/orders/${order.id}/print` as Route}>{t.slip}</Link>
         </DropdownMenuItem>
         {back ? (
           <DropdownMenuItem className={item} disabled={pending} onSelect={stepBack}>
@@ -228,14 +229,13 @@ export function OrderActions({
     </button>
   ) : null;
   const slipBtn = (
-    <button
-      type="button"
-      disabled
+    <Link
+      href={`/orders/${order.id}/print` as Route}
       className={btn({ variant: "outline", size: lg ? "lg" : "default" })}
     >
       {place === "wide" ? <Printer aria-hidden /> : null}
       {t.slip}
-    </button>
+    </Link>
   );
   const dots = menu(
     <button
@@ -460,5 +460,31 @@ export function NoteForm({ id, t }: { id: number; t: OT }) {
         </button>
       </div>
     </form>
+  );
+}
+
+/** "কুরিয়ারের জন্য নোট": saved when the field loses focus; printed on the slip and label. */
+export function CourierNoteField({ id, initial, t }: { id: number; initial: string; t: OT }) {
+  const toast = useToast();
+  const saved = useRef(initial);
+  const [note, setNote] = useState(initial);
+  return (
+    <textarea
+      id="od-sf"
+      value={note}
+      maxLength={500}
+      onChange={(e) => setNote(e.target.value)}
+      onBlur={() => {
+        const v = note.trim();
+        if (v === saved.current) return;
+        void updateTracking({ id, courierNote: v })
+          .then(() => {
+            saved.current = v;
+            toast({ tone: "ok", title: t.detail.saved });
+          })
+          .catch(() => toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub }));
+      }}
+      className="border-input focus:border-primary min-h-16 w-full resize-y rounded-md border bg-white px-3 py-2 text-sm leading-5 font-normal shadow-xs outline-none focus:shadow-[0_0_0_3px_var(--ring)]"
+    />
   );
 }

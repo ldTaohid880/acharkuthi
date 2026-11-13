@@ -567,6 +567,7 @@ export const orderTrackingInput = z.object({
   trackingRef: z.string().trim().max(80).optional(),
   /** YYYY-MM-DD, or "" to clear. */
   etaDate: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]).optional(),
+  courierNote: z.string().trim().max(500).optional(),
 });
 
 /** Order detail "ভেতরের নোট". */
@@ -631,3 +632,28 @@ export type ManualOrderInput = z.input<typeof manualOrderInput>;
 
 export * from "./bd-locations";
 export * from "./pricing";
+
+/** Packing slip / label page: one order id, or "?ids=1,2,3" from the list's selection. */
+export const orderPrintIds = z
+  .string()
+  .trim()
+  .regex(/^\d+(,\d+)*$/)
+  .transform((s) => [...new Set(s.split(",").map(Number))])
+  .pipe(z.array(z.number().int().positive()).min(1).max(100));
+
+/**
+ * Stock page "সংরক্ষণ করুন": each changed size with the count the staff member started from.
+ * A size saves only if nobody (a checkout, another admin) changed it meanwhile.
+ */
+export const stockSaveInput = z.object({
+  changes: z
+    .array(
+      z.object({
+        variantId: z.number().int().positive(),
+        from: z.number().int().nonnegative(),
+        to: z.number().int().nonnegative().max(100000),
+      }),
+    )
+    .min(1)
+    .max(500),
+});

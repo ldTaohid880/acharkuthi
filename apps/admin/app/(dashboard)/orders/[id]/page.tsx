@@ -18,7 +18,13 @@ import { requireAdmin } from "@/lib/require-admin";
 import type { OT } from "../orders-parts";
 import { body, card, CardHead, kv, Wide } from "../card";
 import { AddressDialog } from "./address-dialog";
-import { CopyButton, NoteForm, OrderActions, TrackingFields } from "./detail-client";
+import {
+  CopyButton,
+  CourierNoteField,
+  NoteForm,
+  OrderActions,
+  TrackingFields,
+} from "./detail-client";
 
 export const metadata: Metadata = { title: "Order" };
 
@@ -54,7 +60,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
   };
 
   return (
-    <div className="tab:h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <Crumb value={o.number} />
 
       {/* Phone header (OrderDetail-Phone .p-head) */}
@@ -120,10 +126,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
         </div>
       </div>
 
-      <ScrollArea
-        className="max-tab:contents min-h-0 flex-1"
-        viewportClassName="max-tab:!overflow-visible"
-      >
+      <ScrollArea className="min-h-0 flex-1">
         <div className="tab:gap-4 tab:px-6 tab:pb-8 wide:px-8 wide:pb-12 desk:flex-row desk:items-start desk:flex-wrap tab:pt-0 flex flex-col gap-3 p-4 pb-[110px]">
           {/* Left column (desktop / 1194) */}
           <div className="desk:flex desk:min-w-0 desk:flex-[1.45_1_0] desk:flex-col desk:gap-4 wide:flex-[999_1_560px] contents">
@@ -733,16 +736,15 @@ function CourierCard({ o, t, cod }: { o: OrderDetail; t: OT; cod: number }) {
           <dd className="font-medium">{formatTaka(cod)}</dd>
         </dl>
         <p className="text-muted-foreground tab:hidden text-sm">{t.notBooked}</p>
-        <label className="max-tab:hidden flex flex-col gap-2 text-sm leading-5 font-medium">
-          {t.courierNote}
-          <textarea
-            disabled
-            className="border-input min-h-16 w-full resize-y rounded-md border bg-white px-3 py-2 text-sm leading-5 font-normal shadow-xs disabled:opacity-50"
-          />
-          <span className="text-muted-foreground desk:max-wide:hidden text-xs leading-4 font-normal">
+        <div className="max-tab:hidden flex flex-col gap-2">
+          <label htmlFor="od-sf" className="text-sm leading-5 font-medium">
+            {t.courierNote}
+          </label>
+          <CourierNoteField id={o.id} initial={o.courierNote} t={t} />
+          <span className="text-muted-foreground desk:max-wide:hidden text-xs leading-4">
             {d.riderHelp}
           </span>
-        </label>
+        </div>
         <button
           type="button"
           disabled

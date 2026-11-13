@@ -228,26 +228,26 @@ export function OrdersView(p: Props) {
 
   return (
     <>
-      <PhoneHeader
-        title={t.title}
-        sub={fill(t.phoneSub, { n: digits(total, lang) })}
-        end={
-          <Link
-            href={"/orders/new" as Route}
-            aria-label={t.create.button}
-            className={btn({ size: "iconLg", className: "[&_svg]:size-5" })}
-          >
-            <Plus aria-hidden />
-          </Link>
-        }
-      />
-
-      {/* ───── Phone (<768): Orders-Phone ───── */}
-      <div className="tab:hidden">
+      {/* ───── Phone (<768): Orders-Phone ─────
+          Owner rule: header, attention board, search and status stay fixed; only the cards scroll. */}
+      <div className="tab:hidden flex h-full flex-col">
+        <PhoneHeader
+          title={t.title}
+          sub={fill(t.phoneSub, { n: digits(total, lang) })}
+          end={
+            <Link
+              href={"/orders/new" as Route}
+              aria-label={t.create.button}
+              className={btn({ size: "iconLg", className: "[&_svg]:size-5" })}
+            >
+              <Plus aria-hidden />
+            </Link>
+          }
+        />
         {attention.new + attention.confirmed + attention.packed + attention.problem > 0 ? (
-          <div className="px-4 pt-4">{board(true)}</div>
+          <div className="flex-none px-4 pt-4">{board(true)}</div>
         ) : null}
-        <div className="border-border flex flex-col gap-2.5 border-b bg-white px-4 py-3">
+        <div className="border-border flex flex-none flex-col gap-2.5 border-b bg-white px-4 py-3">
           <div className="flex gap-2">
             <SearchBox value={search} onChange={setSearch} t={t} short large />
             <FilterButton t={t} n={filterCount} lang={lang} onClick={() => setSheet(true)} />
@@ -261,21 +261,23 @@ export function OrdersView(p: Props) {
             block
           />
         </div>
-        <div className="flex flex-col gap-3 p-4">
-          {p.phoneRows.length === 0 ? empty : null}
-          {p.phoneRows.map((o) => (
-            <PhoneCard key={o.id} o={o} t={t} lang={lang} onAction={() => runRow(o)} />
-          ))}
-          {p.phoneRows.length < total ? (
-            <Link
-              href={urlWith({ n: q.n + 10, page: undefined }) as Route}
-              scroll={false}
-              className={btn({ variant: "outline", size: "lg", block: true })}
-            >
-              {t.loadMore}
-            </Link>
-          ) : null}
-        </div>
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="flex flex-col gap-3 p-4">
+            {p.phoneRows.length === 0 ? empty : null}
+            {p.phoneRows.map((o) => (
+              <PhoneCard key={o.id} o={o} t={t} lang={lang} onAction={() => runRow(o)} />
+            ))}
+            {p.phoneRows.length < total ? (
+              <Link
+                href={urlWith({ n: q.n + 10, page: undefined }) as Route}
+                scroll={false}
+                className={btn({ variant: "outline", size: "lg", block: true })}
+              >
+                {t.loadMore}
+              </Link>
+            ) : null}
+          </div>
+        </ScrollArea>
       </div>
 
       {/* ───── Split view (1024–1439): Orders-Tablet1194 ───── */}
@@ -493,10 +495,13 @@ export function OrdersView(p: Props) {
               <Truck aria-hidden className="wide:block hidden" />
               {fill(t.bookN, { n: digits(sel.size, lang) })}
             </button>
-            <button type="button" disabled title="A5" className={barBtn("dim")}>
+            <Link
+              href={`/orders/print?ids=${[...sel].join(",")}` as Route}
+              className={barBtn("dim")}
+            >
               <Printer aria-hidden className="wide:block hidden" />
               {t.printLabels}
-            </button>
+            </Link>
             <span className="wide:block hidden flex-auto" />
             <button
               type="button"
@@ -1030,14 +1035,12 @@ function Preview({
             {t.actPhone[act]}
           </button>
         ) : null}
-        <button
-          type="button"
-          disabled
-          title="A5"
+        <Link
+          href={`/orders/${o.id}/print` as Route}
           className={btn({ variant: "outline", size: "lg" })}
         >
           {t.slip}
-        </button>
+        </Link>
         {CANCELLABLE.has(o.status) ? (
           <button
             type="button"

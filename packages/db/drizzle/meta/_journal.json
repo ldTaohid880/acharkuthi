@@ -120,6 +120,13 @@
       "when": 1794548799555,
       "tag": "0016_order_source",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1794585825924,
+      "tag": "0017_shop_settings_courier_note",
+      "breakpoints": true
     }
   ]
 }

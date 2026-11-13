@@ -55,6 +55,7 @@ export interface OrderDetail {
     transactionId: string | null;
   } | null;
   tracking: { courier: string; ref: string; eta: string };
+  courierNote: string;
   /** Latest time each status was reached, with who did it. */
   events: { status: DbStatus; at: Date; by: string | null }[];
   notes: { id: number; body: string; at: Date; by: string | null }[];
@@ -161,6 +162,7 @@ export async function getOrderDetail(id: number): Promise<OrderDetail | null> {
       ref: order.trackingRef ?? "",
       eta: order.etaDate ?? "",
     },
+    courierNote: order.courierNote ?? "",
     events,
     notes,
   };

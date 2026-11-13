@@ -121,7 +121,7 @@ export function AppShell({
   return (
     <ShellContext.Provider value={shell}>
       <ToastProvider>
-        <div className="bg-background max-tab:block max-tab:h-auto max-tab:min-h-dvh max-tab:overflow-visible max-tab:bg-subtle flex h-dvh overflow-hidden">
+        <div className="bg-background max-tab:bg-subtle flex h-dvh overflow-hidden">
           {/* 768–1023: icon rail */}
           <aside className="tab:flex desk:hidden hidden w-16 flex-none">
             <Rail
@@ -168,7 +168,13 @@ export function AppShell({
             </SheetContent>
           </Sheet>
 
-          <div className="max-tab:h-auto max-tab:overflow-visible flex h-full min-w-0 flex-1 flex-col overflow-hidden">
+          <div
+            className={cn(
+              "flex h-full min-w-0 flex-1 flex-col overflow-hidden",
+              // Phones: the content ends above the fixed bottom nav (detail pages have none).
+              !DETAIL_PAGE.test(pathname) && "max-tab:pb-[76px]",
+            )}
+          >
             <header className="border-border tab:flex hidden h-14 flex-none items-center gap-3 border-b bg-white pr-4 pl-3">
               <button
                 type="button"
@@ -204,11 +210,8 @@ export function AppShell({
               <UserMenu role={role} user={user} t={t} />
             </header>
 
-            {/* shadcn ScrollArea for the page (owner request). Phones keep normal page scrolling. */}
-            <ScrollArea
-              className="max-tab:contents min-h-0 flex-1"
-              viewportClassName="max-tab:!overflow-visible max-tab:pb-[100px] [&>div]:h-full"
-            >
+            {/* shadcn ScrollArea for the page (owner request). Phones too (owner rule 2026-11-13): pages keep their header and filters fixed and scroll only the list or body. */}
+            <ScrollArea className="min-h-0 flex-1" viewportClassName="[&>div]:h-full">
               {children}
             </ScrollArea>
           </div>

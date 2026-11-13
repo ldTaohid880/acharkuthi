@@ -164,7 +164,7 @@ export function NewOrderForm({
   );
 
   return (
-    <div className="tab:h-full flex flex-col">
+    <div className="flex h-full flex-col">
       <Crumb value={c.title} />
 
       {/* Phone header */}
@@ -213,10 +213,7 @@ export function NewOrderForm({
         </div>
       </div>
 
-      <ScrollArea
-        className="max-tab:contents min-h-0 flex-1"
-        viewportClassName="max-tab:!overflow-visible"
-      >
+      <ScrollArea className="min-h-0 flex-1">
         <div className="tab:gap-4 tab:px-6 tab:pt-0 tab:pb-8 wide:px-8 wide:pb-12 desk:flex-row desk:flex-wrap desk:items-start flex flex-col gap-3 p-4 pb-[110px]">
           {formError ? (
             <p role="alert" className="text-destructive max-tab:hidden desk:w-full text-sm">

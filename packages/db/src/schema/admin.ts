@@ -3,6 +3,7 @@ import {
   bigint,
   foreignKey,
   index,
+  int,
   json,
   mysqlEnum,
   mysqlTable,
@@ -145,3 +146,15 @@ export const orderNotes = mysqlTable(
     }).onDelete("set null"),
   ],
 );
+
+/**
+ * "দোকানের তথ্য" (Settings-* boards): one row (id 1). Printed as the sender on shipping labels
+ * (OrderPrint-Desktop). Edited on the Settings page (A26).
+ */
+export const shopSettings = mysqlTable("shop_settings", {
+  id: int("id").primaryKey(),
+  phone: varchar("phone", { length: 20 }),
+  email: varchar("email", { length: 255 }),
+  pickupAddress: text("pickup_address"),
+  updatedAt: timestamp("updated_at").defaultNow().onUpdateNow().notNull(),
+});

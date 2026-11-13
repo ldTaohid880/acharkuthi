@@ -264,7 +264,7 @@ discovery (search, recipes), then the cross-cutting error states.
 - **Styling (owner decision 2026-11-12):** build with Tailwind + shadcn. Take exact values from `admin.css`; they live as theme variables in `apps/admin/app/globals.css`. Do not copy the canvas class names.
 - **Widths:** boards are drawn at 1440 (desktop), 1194 and 834 (tablet) and 390 (phone). Breakpoints: phone `< 768px` (bottom nav + More), icon rail `768–1023px` (Tablet 834 boards), full sidebar with the compact 44px top bar and tablet padding `1024–1439px` (Tablet 1194 boards, split views), desktop boards from `1440px` (`wide:`), where the sidebar collapse toggle appears.
 - **Roles:** `owner` sees everything; `staff` sees Dashboard (without cash figures), Orders, Stock, Messages and Newsletter. Owner-only pages call `requireRole("owner")`.
-- **Scrolling:** shadcn ScrollArea only. Scroll the content (list, table, pane), never the whole page; headers, filters and pagers stay fixed. See "Admin scrolling" in `AGENTS.md`.
+- **Scrolling:** shadcn ScrollArea only. Scroll the content (list, table, pane), never the whole page, phones included; headers, filters, pagers and save bars stay fixed. See "Admin scrolling" in `AGENTS.md`.
 - **Language:** every admin string comes from the bn/en dictionary (`apps/admin/lib/i18n`), per user, Bangla by default. User data is never translated (see `LanguageGuide.dc.html`).
 
 ## Admin build status and order
@@ -279,8 +279,8 @@ Same rules as the storefront table: one row per task, top to bottom, only the us
 | A3  | Orders list                                                                                                                   | `/orders`               | Ready for review |
 | A4  | Order detail                                                                                                                  | `/orders/[id]`          | Ready for review                              |
 | A4b | New order (owner request, no board)                                                                                           | `/orders/new`           | Ready for review                              |
-| A5  | Packing slip / label (desktop only)                                                                                           | `/orders/[id]/print`    | Not built                                     |
-| A6  | Stock                                                                                                                         | `/stock`                | Not built                                     |
+| A5  | Packing slip / label (desktop only)                                                                                           | `/orders/[id]/print`    | Ready for review                              |
+| A6  | Stock                                                                                                                         | `/stock`                | Ready for review                              |
 | A7  | Products list                                                                                                                 | `/products`             | Not built                                     |
 | A8  | Product edit                                                                                                                  | `/products/[id]`        | Not built                                     |
 | A9  | Categories                                                                                                                    | `/categories`           | Not built                                     |
@@ -377,11 +377,15 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A5 · Packing slip / label (desktop only) — `/orders/[id]/print`
 
+> **Owner decisions (2026-11-13):** the label's sender phone and pickup address come from the new `shop_settings` table (filled on Settings, A26; until then only the shop name prints). The "নোট" box prints the new `orders.courier_note`, edited on order detail ("কুরিয়ারের জন্য নোট", auto-save). A "ছাড়" row appears when the order has a discount. Bulk printing from the list's "লেবেল প্রিন্ট" uses `/orders/print?ids=…`. Consignment ID still needs storage (Steadfast). The page has no app shell; print uses named `@page` sizes (A4 slip, 4×6 label).
+
 | Board                                        | File                         |
 | -------------------------------------------- | ---------------------------- |
 | প্যাকিং স্লিপ / লেবেল · Print (desktop only) | `OrderPrint-Desktop.dc.html` |
 
 ### A6 · Stock — `/stock`
+
+> **Notes (2026-11-13):** the low-stock limit stays the fixed 10 with "needs storage", as the boards show. Saving writes a size only if its count didn't change elsewhere meanwhile (a sale or another admin); those sizes are reported in a toast and shown fresh. A size going from 0 to in stock with open requests sends the owner a "restock" notification; a size set to 0 sends "stock" (sold out), the same as checkout. No 1194 board: 1024–1439 keeps the desktop layout with tablet padding.
 
 | Board             | File                    |
 | ----------------- | ----------------------- |

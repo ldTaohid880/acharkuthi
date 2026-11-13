@@ -196,3 +196,21 @@
 @utility tabular {
   font-variant-numeric: tabular-nums;
 }
+
+/* OrderPrint-Desktop: named pages so one print job has A4 slips and 4×6 labels. */
+@page slip {
+  size: A4;
+  margin: 0;
+}
+@page label {
+  size: 4in 6in;
+  margin: 0;
+}
+@media print {
+  .print-slip {
+    page: slip;
+  }
+  .print-label {
+    page: label;
+  }
+}
