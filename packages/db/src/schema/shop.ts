@@ -146,6 +146,15 @@ export const REVIEW_SPICE = ["low", "ok", "high"] as const;
 export const DELIVERY_ZONES = ["in", "out"] as const;
 /** Preset reasons for cancelling an order (admin cancel dialog, States-Tablet). */
 export const CANCEL_REASONS = ["no_answer", "customer_cancelled", "duplicate", "other"] as const;
+/** Where an order came from. Storefront checkout is "website"; the rest are admin manual orders. */
+export const ORDER_SOURCES = [
+  "website",
+  "in_person",
+  "phone",
+  "facebook",
+  "instagram",
+  "whatsapp",
+] as const;
 export const PAYMENT_METHODS = ["cod", "bkash", "nagad", "sslcommerz"] as const;
 export const PAYMENT_STATUSES = ["pending", "paid", "failed", "refunded"] as const;
 
@@ -166,6 +175,7 @@ export const orders = mysqlTable(
     shipUpazila: varchar("ship_upazila", { length: 80 }),
     shipDistrict: varchar("ship_district", { length: 80 }),
     deliveryZone: mysqlEnum("delivery_zone", DELIVERY_ZONES),
+    source: mysqlEnum("source", ORDER_SOURCES).default("website").notNull(),
     subtotal: money("subtotal").notNull(),
     discount: money("discount").default(0).notNull(),
     shippingFee: money("shipping_fee").default(0).notNull(),

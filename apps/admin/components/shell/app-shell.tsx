@@ -5,7 +5,7 @@ import { signOut } from "@repo/auth/client";
 import { cn } from "@repo/ui/lib/utils";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { Sheet, SheetClose, SheetContent, SheetTitle } from "@repo/ui/components/sheet";
-import { ChevronLeft, LogOut, Menu, PanelLeft } from "lucide-react";
+import { ChevronLeft, ChevronRight, LogOut, Menu, PanelLeft } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
@@ -40,6 +40,7 @@ interface Props {
 }
 
 export const SIDEBAR_COOKIE = "ak_sidebar";
+const DETAIL_PAGE = /^\/orders\/(\d+|new)$/;
 
 /**
  * Fixed app shell (admin.css .shell): sidebar + top bar stay put, only the page scrolls.
@@ -60,6 +61,7 @@ export function AppShell({
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
+  const [crumb2, setCrumb2] = useState<string | null>(null);
   const shell = useMemo<ShellState>(
     () => ({
       role,
@@ -68,6 +70,7 @@ export function AppShell({
       unread,
       openSearch: () => setSearchOpen(true),
       openNotifications: () => setNotifOpen(true),
+      setCrumb: setCrumb2,
     }),
     [role, lang, t, unread],
   );
@@ -181,7 +184,18 @@ export function AppShell({
                 aria-label={t.topbar.crumbs}
                 className="flex min-w-0 items-center gap-1.5 text-sm"
               >
-                <span className="text-muted-foreground truncate">{crumb}</span>
+                <span className={cn("text-muted-foreground truncate", crumb2 && "flex-none")}>
+                  {crumb}
+                </span>
+                {crumb2 ? (
+                  <>
+                    <ChevronRight
+                      className="text-muted-foreground size-3.5 flex-none"
+                      aria-hidden
+                    />
+                    <span className="truncate font-medium">{crumb2}</span>
+                  </>
+                ) : null}
               </nav>
               <span className="flex-auto" />
               <TopbarSearch />
@@ -199,7 +213,10 @@ export function AppShell({
             </ScrollArea>
           </div>
 
-          <BottomNav role={role} active={active} counts={counts} t={t} />
+          {/* Detail pages (OrderDetail-Phone) have their own bottom action bar instead. */}
+          {DETAIL_PAGE.test(pathname) ? null : (
+            <BottomNav role={role} active={active} counts={counts} t={t} />
+          )}
           {/* Mounted only while open, so each opening starts fresh. */}
           {searchOpen ? <SearchPalette open onOpenChange={setSearchOpen} /> : null}
           {notifOpen ? <NotificationsPanel open onOpenChange={setNotifOpen} /> : null}

@@ -8,10 +8,12 @@ import {
   mysqlTable,
   primaryKey,
   serial,
+  text,
   timestamp,
   varchar,
 } from "drizzle-orm/mysql-core";
 import { user } from "./auth";
+import { ORDER_STATUSES, orders } from "./shop";
 
 /**
  * order: new order · review: review waiting for approval · message: new contact message ·
@@ -86,5 +88,60 @@ export const adminNotificationReads = mysqlTable(
       foreignColumns: [user.id],
     }).onDelete("cascade"),
     index("admin_notification_reads_user_idx").on(t.userId),
+  ],
+);
+
+/**
+ * One row per status change of an order (OrderDetail-* "স্ট্যাটাস টাইমলাইন"): when and by whom.
+ * Written by the admin actions (confirm, pack, cancel, step back). Orders placed before this
+ * table existed only have their creation time.
+ */
+export const orderStatusEvents = mysqlTable(
+  "order_status_events",
+  {
+    id: serial("id").primaryKey(),
+    orderId: bigint("order_id", { mode: "number", unsigned: true }).notNull(),
+    status: mysqlEnum("status", ORDER_STATUSES).notNull(),
+    /** Staff member who made the change; null if the account was removed. */
+    userId: varchar("user_id", { length: 36 }),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("order_status_events_order_idx").on(t.orderId, t.createdAt),
+    foreignKey({
+      name: "order_status_events_order_fk",
+      columns: [t.orderId],
+      foreignColumns: [orders.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "order_status_events_user_fk",
+      columns: [t.userId],
+      foreignColumns: [user.id],
+    }).onDelete("set null"),
+  ],
+);
+
+/** "ভেতরের নোট": internal notes on an order. Customers never see these. */
+export const orderNotes = mysqlTable(
+  "order_notes",
+  {
+    id: serial("id").primaryKey(),
+    orderId: bigint("order_id", { mode: "number", unsigned: true }).notNull(),
+    userId: varchar("user_id", { length: 36 }),
+    body: text("body").notNull(),
+    createdAt: timestamp("created_at").defaultNow().notNull(),
+  },
+  (t) => [
+    index("order_notes_order_idx").on(t.orderId, t.createdAt),
+    foreignKey({
+      name: "order_notes_order_fk",
+      columns: [t.orderId],
+      foreignColumns: [orders.id],
+    }).onDelete("cascade"),
+    foreignKey({
+      name: "order_notes_user_fk",
+      columns: [t.userId],
+      foreignColumns: [user.id],
+    }).onDelete("set null"),
   ],
 );

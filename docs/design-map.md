@@ -277,7 +277,8 @@ Same rules as the storefront table: one row per task, top to bottom, only the us
 | A1  | Sign in                                                                                                                       | `/login`                | Ready for review |
 | A2  | Dashboard                                                                                                                     | `/`                     | Ready for review |
 | A3  | Orders list                                                                                                                   | `/orders`               | Ready for review |
-| A4  | Order detail                                                                                                                  | `/orders/[id]`          | Not built                                     |
+| A4  | Order detail                                                                                                                  | `/orders/[id]`          | Ready for review                              |
+| A4b | New order (owner request, no board)                                                                                           | `/orders/new`           | Ready for review                              |
 | A5  | Packing slip / label (desktop only)                                                                                           | `/orders/[id]/print`    | Not built                                     |
 | A6  | Stock                                                                                                                         | `/stock`                | Not built                                     |
 | A7  | Products list                                                                                                                 | `/products`             | Not built                                     |
@@ -361,12 +362,18 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A4 · Order detail — `/orders/[id]`
 
+> **Owner decisions (2026-11-13):** status history is stored (`order_status_events`) and internal notes too (`order_notes`), so their "needs storage" badges are gone; the "কুরিয়ারে বুক" and "টাকা পাওয়া গেছে" steps and the Steadfast card still need storage. Tracking fields save on change ("সংরক্ষিত" toast). The "…" menu holds ফোন কপি · ঠিকানা কপি · প্যাকিং স্লিপ (A5) · আগের ধাপে ফিরিয়ে নিন · বাতিল….
+
 | Board                          | File                             |
 | ------------------------------ | -------------------------------- |
 | অর্ডার বিস্তারিত · Desktop     | `OrderDetail-Desktop.dc.html`    |
 | অর্ডার বিস্তারিত · Tablet 834  | `OrderDetail-Tablet.dc.html`     |
 | অর্ডার বিস্তারিত · Tablet 1194 | `OrderDetail-Tablet1194.dc.html` |
 | অর্ডার বিস্তারিত · Phone       | `OrderDetail-Phone.dc.html`      |
+
+### A4b · New order — `/orders/new` (owner request 2026-11-13, no board)
+
+> No canvas board. Built from the order-detail card styles after the owner approved a mockup: source chips (in person, phone, Facebook / Messenger, Instagram, WhatsApp; saved in `orders.source`), item search with quantities, checkout's address fields (district sets the delivery charge), payment (COD / bKash / Nagad, "টাকা পাওয়া গেছে", transaction ID), coupon and note. Prices are re-read on the server, stock goes down, and the order starts Confirmed. The order detail page also gained "ঠিকানা বদলান" (until booked; a notice shows the new delivery charge and total, layout A) and shows the order's source instead of always "ওয়েবসাইট থেকে".
 
 ### A5 · Packing slip / label (desktop only) — `/orders/[id]/print`
 

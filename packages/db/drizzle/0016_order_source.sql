@@ -1,0 +1,1 @@
+ALTER TABLE `orders` ADD `source` enum('website','in_person','phone','facebook','instagram','whatsapp') DEFAULT 'website' NOT NULL;

@@ -556,3 +556,78 @@ export const orderCancelInput = z.object({
   reason: z.enum(CANCEL_REASON_KEYS),
   note: z.string().trim().max(300).optional(),
 });
+
+/** Order detail "আগের ধাপে ফিরিয়ে নিন": Packed → Confirmed, Confirmed → New. */
+export const orderStepBackInput = z.object({ id: z.number().int().positive() });
+
+/** Order detail "ডেলিভারি ট্র্যাকিং" (auto-saved). Empty text clears the field. */
+export const orderTrackingInput = z.object({
+  id: z.number().int().positive(),
+  courierName: z.string().trim().max(80).optional(),
+  trackingRef: z.string().trim().max(80).optional(),
+  /** YYYY-MM-DD, or "" to clear. */
+  etaDate: z.union([z.literal(""), z.string().regex(/^\d{4}-\d{2}-\d{2}$/)]).optional(),
+});
+
+/** Order detail "ভেতরের নোট". */
+export const orderNoteInput = z.object({
+  id: z.number().int().positive(),
+  body: z.string().trim().min(1).max(1000),
+});
+
+/**
+ * Admin delivery address (order address edit and manual orders). Same parts as storefront
+ * checkout; field errors are shown from the admin dictionary, so no messages here.
+ */
+export const adminAddressFields = z.object({
+  name: z.string().trim().min(1).max(120),
+  phone: z
+    .string()
+    .transform(normalisePhone)
+    .pipe(z.string().regex(/^(?:\+?88)?01[3-9]\d{8}$/)),
+  division: z.string().trim().min(1).max(40),
+  district: z.string().trim().min(1).max(80),
+  upazila: z.string().trim().min(1).max(80),
+  area: z.string().trim().max(120),
+  address: z.string().trim().min(5).max(255),
+  postal: z
+    .string()
+    .trim()
+    .refine((v) => v === "" || /^\d{4}$/.test(v)),
+});
+export type AdminAddressFields = z.input<typeof adminAddressFields>;
+export type AdminAddressField = keyof AdminAddressFields;
+
+/** Order detail "ঠিকানা বদলান" (owner decision: only until the order is booked). */
+export const orderAddressInput = adminAddressFields.extend({ id: z.number().int().positive() });
+
+/** Sources staff can pick for a manual order ("website" is storefront checkout only). */
+export const MANUAL_ORDER_SOURCES = [
+  "in_person",
+  "phone",
+  "facebook",
+  "instagram",
+  "whatsapp",
+] as const;
+export type ManualOrderSource = (typeof MANUAL_ORDER_SOURCES)[number];
+
+/** Admin "নতুন অর্ডার": prices are read from the database, never from this input. */
+export const manualOrderInput = adminAddressFields.extend({
+  email: z
+    .string()
+    .trim()
+    .max(255)
+    .refine((v) => v === "" || /^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(v)),
+  source: z.enum(MANUAL_ORDER_SOURCES),
+  note: z.string().trim().max(500),
+  items: z.array(cartItem).min(1).max(30),
+  paymentMethod: z.enum(["cod", "bkash", "nagad"]),
+  /** Paid already (cash in hand, or a bKash / Nagad transfer received). */
+  paid: z.boolean(),
+  transactionId: z.string().trim().max(120),
+  couponCode: z.string().trim().max(40),
+});
+export type ManualOrderInput = z.input<typeof manualOrderInput>;
+
+export * from "./bd-locations";
+export * from "./pricing";

@@ -2,7 +2,7 @@
 
 import type { AdminRole } from "@repo/auth";
 import type { AdminLang } from "@repo/validators";
-import { createContext, useContext, useSyncExternalStore } from "react";
+import { createContext, useContext, useEffect, useSyncExternalStore } from "react";
 import type { Dict } from "@/lib/i18n/dict";
 
 export interface ShellState {
@@ -12,6 +12,8 @@ export interface ShellState {
   unread: number;
   openSearch: () => void;
   openNotifications: () => void;
+  /** Second breadcrumb in the top bar (Topbar crumb2), e.g. the order number. */
+  setCrumb: (v: string | null) => void;
 }
 
 export const ShellContext = createContext<ShellState | null>(null);
@@ -38,4 +40,14 @@ function current(): Breakpoint {
 /** Same breakpoints as globals.css: phone < 768, tab 768–1023, desk ≥ 1024. */
 export function useBreakpoint(): Breakpoint {
   return useSyncExternalStore(subscribe, current, () => "desk");
+}
+
+/** Shows `value` as the top bar's second breadcrumb while the calling page is mounted. */
+export function Crumb({ value }: { value: string }) {
+  const { setCrumb } = useShell();
+  useEffect(() => {
+    setCrumb(value);
+    return () => setCrumb(null);
+  }, [setCrumb, value]);
+  return null;
 }

@@ -11,6 +11,7 @@ import {
   ChevronUp,
   Copy,
   Phone,
+  Plus,
   Printer,
   RefreshCw,
   Search,
@@ -227,7 +228,19 @@ export function OrdersView(p: Props) {
 
   return (
     <>
-      <PhoneHeader title={t.title} sub={fill(t.phoneSub, { n: digits(total, lang) })} />
+      <PhoneHeader
+        title={t.title}
+        sub={fill(t.phoneSub, { n: digits(total, lang) })}
+        end={
+          <Link
+            href={"/orders/new" as Route}
+            aria-label={t.create.button}
+            className={btn({ size: "iconLg", className: "[&_svg]:size-5" })}
+          >
+            <Plus aria-hidden />
+          </Link>
+        }
+      />
 
       {/* ───── Phone (<768): Orders-Phone ───── */}
       <div className="tab:hidden">
@@ -277,7 +290,16 @@ export function OrdersView(p: Props) {
                   <div className="p-3 pb-0">{board(true)}</div>
                 ) : null}
                 <div className="border-border flex flex-col gap-2.5 border-b bg-white p-3">
-                  <SearchBox value={search} onChange={setSearch} t={t} short large />
+                  <div className="flex gap-2">
+                    <SearchBox value={search} onChange={setSearch} t={t} short large />
+                    <Link
+                      href={"/orders/new" as Route}
+                      aria-label={t.create.button}
+                      className={btn({ size: "iconLg", className: "[&_svg]:size-5" })}
+                    >
+                      <Plus aria-hidden />
+                    </Link>
+                  </div>
                   <StatusMenu
                     counts={counts}
                     current={current}
@@ -399,6 +421,16 @@ export function OrdersView(p: Props) {
                 {t.settleCod}
               </button>
             ) : null}
+            <Link
+              href={"/orders/new" as Route}
+              className={btn({
+                size: "lg",
+                className: "wide:h-8 wide:gap-1.5 wide:px-3 wide:text-[13px]",
+              })}
+            >
+              <Plus aria-hidden />
+              {t.create.button}
+            </Link>
           </div>
         </div>
 

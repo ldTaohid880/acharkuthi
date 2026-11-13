@@ -70,3 +70,25 @@ export function DateRangeCalendar({
     />
   );
 }
+
+/** Single-day shadcn Calendar (tracking "সম্ভাব্য ডেলিভারির তারিখ"). Clicking the day again clears it. */
+export function DateCalendar({
+  value,
+  onChange,
+  lang,
+}: {
+  value?: string | undefined;
+  onChange: (iso: string | undefined) => void;
+  lang: AdminLang;
+}) {
+  const selected = isoToDate(value);
+  return (
+    <Calendar
+      mode="single"
+      {...(selected ? { selected } : {})}
+      onSelect={(d) => onChange(dateToIso(d))}
+      defaultMonth={selected ?? new Date()}
+      {...(lang === "bn" ? { locale: bn, formatters: bnFormatters } : {})}
+    />
+  );
+}
