@@ -13,8 +13,22 @@ import {
 import { withEnglish } from "./sample-recipes-en";
 
 const SHELVES = [
-  { name: "Mango", nameBn: "আম", slug: "mango", sortOrder: 1, tagline: "Raw mango", taglineBn: "কাঁচা আম" },
-  { name: "Lemon", nameBn: "লেবু", slug: "lemon", sortOrder: 2, tagline: "Gently sour", taglineBn: "হালকা টক" },
+  {
+    name: "Mango",
+    nameBn: "আম",
+    slug: "mango",
+    sortOrder: 1,
+    tagline: "Raw mango",
+    taglineBn: "কাঁচা আম",
+  },
+  {
+    name: "Lemon",
+    nameBn: "লেবু",
+    slug: "lemon",
+    sortOrder: 2,
+    tagline: "Gently sour",
+    taglineBn: "হালকা টক",
+  },
   {
     name: "Special",
     nameBn: "বিশেষ",
