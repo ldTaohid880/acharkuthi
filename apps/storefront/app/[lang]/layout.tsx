@@ -17,6 +17,7 @@ import "../design-mobile.css";
 import "../design-drawer.css";
 import { BasketBar } from "@/components/basket-bar";
 import { JsonLd } from "@/components/json-ld";
+import { MetaPixel } from "@/components/meta-pixel";
 import { MiniBasket } from "@/components/mini-basket";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
@@ -25,6 +26,7 @@ import { getDict } from "@/lib/i18n/dict";
 import { isLang, OG_LOCALE, type Lang } from "@/lib/i18n/lang";
 import { LangProvider } from "@/lib/i18n/lang-context";
 import { siteUrl } from "@/lib/site-url";
+import { env } from "@/env";
 import { notFound } from "next/navigation";
 
 const fraunces = Fraunces({
@@ -127,6 +129,7 @@ export default async function RootLayout({
           <BasketBar />
           <MiniBasket />
         </LangProvider>
+        {env.META_PIXEL_ID ? <MetaPixel pixelId={env.META_PIXEL_ID} /> : null}
       </body>
     </html>
   );

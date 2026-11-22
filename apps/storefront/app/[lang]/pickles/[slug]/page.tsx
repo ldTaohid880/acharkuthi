@@ -25,6 +25,7 @@ import { localePath } from "@/lib/i18n/lang";
 import { pickString, pickText, type LocalText } from "@/lib/i18n/pick";
 import { breadcrumbJsonLd, langOf, pageMeta, productJsonLd, realCopy } from "@/lib/seo";
 import { JsonLd } from "@/components/json-ld";
+import { PixelViewContent } from "@/components/pixel-view-content";
 import { formatTaka } from "@repo/ui/lib/utils";
 
 interface Props {
@@ -201,6 +202,13 @@ export default async function ProductPage({ params, searchParams }: Props) {
   return (
     <main className="page-product">
       <JsonLd data={jsonLd} />
+      {variants[0] ? (
+        <PixelViewContent
+          variantId={variants[0].id}
+          name={product.name}
+          price={variants[0].price}
+        />
+      ) : null}
       <div className="wrap pgap">
         <nav className="crumbs" aria-label="Breadcrumb" style={{ paddingTop: 20 }}>
           <Link href={to("/")} lang={lang}>

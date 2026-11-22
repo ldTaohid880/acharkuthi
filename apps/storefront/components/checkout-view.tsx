@@ -22,6 +22,7 @@ import { useCart } from "@/lib/cart-store";
 import { zoneForDistrict } from "@/lib/checkout-pricing";
 import { deviceFingerprint } from "@/lib/device-fingerprint";
 import { localePath } from "@/lib/i18n/lang";
+import { pixelValue, trackPixel } from "@/lib/meta-pixel";
 import { useLang } from "@/lib/i18n/lang-context";
 import { soon } from "@/lib/routes";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
@@ -238,6 +239,27 @@ export function CheckoutView({
     // eslint-disable-next-line react-hooks/exhaustive-deps -- applied is read, not a trigger
   }, [hydrated, requote]);
 
+  // Meta Pixel InitiateCheckout, once per visit, with the first server-priced basket.
+  const pixelCheckout = useRef(false);
+  useEffect(() => {
+    if (pixelCheckout.current || status === "success" || !quote) return;
+    const live = quote.lines.filter((l) => l.available);
+    if (!live.length) return;
+    pixelCheckout.current = true;
+    trackPixel("InitiateCheckout", {
+      content_ids: live.map((l) => String(l.variantId)),
+      content_type: "product",
+      contents: live.map((l) => ({
+        id: String(l.variantId),
+        quantity: l.quantity,
+        item_price: pixelValue(l.unitPrice),
+      })),
+      num_items: live.reduce((n, l) => n + l.quantity, 0),
+      value: pixelValue(quote.totals.subtotal - quote.totals.discount),
+      currency: "BDT",
+    });
+  }, [quote, status]);
+
   // An empty basket right after an order in this tab (reload, Back/Forward): show that order's
   // confirmation again instead of sending the shopper away without their order number.
   const lastRaw = useSyncExternalStore(noSubscribe, readLastOrderRaw, () => null);
@@ -423,6 +445,23 @@ export function CheckoutView({
         checkoutKey.current = null;
         setOrder(res.order);
         setStatus("success");
+        // Meta Pixel Purchase; the order number is the eventID for dedup.
+        trackPixel(
+          "Purchase",
+          {
+            content_ids: res.order.lines.map((l) => String(l.variantId)),
+            content_type: "product",
+            contents: res.order.lines.map((l) => ({
+              id: String(l.variantId),
+              quantity: l.quantity,
+              item_price: pixelValue(l.unitPrice),
+            })),
+            num_items: res.order.lines.reduce((n, l) => n + l.quantity, 0),
+            value: pixelValue(res.order.totals.total),
+            currency: "BDT",
+          },
+          res.order.orderNumber,
+        );
         try {
           sessionStorage.setItem(LAST_ORDER, JSON.stringify({ ...res.order, who }));
         } catch {

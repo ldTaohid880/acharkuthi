@@ -25,6 +25,7 @@
         "SMTP_USER",
         "SMTP_PASS",
         "MAIL_FROM",
+        "META_PIXEL_ID",
         "BOOTSTRAP_OWNER_EMAIL",
         "BOOTSTRAP_OWNER_PASSWORD",
         "BOOTSTRAP_OWNER_NAME",

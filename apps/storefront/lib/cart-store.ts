@@ -2,6 +2,7 @@
 
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { pixelValue, trackPixel } from "./meta-pixel";
 
 export interface CartLine {
   variantId: number;
@@ -36,7 +37,21 @@ export const useCart = create<CartState>()(
   persist(
     (set) => ({
       lines: [],
-      add: (line) =>
+      add: (line) => {
+        trackPixel("AddToCart", {
+          content_ids: [String(line.variantId)],
+          content_name: line.productName,
+          content_type: "product",
+          contents: [
+            {
+              id: String(line.variantId),
+              quantity: line.quantity,
+              item_price: pixelValue(line.unitPrice),
+            },
+          ],
+          value: pixelValue(line.unitPrice * line.quantity),
+          currency: "BDT",
+        });
         set((s) => {
           const existing = s.lines.find((l) => l.variantId === line.variantId);
           if (!existing) return { lines: [...s.lines, line] };
@@ -45,7 +60,8 @@ export const useCart = create<CartState>()(
               l.variantId === line.variantId ? { ...l, quantity: l.quantity + line.quantity } : l,
             ),
           };
-        }),
+        });
+      },
       setQuantity: (variantId, quantity) =>
         set((s) => ({
           lines:

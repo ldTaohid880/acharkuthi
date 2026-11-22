@@ -30,6 +30,15 @@ export const env = createEnv({
     R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
     R2_BUCKET: z.string().min(1).optional(),
     R2_PUBLIC_URL: z.url().optional(),
+    /**
+     * Meta (Facebook) Pixel ID from Events Manager. A server variable on purpose: the root layout
+     * reads it per request and hands it to components/meta-pixel.tsx, so Hostinger's runtime env
+     * sets it without a rebuild. Unset: the pixel never loads.
+     */
+    META_PIXEL_ID: z
+      .string()
+      .regex(/^\d{5,20}$/, "digits only")
+      .optional(),
   },
   client: {},
   experimental__runtimeEnv: {},
