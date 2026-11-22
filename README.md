@@ -1,159 +1,75 @@
-# Turborepo starter
+# আচারকুঠি · Acharkuthi
 
-This Turborepo starter is maintained by the Turborepo core team.
+Online shop and back office for Acharkuthi pickles. A pnpm + Turborepo monorepo with two
+Next.js apps that share one MySQL database.
 
-## Using this example
+| App                 | Path              | Dev URL               | Production               |
+| ------------------- | ----------------- | --------------------- | ------------------------ |
+| Storefront (shop)   | `apps/storefront` | http://localhost:3000 | `acharkuthi.store`       |
+| Admin (back office) | `apps/admin`      | http://localhost:3001 | `admin.acharkuthi.store` |
 
-Run the following command:
+Shared packages:
 
-```sh
-npx create-turbo@latest
-```
+- `packages/db`: Drizzle ORM schema, migrations and seed (MySQL / MariaDB)
+- `packages/auth`: Better Auth setup shared by both apps
+- `packages/validators`: shared Zod schemas
+- `packages/ui`, `packages/eslint-config`, `packages/typescript-config`
 
-## What's inside?
+## Requirements
 
-This Turborepo includes the following packages/apps:
+- Node.js 22 or newer
+- pnpm 11 (`corepack enable` picks the version from `package.json`)
+- A local MySQL or MariaDB server
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `@next/eslint-plugin-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
+## Getting started
 
 ```sh
-cd my-turborepo
-turbo build
+pnpm install
+
+# Environment: copy the example into each place that needs it, then fill it in
+cp .env.example apps/storefront/.env
+cp .env.example apps/admin/.env
+cp packages/db/.env.example packages/db/.env
+
+pnpm db:migrate   # create the schema
+pnpm db:seed      # optional sample data
+pnpm dev          # storefront on :3000, admin on :3001
 ```
 
-Without global `turbo`, use your package manager:
+Every variable is described in [.env.example](.env.example). Leave the R2 and SMTP values empty
+in development; uploads then stay local and emails are skipped.
 
-```sh
-cd my-turborepo
-npx turbo build
-pnpm exec turbo build
-pnpm exec turbo build
-```
+## Scripts
 
-You can build a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
+| Command                          | What it does                              |
+| -------------------------------- | ----------------------------------------- |
+| `pnpm dev`                       | Run both apps in development              |
+| `pnpm build`                     | Production build of every app and package |
+| `pnpm lint` / `pnpm check-types` | ESLint and TypeScript checks              |
+| `pnpm test`                      | Unit tests (Vitest)                       |
+| `pnpm test:e2e`                  | End-to-end tests (Playwright)             |
+| `pnpm format` / `format:check`   | Prettier                                  |
+| `pnpm db:generate`               | New Drizzle migration from schema changes |
+| `pnpm db:studio`                 | Drizzle Studio                            |
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
+## CI and deployment
 
-```sh
-turbo build --filter=docs
-```
+- **CI** ([.github/workflows/ci.yml](.github/workflows/ci.yml)) runs format check, lint, types,
+  tests and build on every pull request and push to `main`.
+- **Deploy** ([.github/workflows/deploy.yml](.github/workflows/deploy.yml)) ships both apps to
+  Hostinger on every push to `main`, or by hand from the Actions tab. It needs the repository
+  secret `HOSTINGER_API_TOKEN` and a `production` environment.
 
-Without global `turbo`:
+Full deploy details, the one-time Hostinger setup and environment variables are in
+[docs/deploy.md](docs/deploy.md).
 
-```sh
-npx turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
-```
+## Secrets
 
-### Develop
+Never commit real credentials. These are git-ignored on purpose:
 
-To develop all apps and packages, run the following command:
+- `.env` files in each app and in `packages/db`
+- `.env.deploy` (local Hostinger API token)
+- `deploy/env/*.env` (production environment sets)
+- `.deploy/` (built deploy bundles)
 
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo dev
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo dev
-pnpm exec turbo dev
-pnpm exec turbo dev
-```
-
-You can develop a specific package by using a [filter](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters):
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo dev --filter=web
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
-```
-
-### Remote Caching
-
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
-
-Turborepo can use a technique known as [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed (recommended):
-
-```sh
-cd my-turborepo
-turbo login
-```
-
-Without global `turbo`, use your package manager:
-
-```sh
-cd my-turborepo
-npx turbo login
-pnpm exec turbo login
-pnpm exec turbo login
-```
-
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
-
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
-
-With [global `turbo`](https://turborepo.dev/docs/getting-started/installation#global-installation) installed:
-
-```sh
-turbo link
-```
-
-Without global `turbo`:
-
-```sh
-npx turbo link
-pnpm exec turbo link
-pnpm exec turbo link
-```
-
-## Useful Links
-
-Learn more about the power of Turborepo:
-
-- [Tasks](https://turborepo.dev/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.dev/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.dev/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.dev/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.dev/docs/reference/configuration)
-- [CLI Usage](https://turborepo.dev/docs/reference/command-line-reference)
+Commit only the `*.example` templates.
