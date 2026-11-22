@@ -69,7 +69,6 @@ const galada = Galada({
   display: "swap",
 });
 
-
 /** Defaults for every page; public pages add their own canonical URL and preview (lib/seo.ts). */
 export async function generateMetadata({
   params,

@@ -10,15 +10,16 @@ import type { Dict } from "@/lib/i18n/dict";
 import { Icon } from "./icon";
 import { Select } from "./select";
 
-const subjects = (t: Dict["contact"]) => [
-  ["", t.pick],
-  ["order", t.sOrder],
-  ["delivery", t.sDelivery],
-  ["product", t.sProduct],
-  ["refund", t.sRefund],
-  ["feedback", t.sFeedback],
-  ["other", t.sOther],
-] as const;
+const subjects = (t: Dict["contact"]) =>
+  [
+    ["", t.pick],
+    ["order", t.sOrder],
+    ["delivery", t.sDelivery],
+    ["product", t.sProduct],
+    ["refund", t.sRefund],
+    ["feedback", t.sFeedback],
+    ["other", t.sOther],
+  ] as const;
 
 const initialState: ContactState = {
   status: "idle",
@@ -117,9 +118,7 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
       {state.status === "fail" ? (
         <div className="fail" role="alert">
           <b lang={lang}>{t.failTitle}</b>
-          <p lang={lang}>
-            {t.failText}
-          </p>
+          <p lang={lang}>{t.failText}</p>
           <div className="row">
             <button
               type="submit"
@@ -146,7 +145,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
         <div className={`fgrid ${pending ? "busy" : ""}`}>
           <label className="ak-field">
             <span lang={lang}>
-              {t.name}<em aria-hidden="true">*</em>
+              {t.name}
+              <em aria-hidden="true">*</em>
             </span>
             <input
               className={cls("name")}
@@ -163,7 +163,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
           </label>
           <label className="ak-field">
             <span lang={lang}>
-              {t.email}<em aria-hidden="true">*</em>
+              {t.email}
+              <em aria-hidden="true">*</em>
             </span>
             <input
               className={cls("email")}
@@ -180,7 +181,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
           </label>
           <label className="ak-field">
             <span lang={lang}>
-              {t.phone}<small>{t.optional}</small>
+              {t.phone}
+              <small>{t.optional}</small>
             </span>
             <input
               className={cls("phone")}
@@ -196,7 +198,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
           </label>
           <label className="ak-field">
             <span lang={lang}>
-              {t.subject}<em aria-hidden="true">*</em>
+              {t.subject}
+              <em aria-hidden="true">*</em>
             </span>
             <Select
               name="subject"
@@ -212,7 +215,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
           </label>
           <label className="ak-field full">
             <span lang={lang}>
-              {t.message}<em aria-hidden="true">*</em>
+              {t.message}
+              <em aria-hidden="true">*</em>
             </span>
             <textarea
               className={cls("message")}

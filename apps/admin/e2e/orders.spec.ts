@@ -8,18 +8,27 @@ test.describe("dashboard", () => {
     // Start of today in Dhaka (UTC+6, no DST).
     const now = new Date();
     const dhaka = new Date(now.getTime() + 6 * 3600_000);
-    const start = new Date(Date.UTC(dhaka.getUTCFullYear(), dhaka.getUTCMonth(), dhaka.getUTCDate()) - 6 * 3600_000);
+    const start = new Date(
+      Date.UTC(dhaka.getUTCFullYear(), dhaka.getUTCMonth(), dhaka.getUTCDate()) - 6 * 3600_000,
+    );
     await page.goto("/");
-    const today = await one<{ n: number }>("select count(*) n from orders where created_at >= ?", [start]);
+    const today = await one<{ n: number }>("select count(*) n from orders where created_at >= ?", [
+      start,
+    ]);
     const delivered = await one<{ n: number }>(
       "select count(distinct order_id) n from order_status_events where status = 'delivered' and created_at >= ?",
       [start],
     );
     const cell = (label: string) =>
-      page.getByText(label, { exact: true }).locator("visible=true").first().locator("xpath=ancestor::div[1]");
+      page
+        .getByText(label, { exact: true })
+        .locator("visible=true")
+        .first()
+        .locator("xpath=ancestor::div[1]");
     const value = async (label: string) => {
       const txt = await cell(label).innerText();
-      const nums = txt.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).match(/\d+/g) ?? [];
+      const nums =
+        txt.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d))).match(/\d+/g) ?? [];
       return Number(nums.at(-1));
     };
     expect(await value(t.dash.ordersToday)).toBe(Number(today?.n));
@@ -31,7 +40,10 @@ test.describe("orders list", () => {
   test("search by number, name and phone; date presets", async ({ page, t, phone }) => {
     const o = await makeOrder("pending", { name: "E2E Searchable Buyer" });
     await page.goto("/orders");
-    const search = page.getByRole("searchbox", { name: t.orders.searchAria }).locator("visible=true").first();
+    const search = page
+      .getByRole("searchbox", { name: t.orders.searchAria })
+      .locator("visible=true")
+      .first();
     for (const term of [o.number, "E2E Searchable", "01900000099"]) {
       await search.fill(term);
       await expect(page.getByText(o.number).locator("visible=true").first()).toBeVisible();
@@ -44,11 +56,24 @@ test.describe("orders list", () => {
     // Phones put the date range in the filter sheet; the presets are checked at desktop width.
     if (phone) return;
     // Date: "Today" keeps today's order.
-    await page.getByRole("button", { name: t.orders.date, exact: true }).locator("visible=true").first().click();
-    await page.getByRole("button", { name: t.orders.datePresets.today }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.date, exact: true })
+      .locator("visible=true")
+      .first()
+      .click();
+    await page
+      .getByRole("button", { name: t.orders.datePresets.today })
+      .locator("visible=true")
+      .first()
+      .click();
     // A preset applies at once: the button then reads "Date: Today".
     await expect(
-      page.getByRole("button", { name: new RegExp(`${t.orders.date}.*${t.orders.datePresets.today}`) }).locator("visible=true").first(),
+      page
+        .getByRole("button", {
+          name: new RegExp(`${t.orders.date}.*${t.orders.datePresets.today}`),
+        })
+        .locator("visible=true")
+        .first(),
     ).toBeVisible();
     await expect(page.getByText(o.number).locator("visible=true").first()).toBeVisible();
   });
@@ -56,10 +81,18 @@ test.describe("orders list", () => {
   test("status filter via the attention board", async ({ page, t }) => {
     const o = await makeOrder("confirmed");
     await page.goto("/orders");
-    await page.getByRole("link", { name: new RegExp(`^${t.orders.attn.confirmed}`) }).locator("visible=true").first().click();
+    await page
+      .getByRole("link", { name: new RegExp(`^${t.orders.attn.confirmed}`) })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect(page).toHaveURL(/status=confirmed/);
     await expect(page.getByText(o.number).locator("visible=true").first()).toBeVisible();
-    await page.getByRole("link", { name: new RegExp(`^${t.orders.attn.new}`) }).locator("visible=true").first().click();
+    await page
+      .getByRole("link", { name: new RegExp(`^${t.orders.attn.new}`) })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect(page).toHaveURL(/status=new/);
     await expect(page.getByText(o.number).locator("visible=true")).toHaveCount(0);
   });
@@ -69,7 +102,12 @@ test.describe("orders list", () => {
     await page.goto(`/orders?q=${o.number}`);
     // Filtered to this one order: a table row on desktop, a card on phones.
     await expect(page.getByText(o.number).locator("visible=true").first()).toBeVisible();
-    await expect(page.getByText(fill(t.orders.items, { n: 1 })).locator("visible=true").first()).toBeVisible();
+    await expect(
+      page
+        .getByText(fill(t.orders.items, { n: 1 }))
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible();
     await expect(page.getByText(/(^|[^\d])4 items/).locator("visible=true")).toHaveCount(0);
   });
 });
@@ -79,19 +117,40 @@ test.describe("order detail", () => {
     const o = await makeOrder("pending");
     await page.goto(`/orders/${o.id}`);
     await expect(page.getByText(o.number).locator("visible=true").first()).toBeVisible();
-    await page.getByRole("button", { name: t.orders.actPhone.confirm }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.actPhone.confirm })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect.poll(() => orderStatus(o.id)).toBe("confirmed");
-    await page.getByRole("button", { name: t.orders.actPhone.pack }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.actPhone.pack })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect.poll(() => orderStatus(o.id)).toBe("processing");
-    await page.getByRole("button", { name: t.orders.markShipped }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.markShipped })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect.poll(() => orderStatus(o.id)).toBe("shipped");
-    await page.getByRole("button", { name: t.orders.markDelivered }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.markDelivered })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect.poll(() => orderStatus(o.id)).toBe("delivered");
     const events = await q<{ status: string }>(
       "select status from order_status_events where order_id = ? order by id",
       [o.id],
     );
-    expect(events.map((e) => e.status)).toEqual(["confirmed", "processing", "shipped", "delivered"]);
+    expect(events.map((e) => e.status)).toEqual([
+      "confirmed",
+      "processing",
+      "shipped",
+      "delivered",
+    ]);
   });
 
   test("cancel with a reason", async ({ page, t }) => {
@@ -101,7 +160,11 @@ test.describe("order detail", () => {
     if (await direct.count()) await direct.first().click();
     else {
       // Phones: Cancel lives in the "More actions" menu.
-      await page.getByRole("button", { name: t.orders.more }).locator("visible=true").first().click();
+      await page
+        .getByRole("button", { name: t.orders.more })
+        .locator("visible=true")
+        .first()
+        .click();
       await page.getByRole("menuitem", { name: t.orders.cancel }).click();
     }
     const dlg = page.getByRole("dialog").or(page.getByRole("alertdialog")).first();
@@ -109,15 +172,25 @@ test.describe("order detail", () => {
     await dlg.getByText(t.orders.reasons.no_answer).click();
     await dlg.getByRole("button", { name: t.orders.doCancel }).click();
     await expect.poll(() => orderStatus(o.id)).toBe("cancelled");
-    const row = await one<{ cancel_reason: string }>("select cancel_reason from orders where id = ?", [o.id]);
+    const row = await one<{ cancel_reason: string }>(
+      "select cancel_reason from orders where id = ?",
+      [o.id],
+    );
     expect(row?.cancel_reason).toBe("no_answer");
   });
 
-  test("edit the address before booking: the fee follows the delivery zone", async ({ page, t }) => {
+  test("edit the address before booking: the fee follows the delivery zone", async ({
+    page,
+    t,
+  }) => {
     const s = await settings();
     const o = await makeOrder("confirmed", { zone: "in" });
     await page.goto(`/orders/${o.id}`);
-    await page.getByRole("button", { name: t.orders.detail.editAddress }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: t.orders.detail.editAddress })
+      .locator("visible=true")
+      .first()
+      .click();
     const dlg = page.getByRole("dialog");
     await dlg.locator("#ea-division").selectOption("চট্টগ্রাম");
     await dlg.locator("#ea-district").selectOption("চট্টগ্রাম");
@@ -125,10 +198,12 @@ test.describe("order detail", () => {
     await expect(dlg.getByText(t.orders.detail.feeChangeOut)).toBeVisible();
     await dlg.getByRole("button", { name: t.orders.detail.save }).click();
     await expect(dlg).toBeHidden();
-    const row = await one<{ delivery_zone: string; shipping_fee: number; total: number; ship_district: string }>(
-      "select delivery_zone, shipping_fee, total, ship_district from orders where id = ?",
-      [o.id],
-    );
+    const row = await one<{
+      delivery_zone: string;
+      shipping_fee: number;
+      total: number;
+      ship_district: string;
+    }>("select delivery_zone, shipping_fee, total, ship_district from orders where id = ?", [o.id]);
     expect(row?.delivery_zone).toBe("out");
     expect(row?.ship_district).toBe("চট্টগ্রাম");
     expect(row?.shipping_fee).toBe(s!.delivery_fee_out);
@@ -156,7 +231,10 @@ test.describe("manual order", () => {
     await page.goto("/orders/new");
     await page.getByRole("button", { name: t.orders.detail.sources.phone, exact: true }).click();
     await page.getByLabel(c.searchPh).fill("Lemon");
-    await page.getByRole("button", { name: /Lemon Pickle/ }).first().click();
+    await page
+      .getByRole("button", { name: /Lemon Pickle/ })
+      .first()
+      .click();
     await page.locator("#no-name").fill("E2E Manual Buyer");
     await page.locator("#no-phone").fill("01900000098");
     await page.locator("#no-division").selectOption("ঢাকা");
@@ -170,8 +248,12 @@ test.describe("manual order", () => {
     );
     expect(row?.status).toBe("confirmed");
     expect(row?.source).toBe("phone");
-    await expect(page.getByText(t.orders.detail.sources.phone).locator("visible=true").first()).toBeVisible();
-    const after = await one<{ stock: number }>("select stock from product_variants where id = ?", [v?.id]);
+    await expect(
+      page.getByText(t.orders.detail.sources.phone).locator("visible=true").first(),
+    ).toBeVisible();
+    const after = await one<{ stock: number }>("select stock from product_variants where id = ?", [
+      v?.id,
+    ]);
     expect(after?.stock).toBe((v?.stock ?? 0) - 1);
   });
 });

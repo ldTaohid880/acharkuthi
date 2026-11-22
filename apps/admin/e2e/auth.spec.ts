@@ -20,7 +20,12 @@ test.describe("admin sign-in", () => {
     await expect(page.locator('input[id$="-pass"]')).toHaveValue(passwordOf("owner"));
     await page.locator('button[type="submit"]').click();
     await expect(page).not.toHaveURL(/\/login/, { timeout: 15_000 });
-    await expect(page.getByRole("button", { name: t.nav.signOut }).or(page.getByRole("link", { name: t.nav.more })).first()).toBeAttached();
+    await expect(
+      page
+        .getByRole("button", { name: t.nav.signOut })
+        .or(page.getByRole("link", { name: t.nav.more }))
+        .first(),
+    ).toBeAttached();
 
     // Sign out: sidebar on desktop, the More page on phones.
     if (phone) await page.goto("/more");
@@ -46,7 +51,9 @@ test.describe("customer account", () => {
   test("a non-admin user gets no access", async ({ page }) => {
     await page.goto("/orders");
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByRole("heading", { name: "এই অ্যাকাউন্টের অ্যাক্সেস নেই" })).toBeVisible();
+    await expect(
+      page.getByRole("heading", { name: "এই অ্যাকাউন্টের অ্যাক্সেস নেই" }),
+    ).toBeVisible();
     for (const path of ["/", "/products", "/settings"]) {
       await page.goto(path);
       await expect(page).toHaveURL(/\/login/);
@@ -64,7 +71,15 @@ test.describe("staff account", () => {
       await expect(page).toHaveURL(new RegExp(`${path}$`));
     });
   }
-  for (const path of ["/products", "/coupons", "/categories", "/settings", "/customers", "/reviews", "/restock-alerts"]) {
+  for (const path of [
+    "/products",
+    "/coupons",
+    "/categories",
+    "/settings",
+    "/customers",
+    "/reviews",
+    "/restock-alerts",
+  ]) {
     test(`staff get "no access" on ${path}`, async ({ page, t }) => {
       const res = await page.goto(path);
       expect(res?.status()).toBe(403);
@@ -75,10 +90,18 @@ test.describe("staff account", () => {
     test.skip(phone, "desktop sidebar");
     await page.goto("/orders");
     const nav = page.getByRole("navigation", { name: t.nav.label });
-    await expect(nav.getByRole("link", { name: new RegExp(`^${t.nav.items.orders}`) })).toBeVisible();
-    await expect(nav.getByRole("link", { name: new RegExp(`^${t.nav.items.stock}`) })).toBeVisible();
-    await expect(nav.getByRole("link", { name: new RegExp(`^${t.nav.items.messages}`) })).toBeVisible();
+    await expect(
+      nav.getByRole("link", { name: new RegExp(`^${t.nav.items.orders}`) }),
+    ).toBeVisible();
+    await expect(
+      nav.getByRole("link", { name: new RegExp(`^${t.nav.items.stock}`) }),
+    ).toBeVisible();
+    await expect(
+      nav.getByRole("link", { name: new RegExp(`^${t.nav.items.messages}`) }),
+    ).toBeVisible();
     for (const k of ["coupons", "products", "settings", "customers", "reviews"] as const)
-      await expect(nav.getByRole("link", { name: new RegExp(`^${t.nav.items[k]}`) })).toHaveCount(0);
+      await expect(nav.getByRole("link", { name: new RegExp(`^${t.nav.items[k]}`) })).toHaveCount(
+        0,
+      );
   });
 });

@@ -18,7 +18,9 @@ test.describe("product page", () => {
     const pk = t.picker;
     await page.goto(p(`/pickles/${E2E_SLUG}`));
     const sizes = page.getByRole("radiogroup", { name: pk.packageSize });
-    const mine = sizes.getByRole("radio", { name: `${slotLabel(slot)}, ${formatTaka(SLOT_PRICE)}` });
+    const mine = sizes.getByRole("radio", {
+      name: `${slotLabel(slot)}, ${formatTaka(SLOT_PRICE)}`,
+    });
     await mine.click();
     await expect(mine).toHaveAttribute("aria-checked", "true");
 
@@ -28,7 +30,12 @@ test.describe("product page", () => {
     const add = page.locator("button.addb:visible").first();
     if (!mobile) await expect(add).toContainText(formatTaka(SLOT_PRICE * 3));
     await add.click();
-    await expect(page.getByText(pk.added(3, slotLabel(slot))).locator("visible=true").first()).toBeVisible();
+    await expect(
+      page
+        .getByText(pk.added(3, slotLabel(slot)))
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible();
 
     // Mini-basket: open from the header, it lists the line; quantity and remove work there too.
     await page.getByRole("button", { name: t.header.basket(3) }).click();
@@ -53,7 +60,9 @@ test.describe("product page", () => {
     const photos = await q<{ url: string }>(
       "select i.url from product_images i join products p on p.id = i.product_id where p.slug = 'raw-mango'",
     );
-    const gallery = mobile ? page.locator(".gwrapm") : page.locator(".page-product .jarimg").first();
+    const gallery = mobile
+      ? page.locator(".gwrapm")
+      : page.locator(".page-product .jarimg").first();
     await expect(gallery).toBeVisible();
     if (photos[0]) {
       const img = mobile ? page.locator(".gwrapm img").first() : page.locator(".jarimg").first();
@@ -61,7 +70,11 @@ test.describe("product page", () => {
       const ok = await img.evaluate((el) => (el as HTMLImageElement).naturalWidth > 0);
       expect(ok, "product photo loads").toBe(true);
     }
-    if (mobile) await expect(page.locator(".gtrack")).toHaveAttribute("aria-label", photos.length > 1 ? t.gallery.photos : t.gallery.one);
+    if (mobile)
+      await expect(page.locator(".gtrack")).toHaveAttribute(
+        "aria-label",
+        photos.length > 1 ? t.gallery.photos : t.gallery.one,
+      );
   });
 
   test("story and care: page language first, else the other language with its lang", async ({
@@ -78,7 +91,9 @@ test.describe("product page", () => {
     // Taste (flavor): both stored.
     const story = page.locator("section[aria-labelledby=dh]");
     await expect(story.getByRole("heading", { name: t.pdp.storyTitle })).toBeVisible();
-    const taste = story.locator("dt", { hasText: t.pdp.flavor }).locator("xpath=following-sibling::dd[1]");
+    const taste = story
+      .locator("dt", { hasText: t.pdp.flavor })
+      .locator("xpath=following-sibling::dd[1]");
     await expect(taste).toHaveAttribute("lang", lang);
     await expect(taste).toHaveText(lang === "en" ? "E2E flavour text" : "ই২ই স্বাদের বর্ণনা");
     // Storage: Bangla only, so the English page falls back to Bangla, marked lang="bn".
@@ -90,7 +105,11 @@ test.describe("product page", () => {
     await expect(storage.locator(".pnl")).toHaveText("ই২ই সংরক্ষণ");
   });
 
-  test("reviews: rating filter, photo filter, sort and the shop's reply", async ({ page, p, t }) => {
+  test("reviews: rating filter, photo filter, sort and the shop's reply", async ({
+    page,
+    p,
+    t,
+  }) => {
     const pdp = t.pdp;
     await page.goto(p(`/pickles/${E2E_SLUG}`));
     const list = page.locator("ul.rlist > li.rv");
@@ -133,7 +152,9 @@ test.describe("product page", () => {
     await page.goto(p(`/pickles/${E2E_SLUG}`));
     await page.getByRole("button", { name: rv.write }).click();
     const dlg = page.getByRole("dialog");
-    await expect(dlg.getByRole("heading", { name: rv.title(E2E_NAME) }).or(dlg.locator("#wrh"))).toBeVisible();
+    await expect(
+      dlg.getByRole("heading", { name: rv.title(E2E_NAME) }).or(dlg.locator("#wrh")),
+    ).toBeVisible();
     await dlg.locator("button[type=submit]").click();
     await expect(dlg.getByText(rv.err.rating)).toBeVisible();
     await expect(dlg.getByText(rv.err.bodyEmpty)).toBeVisible();
@@ -143,21 +164,40 @@ test.describe("product page", () => {
     await dlg.getByRole("radio", { name: rv.star(4) }).click();
     await dlg.locator('textarea[name="body"]').fill("short");
     await expect(dlg.getByText(rv.err.bodyShort)).toBeVisible();
-    await dlg.locator('textarea[name="body"]').fill("E2E: tangy and just hot enough, ate it with rice.");
+    await dlg
+      .locator('textarea[name="body"]')
+      .fill("E2E: tangy and just hot enough, ate it with rice.");
 
     // A text file renamed as an image is refused by its bytes.
     const file = dlg.locator('input[type="file"]');
-    await file.setInputFiles({ name: "fake.png", mimeType: "image/png", buffer: Buffer.from("not an image at all") });
+    await file.setInputFiles({
+      name: "fake.png",
+      mimeType: "image/png",
+      buffer: Buffer.from("not an image at all"),
+    });
     await dlg.locator("button[type=submit]").click();
-    await expect(dlg.getByRole("alert").filter({ hasText: lang(t) === "en" ? rv.err.photo : /JPG|PNG|WebP/ })).toBeVisible();
+    await expect(
+      dlg.getByRole("alert").filter({ hasText: lang(t) === "en" ? rv.err.photo : /JPG|PNG|WebP/ }),
+    ).toBeVisible();
     // Over 5 MB.
     const big = Buffer.concat([PNG, Buffer.alloc(5 * 1024 * 1024 + 10)]);
-    await dlg.getByRole("button", { name: rv.removePhoto }).click().catch(() => undefined);
+    await dlg
+      .getByRole("button", { name: rv.removePhoto })
+      .click()
+      .catch(() => undefined);
     await file.setInputFiles({ name: "big.png", mimeType: "image/png", buffer: big });
     await dlg.locator("button[type=submit]").click();
-    await expect(dlg.getByRole("alert").filter({ hasText: lang(t) === "en" ? rv.err.photo : /৫|5/ }).first()).toBeVisible();
+    await expect(
+      dlg
+        .getByRole("alert")
+        .filter({ hasText: lang(t) === "en" ? rv.err.photo : /৫|5/ })
+        .first(),
+    ).toBeVisible();
     // A real PNG is accepted.
-    await dlg.getByRole("button", { name: rv.removePhoto }).click().catch(() => undefined);
+    await dlg
+      .getByRole("button", { name: rv.removePhoto })
+      .click()
+      .catch(() => undefined);
     await file.setInputFiles({ name: "ok.png", mimeType: "image/png", buffer: PNG });
     await dlg.locator("button[type=submit]").click();
     await expect(dlg.getByText(rv.doneTitle)).toBeVisible({ timeout: 15_000 });

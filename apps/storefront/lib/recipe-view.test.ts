@@ -22,7 +22,8 @@ describe("applyRecipesQuery", () => {
 
   it("returns everything for all", () => expect(run("all")).toHaveLength(4));
   it("filters by stored category", () => expect(run("rice")).toHaveLength(2));
-  it("treats easy as difficulty 1, whatever the category", () => expect(run("easy")).toHaveLength(2));
+  it("treats easy as difficulty 1, whatever the category", () =>
+    expect(run("easy")).toHaveLength(2));
   it("quick keeps 15 minutes or less", () => expect(run("all", true)).toHaveLength(2));
   it("combines category and quick", () => expect(run("rice", true)).toHaveLength(1));
   it("returns nothing when no recipe matches", () => expect(run("snack")).toHaveLength(0));
@@ -48,7 +49,10 @@ describe("recipe detail helpers", () => {
   });
   it("groups in first-seen order", () => {
     const g = groupIngredients([{ group: "a" }, { group: "b" }, { group: "a" }]);
-    expect(g.map((x) => [x.group, x.items.length])).toEqual([["a", 2], ["b", 1]]);
+    expect(g.map((x) => [x.group, x.items.length])).toEqual([
+      ["a", 2],
+      ["b", 1],
+    ]);
   });
   it("splits multi-line tips only", () => {
     expect(tipLines("a\nb")).toEqual(["a", "b"]);

@@ -14,8 +14,14 @@ teardown("clean up admin e2e data", async () => {
     );
     for (const i of items)
       if (i.variant_id)
-        await exec("update product_variants set stock = stock + ? where id = ?", [i.quantity, i.variant_id]);
-    await exec("update orders set status = 'cancelled', cancel_reason = 'other', cancel_note = 'e2e cleanup' where id = ?", [o.id]);
+        await exec("update product_variants set stock = stock + ? where id = ?", [
+          i.quantity,
+          i.variant_id,
+        ]);
+    await exec(
+      "update orders set status = 'cancelled', cancel_reason = 'other', cancel_note = 'e2e cleanup' where id = ?",
+      [o.id],
+    );
   }
   await exec("delete from coupons where code like 'E2E%'");
   await exec("delete from categories where slug like 'e2e-%'");

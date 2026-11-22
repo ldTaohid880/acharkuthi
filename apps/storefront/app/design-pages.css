@@ -12857,8 +12857,7 @@ html[lang="en"] .steps li::before {
   }
 }
 .pc-photo {
-  background:
-    radial-gradient(120% 90% at 50% 35%, #f1ede0 0%, #e6e1cf 70%, #ddd7c2 100%);
+  background: radial-gradient(120% 90% at 50% 35%, #f1ede0 0%, #e6e1cf 70%, #ddd7c2 100%);
   box-shadow: inset 0 0 0 1px rgba(52, 57, 43, 0.05);
 }
 /* The placeholder jar rests on the well with a soft ground shadow. */

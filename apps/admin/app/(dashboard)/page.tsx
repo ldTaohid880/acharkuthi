@@ -206,11 +206,7 @@ function Kpis({
     },
     {
       key: "deliv",
-      label: (
-        <>
-          {d.deliveredToday}
-        </>
-      ),
+      label: <>{d.deliveredToday}</>,
       labelPhone: d.deliveredToday,
       value: String(data.deliveredToday),
     },
@@ -219,21 +215,13 @@ function Kpis({
     cells.push(
       {
         key: "cod",
-        label: (
-          <>
-            {d.collectedToday}
-          </>
-        ),
+        label: <>{d.collectedToday}</>,
         labelPhone: d.collectedTodayShort,
         value: data.cash ? formatTaka(data.cash.collectedToday) : "—",
       },
       {
         key: "sf",
-        label: (
-          <>
-            {d.steadfast}
-          </>
-        ),
+        label: <>{d.steadfast}</>,
         labelPhone: d.steadfast,
         value: data.cash?.balance != null ? formatTaka(data.cash.balance) : "—",
       },

@@ -20,19 +20,20 @@ Already done (keep it):
 
 Gaps:
 
-| # | Problem | Effect |
-|---|---------|--------|
-| 1 | Product `og:image` is **WebP** | WhatsApp, and sometimes Messenger, show no image |
-| 2 | Product photos are **portrait 1195×1600** (one is square) | FB, Messenger and WhatsApp crop through the middle or shrink to a thumbnail |
-| 3 | Every other page uses `/brand/logo.png` (1118×1024) with `twitter:card=summary` | Small square thumbnail, no large card |
-| 4 | Products are `og:type=website` with no price tags | No price on FB/Messenger; Facebook Shops can't read them |
-| 5 | `/basket`, `/track` (and other utility pages) have no `og:url`/canonical and reuse Home's title | Odd previews if shared |
-| 6 | Category OG uses the logo, not the category's header photo | Generic preview |
-| 7 | Category description in admin is placeholder-like ("amer achar") | Weak preview text (owner fills in admin) |
+| #   | Problem                                                                                         | Effect                                                                      |
+| --- | ----------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 1   | Product `og:image` is **WebP**                                                                  | WhatsApp, and sometimes Messenger, show no image                            |
+| 2   | Product photos are **portrait 1195×1600** (one is square)                                       | FB, Messenger and WhatsApp crop through the middle or shrink to a thumbnail |
+| 3   | Every other page uses `/brand/logo.png` (1118×1024) with `twitter:card=summary`                 | Small square thumbnail, no large card                                       |
+| 4   | Products are `og:type=website` with no price tags                                               | No price on FB/Messenger; Facebook Shops can't read them                    |
+| 5   | `/basket`, `/track` (and other utility pages) have no `og:url`/canonical and reuse Home's title | Odd previews if shared                                                      |
+| 6   | Category OG uses the logo, not the category's header photo                                      | Generic preview                                                             |
+| 7   | Category description in admin is placeholder-like ("amer achar")                                | Weak preview text (owner fills in admin)                                    |
 
 ## 2. Target result
 
 **Every shared link**
+
 - Primary image: **1200×630 JPEG** (under 300 KB, sRGB, progressive), `og:image:secure_url`,
   `og:image:type`, `og:image:width/height`, `og:image:alt` in the page language.
 - Secondary image: **1080×1080 JPEG** square in the same `og:image` list. WhatsApp's small bubble
@@ -42,6 +43,7 @@ Gaps:
   Same design, text order flipped, like the product names on the site.
 
 **Products**
+
 - `og:type=product` plus `product:price:amount`, `product:price:currency=BDT`,
   `product:availability` (in stock / out of stock), `product:condition=new`,
   `product:brand=Acharkuthi`, `product:retailer_item_id` (SKU), `product:category`.
@@ -52,6 +54,7 @@ Gaps:
   "স্টক শেষ · Sold out" (auto from stock), "ছাড় ১৫%" (when a compare-at price exists).
 
 **Categories, site pages, utility pages**
+
 - Category: card from its header photo plus name and product count; override allowed.
 - Site pages (Home, Shop, Story, Contact, FAQ, policies): each can have its own card; else the site
   default from Settings.
@@ -62,6 +65,7 @@ Gaps:
 ## 3. Share Studio (admin)
 
 ### 3.1 Templates (Settings → শেয়ার কার্ড · Share cards)
+
 - 3 or 4 built-in layouts, each with a wide (1200×630) and a square (1080×1080) variant:
   1. **Split**: photo left (rounded), names, price and logo right on the brand band.
   2. **Full-bleed**: photo fills the card with a soft gradient band at the bottom for text.
@@ -73,7 +77,9 @@ Gaps:
   change re-renders everything in a bulk pass.
 
 ### 3.2 Per item (product edit, category edit, page settings)
+
 New card **"শেয়ার প্রিভিউ · Share preview"**:
+
 - Mode: `অটো` (template) / `নিজের ছবি` (custom upload) / `টেমপ্লেট বদলান`.
 - **Focal-point crop**: drag a point on the photo; the wide and square crops both keep it in view,
   with platform **safe-zone overlays** (WhatsApp square crop, X rounded corners, Telegram's
@@ -86,7 +92,9 @@ New card **"শেয়ার প্রিভিউ · Share preview"**:
   without the owner's click.
 
 ### 3.3 Live previews (the core of the request)
+
 A preview panel that updates as the owner types or drags, with accurate mock-ups:
+
 - Facebook feed post, Messenger bubble, WhatsApp chat bubble (light and dark), Instagram DM,
   Telegram, X (large card), LinkedIn, Discord embed, Slack unfurl, iMessage.
 - Switches: **Bangla / English** version, **phone / desktop** width, **light / dark** chat theme.
@@ -94,7 +102,9 @@ A preview panel that updates as the owner types or drags, with accurate mock-ups
 - Shows the final image file size and dimensions, and warns when over limits.
 
 ### 3.4 Health score and checks
+
 Per item and site-wide (Settings dashboard), green/amber/red:
+
 - Image present, JPEG, right size, under 300 KB; square variant present.
 - Title and description present in both languages and within limits; no placeholder text
   (reuse `isPlaceholder()` from `lib/seo.ts`).
@@ -105,6 +115,7 @@ Per item and site-wide (Settings dashboard), green/amber/red:
 - A list view: "১২টি পণ্যের কার্ড পুরোনো" with a one-click fix.
 
 ### 3.5 Cache refresh
+
 - Every change bumps `og_image_version`, and the image URL carries `?v=<version>`.
 - **"Facebook-এ রিফ্রেশ"**: calls the Graph API (`POST /?id=<url>&scrape=true` with an app access
   token in env `FB_APP_ID` / `FB_APP_SECRET`), which also refreshes Messenger and WhatsApp
@@ -113,6 +124,7 @@ Per item and site-wide (Settings dashboard), green/amber/red:
 - Telegram: link to `@WebpageBot` with the URL prefilled.
 
 ### 3.6 History
+
 - Keep the last 5 generated cards per item (R2 `og/…`), with "restore" and a before/after view.
 - Old files are deleted from R2 after a week (lifecycle rule on the `og/` prefix).
 
@@ -151,23 +163,23 @@ Alternative if browser rendering proves awkward: a storefront route `/og/[kind]/
 
 New table `share_cards` (one row per item and language) instead of many columns:
 
-| Column | Type | Notes |
-|---|---|---|
-| `id` | serial | |
-| `kind` | enum `product`, `category`, `page`, `site` | |
-| `ref_id` | int null | product/category id; null for page/site |
-| `page_key` | varchar(40) null | `home`, `shop`, `story`, `contact`, `faq`, `policies` |
-| `lang` | enum `bn`, `en` | |
-| `mode` | enum `auto`, `custom` | |
-| `template` | varchar(30) | template id |
-| `title`, `description` | varchar(120) / varchar(300) null | overrides |
-| `source_image_url` | varchar(500) null | custom photo (R2) |
-| `focal_x`, `focal_y` | decimal(4,3) default 0.5 | crop focus |
-| `wide_url`, `square_url` | varchar(500) null | generated JPEGs (R2) |
-| `wide_bytes`, `square_bytes` | int null | for the health check |
-| `version` | int default 0 | cache-busting `?v=` |
-| `rendered_from` | varchar(64) null | hash of inputs (name, price, photo, template); differs → "stale" |
-| `updated_at` | timestamp | |
+| Column                       | Type                                       | Notes                                                            |
+| ---------------------------- | ------------------------------------------ | ---------------------------------------------------------------- |
+| `id`                         | serial                                     |                                                                  |
+| `kind`                       | enum `product`, `category`, `page`, `site` |                                                                  |
+| `ref_id`                     | int null                                   | product/category id; null for page/site                          |
+| `page_key`                   | varchar(40) null                           | `home`, `shop`, `story`, `contact`, `faq`, `policies`            |
+| `lang`                       | enum `bn`, `en`                            |                                                                  |
+| `mode`                       | enum `auto`, `custom`                      |                                                                  |
+| `template`                   | varchar(30)                                | template id                                                      |
+| `title`, `description`       | varchar(120) / varchar(300) null           | overrides                                                        |
+| `source_image_url`           | varchar(500) null                          | custom photo (R2)                                                |
+| `focal_x`, `focal_y`         | decimal(4,3) default 0.5                   | crop focus                                                       |
+| `wide_url`, `square_url`     | varchar(500) null                          | generated JPEGs (R2)                                             |
+| `wide_bytes`, `square_bytes` | int null                                   | for the health check                                             |
+| `version`                    | int default 0                              | cache-busting `?v=`                                              |
+| `rendered_from`              | varchar(64) null                           | hash of inputs (name, price, photo, template); differs → "stale" |
+| `updated_at`                 | timestamp                                  |                                                                  |
 
 Unique key `(kind, ref_id, page_key, lang)`. History rows go in `share_card_versions` (card id,
 version, URLs, created_at), keeping 5.

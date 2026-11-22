@@ -33,7 +33,11 @@ export function ProductCard({ product, lang }: { product: CatalogProduct; lang: 
     <article className={inStock ? "pcard" : "pcard is-out"}>
       <div className="pc-photo">
         {/* eslint-disable-next-line @next/next/no-img-element -- admin-uploaded URLs, any host */}
-        <img src={photo?.url ?? "/jar.svg"} alt={pickString(lang, photo?.altBn, photo?.alt)} loading="lazy" />
+        <img
+          src={photo?.url ?? "/jar.svg"}
+          alt={pickString(lang, photo?.altBn, photo?.alt)}
+          loading="lazy"
+        />
         {inStock ? null : (
           <span className="pc-band" aria-hidden="true" lang={lang}>
             {t.out}

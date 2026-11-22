@@ -77,8 +77,7 @@ export async function bookCourier(input: unknown): Promise<BookResult> {
 }
 
 export type SyncResult =
-  | { ok: true; checked: number; changed: number }
-  | { ok: false; reason: "keys" };
+  { ok: true; checked: number; changed: number } | { ok: false; reason: "keys" };
 
 /** "কুরিয়ার সিঙ্ক": asks Steadfast for each booked, shipped order's status. */
 export async function syncCourier(input: unknown): Promise<SyncResult> {
@@ -106,7 +105,11 @@ export async function syncCourier(input: unknown): Promise<SyncResult> {
     await db.transaction(async (tx) => {
       const [u] = await tx
         .update(o)
-        .set({ courierStatus: status, courierSyncedAt: new Date(), ...(next ? { status: next } : {}) })
+        .set({
+          courierStatus: status,
+          courierSyncedAt: new Date(),
+          ...(next ? { status: next } : {}),
+        })
         .where(and(eq(o.id, r.id), eq(o.status, "shipped")));
       if (next && u.affectedRows === 1) {
         await tx.insert(ev).values({ orderId: r.id, status: next, userId: session.user.id });

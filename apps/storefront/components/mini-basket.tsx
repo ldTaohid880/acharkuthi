@@ -123,7 +123,8 @@ export function MiniBasket() {
         setImages((prev) => ({ ...prev, ...next }));
       })
       .catch(() => {
-        if (live) setImages((prev) => ({ ...prev, ...Object.fromEntries(ids.map((id) => [id, null])) }));
+        if (live)
+          setImages((prev) => ({ ...prev, ...Object.fromEntries(ids.map((id) => [id, null])) }));
       });
     return () => {
       live = false;
@@ -232,14 +233,19 @@ export function MiniBasket() {
                       .join(" · ");
                     return (
                       <li className="mrow" key={l.variantId}>
-                        <div className={`bk-th ${i % 2 ? "t2" : ""} ${images[l.variantId] ? "ph" : ""}`}>
+                        <div
+                          className={`bk-th ${i % 2 ? "t2" : ""} ${images[l.variantId] ? "ph" : ""}`}
+                        >
                           {l.variantId in images ? (
                             // eslint-disable-next-line @next/next/no-img-element -- product photos and the local jar SVG
                             <img src={images[l.variantId] ?? "/jar.svg"} alt="" />
                           ) : null}
                         </div>
                         <div>
-                          <p className="bk-nm" lang={lang === "bn" && l.productNameBn ? "bn" : "en"}>
+                          <p
+                            className="bk-nm"
+                            lang={lang === "bn" && l.productNameBn ? "bn" : "en"}
+                          >
                             {l.slug ? (
                               <Link href={href(`/pickles/${l.slug}`)} onClick={close}>
                                 {lineName(l, lang)}

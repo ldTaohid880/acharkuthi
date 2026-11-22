@@ -139,7 +139,7 @@ export function RecipeCardLink({ r, wide }: { r: RecipeCard; wide: boolean }) {
   const rt = recipeText(r, lang);
   return (
     <Link
-      className={`rc${wide ? " wide" : ""}`}
+      className={`rc ${wide ? "wide" : ""}`}
       href={href(recipeHref(r.slug))}
       // No aria-label: the name comes from the card's visible text (title, time, level), so
       // what a voice-control user reads out matches (WCAG 2.5.3).
@@ -288,7 +288,7 @@ export function RecipesView({
               <button
                 key={key}
                 type="button"
-                className={`ak-chip${cat === key ? " is-on" : ""}`}
+                className={`ak-chip ${cat === key ? "is-on" : ""}`}
                 aria-pressed={cat === key}
                 lang={lang}
                 onClick={() => update(key, quick)}
@@ -299,7 +299,7 @@ export function RecipesView({
             <span className="sep" aria-hidden="true" />
             <button
               type="button"
-              className={`ak-chip${quick ? " is-on" : ""}`}
+              className={`ak-chip ${quick ? "is-on" : ""}`}
               aria-pressed={quick}
               lang={lang}
               onClick={() => update(cat, !quick)}

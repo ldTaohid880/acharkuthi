@@ -421,18 +421,19 @@ export async function placeOrder(input: unknown): Promise<PlaceOrderResult> {
             norm(a.fullName) === norm(contact.name),
         );
         const existing = saved[0];
-        if (!same) await tx.insert(schema.addresses).values({
-          userId,
-          fullName: contact.name,
-          phone: contact.phone,
-          line1: contact.address,
-          area: contact.area || null,
-          city: contact.upazila,
-          district: contact.district,
-          division: contact.division,
-          postalCode: contact.postal || null,
-          isDefault: !existing,
-        });
+        if (!same)
+          await tx.insert(schema.addresses).values({
+            userId,
+            fullName: contact.name,
+            phone: contact.phone,
+            line1: contact.address,
+            area: contact.area || null,
+            city: contact.upazila,
+            district: contact.district,
+            division: contact.division,
+            postalCode: contact.postal || null,
+            isDefault: !existing,
+          });
       }
       return order.id;
     });

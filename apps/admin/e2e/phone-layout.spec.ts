@@ -4,7 +4,20 @@ import { expect, pageDoesNotScroll, test } from "./support/fixtures";
  * Owner rule (2026-11-13): on phones the page never scrolls as a whole; only the list or body
  * ScrollArea scrolls, and headers and save bars stay put.
  */
-const PAGES = ["/", "/orders", "/products", "/stock", "/categories", "/coupons", "/customers", "/reviews", "/messages", "/restock-alerts", "/settings", "/more"];
+const PAGES = [
+  "/",
+  "/orders",
+  "/products",
+  "/stock",
+  "/categories",
+  "/coupons",
+  "/customers",
+  "/reviews",
+  "/messages",
+  "/restock-alerts",
+  "/settings",
+  "/more",
+];
 
 test.describe("phone layout", () => {
   test.beforeEach(({ phone }) => test.skip(!phone, "phone project only"));
@@ -22,7 +35,9 @@ test.describe("phone layout", () => {
       await page.waitForTimeout(300);
       expect(await page.evaluate(() => window.scrollY)).toBe(0);
       if (await header.count()) expect((await header.boundingBox())?.y ?? 0).toBe(top);
-      const viewports = page.locator("[data-slot=scroll-area-viewport], [data-radix-scroll-area-viewport]");
+      const viewports = page.locator(
+        "[data-slot=scroll-area-viewport], [data-radix-scroll-area-viewport]",
+      );
       expect(await viewports.count()).toBeGreaterThan(0);
     });
   }

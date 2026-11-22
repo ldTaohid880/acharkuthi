@@ -37,14 +37,15 @@ test.describe("home", () => {
     const cards = shelf.locator(".fpk-card");
     expect(await cards.count()).toBeLessThanOrEqual(3);
     await expect(cards.locator("a.stretch").first()).toBeVisible();
-    for (const h of await shelf.locator("a[href*='/pickles/']").evaluateAll((as) => as.map((a) => a.getAttribute("href"))))
+    for (const h of await shelf
+      .locator("a[href*='/pickles/']")
+      .evaluateAll((as) => as.map((a) => a.getAttribute("href"))))
       expect(h?.startsWith(p("/pickles/"))).toBe(true);
 
     await expect(page.locator("#story h2")).toHaveText(t.home.storyTitle);
-    await expect(page.locator("#story").getByRole("link", { name: t.home.readStory })).toHaveAttribute(
-      "href",
-      p("/our-story"),
-    );
+    await expect(
+      page.locator("#story").getByRole("link", { name: t.home.readStory }),
+    ).toHaveAttribute("href", p("/our-story"));
   });
 
   test("reviews section shows approved site reviews", async ({ page, p, t, mobile }) => {
@@ -59,7 +60,12 @@ test.describe("home", () => {
       await expect(sec.getByText(t.home.rvSample).locator("visible=true").first()).toBeVisible();
   });
 
-  test("site-review form: validation errors, then a successful send", async ({ page, p, t, slot }) => {
+  test("site-review form: validation errors, then a successful send", async ({
+    page,
+    p,
+    t,
+    slot,
+  }) => {
     const h = t.home;
     const msg = (bn: string) => h.err[bn] ?? bn;
     await page.goto(p("/"));
@@ -76,8 +82,12 @@ test.describe("home", () => {
     await dlg.getByRole("radio", { name: h.rvStar(5) }).click();
     await dlg.locator('textarea[name="body"]').fill("ভালো");
     await dlg.locator("button[type=submit]").click();
-    await expect(dlg.getByText(msg("আরেকটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)"), { exact: true })).toBeVisible();
-    await dlg.locator('textarea[name="body"]').fill("E2E: quick delivery and the jar was sealed well.");
+    await expect(
+      dlg.getByText(msg("আরেকটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)"), { exact: true }),
+    ).toBeVisible();
+    await dlg
+      .locator('textarea[name="body"]')
+      .fill("E2E: quick delivery and the jar was sealed well.");
     await dlg.locator("button[type=submit]").click();
     await expect(dlg.getByText(h.rvOkTitle)).toBeVisible();
     const row = await one<{ rating: number; is_approved: number }>(

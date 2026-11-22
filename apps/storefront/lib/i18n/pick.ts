@@ -25,5 +25,8 @@ export function pickText(
 }
 
 /** `pickText`, then just the string ("" when both are empty), for attributes such as alt. */
-export const pickString = (lang: Lang, bn: string | null | undefined, en: string | null | undefined) =>
-  pickText(lang, bn, en)?.text ?? "";
+export const pickString = (
+  lang: Lang,
+  bn: string | null | undefined,
+  en: string | null | undefined,
+) => pickText(lang, bn, en)?.text ?? "";

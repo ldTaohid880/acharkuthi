@@ -38,17 +38,32 @@ describe("recipe text per language", () => {
   });
   it("formats English ingredient amounts with Latin digits and plural cups", () => {
     const cup = localIngredient(
-      { group: "মূল", groupEn: "Main", name: "মুগডাল", nameEn: "Mung dal", qty: 1, unit: "কাপ", unitEn: "cup" },
+      {
+        group: "মূল",
+        groupEn: "Main",
+        name: "মুগডাল",
+        nameEn: "Mung dal",
+        qty: 1,
+        unit: "কাপ",
+        unitEn: "cup",
+      },
       "en",
     );
     expect(cup).toMatchObject({ lang: "en", group: "Main", name: "Mung dal", unit: "cup" });
     expect(ingredientAmount(cup, 8, 4)).toBe("2 cups");
     expect(ingredientAmount(cup, 2, 4)).toBe("½ cup");
-    const piece = localIngredient({ group: "g", name: "ডিম", nameEn: "Eggs", qty: 4, unit: "টি", unitEn: "" }, "en");
-    expect(ingredientAmount(piece, 4, 4)).toBe("4");
-    expect(ingredientAmount(localIngredient({ group: "g", name: "মুগডাল", qty: 1, unit: "কাপ" }, "bn"), 8, 4)).toBe(
-      "২ কাপ",
+    const piece = localIngredient(
+      { group: "g", name: "ডিম", nameEn: "Eggs", qty: 4, unit: "টি", unitEn: "" },
+      "en",
     );
+    expect(ingredientAmount(piece, 4, 4)).toBe("4");
+    expect(
+      ingredientAmount(
+        localIngredient({ group: "g", name: "মুগডাল", qty: 1, unit: "কাপ" }, "bn"),
+        8,
+        4,
+      ),
+    ).toBe("২ কাপ");
   });
   it("keeps an untranslated item wholly in Bangla", () => {
     expect(localIngredient({ group: "মশলা", name: "লবণ", fixed: "স্বাদমতো" }, "en")).toEqual({

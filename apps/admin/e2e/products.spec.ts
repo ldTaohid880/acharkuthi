@@ -22,14 +22,18 @@ async function makeProduct() {
        values (?, ?, ?, ?, 20, 1, ?)`,
       [p?.id, `${slug}-${i}`.toUpperCase(), label, 20000 + i * 10000, i],
     );
-  const used = await one<{ id: number }>("select id from product_variants where sku = ?", [`${slug}-0`.toUpperCase()]);
+  const used = await one<{ id: number }>("select id from product_variants where sku = ?", [
+    `${slug}-0`.toUpperCase(),
+  ]);
   // An old cancelled order that used the 250 g size.
   await exec(
     `insert into orders (order_number, status, customer_name, customer_phone, shipping_address, subtotal, total)
      values (?, 'cancelled', 'E2E Old Order', '01900000097', 'ঢাকা', 20000, 20000)`,
     [`AK-261116-96${String(Date.now() % 10000).padStart(4, "0")}`],
   );
-  const o = await one<{ id: number }>("select id from orders where customer_name = 'E2E Old Order' order by id desc limit 1");
+  const o = await one<{ id: number }>(
+    "select id from orders where customer_name = 'E2E Old Order' order by id desc limit 1",
+  );
   await exec(
     "insert into order_items (order_id, variant_id, product_name, variant_label, unit_price, quantity) values (?, ?, 'E2E Admin Pickle', '250 g', 20000, 1)",
     [o?.id, used?.id],
@@ -38,7 +42,11 @@ async function makeProduct() {
 }
 
 const save = async (page: Page, t: Dict) => {
-  await page.getByRole("button", { name: t.pedit.save, exact: true }).locator("visible=true").first().click();
+  await page
+    .getByRole("button", { name: t.pedit.save, exact: true })
+    .locator("visible=true")
+    .first()
+    .click();
 };
 
 test.describe("products", () => {
@@ -46,15 +54,33 @@ test.describe("products", () => {
     test.skip(phone, "phone product cards have no row menu; hide/show is checked at desktop width");
     const p = await makeProduct();
     const active = async () =>
-      (await one<{ is_active: number }>("select is_active from products where id = ?", [p.id]))?.is_active;
+      (await one<{ is_active: number }>("select is_active from products where id = ?", [p.id]))
+        ?.is_active;
     await page.goto("/products");
-    await page.getByRole("textbox", { name: t.products.searchAria }).locator("visible=true").first().fill(p.name);
-    const row = page.locator("tr, li, [role=row]").filter({ hasText: p.nameBn }).locator("visible=true").first();
+    await page
+      .getByRole("textbox", { name: t.products.searchAria })
+      .locator("visible=true")
+      .first()
+      .fill(p.name);
+    const row = page
+      .locator("tr, li, [role=row]")
+      .filter({ hasText: p.nameBn })
+      .locator("visible=true")
+      .first();
     await row.getByRole("button", { name: t.products.more }).click();
     await page.getByRole("menuitem", { name: t.products.hide }).click();
     await expect.poll(active).toBe(0);
-    await expect(page.getByText(fill(t.products.hiddenToast, { name: p.nameBn })).locator("visible=true").first()).toBeVisible();
-    await page.getByRole("button", { name: t.products.undo }).locator("visible=true").first().click();
+    await expect(
+      page
+        .getByText(fill(t.products.hiddenToast, { name: p.nameBn }))
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible();
+    await page
+      .getByRole("button", { name: t.products.undo })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect.poll(active).toBe(1);
 
     await row.getByRole("button", { name: t.products.more }).click();
@@ -89,17 +115,38 @@ test.describe("products", () => {
     const flav = page.locator("#pd-flavor");
     await flav.fill("ই২ই টক-ঝাল স্বাদ");
     const detCard = page.locator("section").filter({ has: flav });
-    await detCard.getByRole("radiogroup", { name: pe.contentLang }).getByRole("radio", { name: /English/ }).click();
-    if (!phone) await expect(detCard.getByText(pe.emptyFallback).locator("visible=true").first()).toBeVisible();
+    await detCard
+      .getByRole("radiogroup", { name: pe.contentLang })
+      .getByRole("radio", { name: /English/ })
+      .click();
+    if (!phone)
+      await expect(
+        detCard.getByText(pe.emptyFallback).locator("visible=true").first(),
+      ).toBeVisible();
     await expect(flav).toHaveValue("");
-    await detCard.getByRole("radiogroup", { name: pe.contentLang }).getByRole("radio", { name: /বাংলা/ }).click();
+    await detCard
+      .getByRole("radiogroup", { name: pe.contentLang })
+      .getByRole("radio", { name: /বাংলা/ })
+      .click();
 
     await save(page, t);
-    await expect.poll(async () => (await one<{ d: string | null }>("select description_bn d from products where id = ?", [p.id]))?.d, { timeout: 20_000 }).toBe("ই২ই অ্যাডমিন বাংলা বিবরণ।");
-    const row = await one<{ description: string; description_bn: string; flavor: string; flavor_en: string | null }>(
-      "select description, description_bn, flavor, flavor_en from products where id = ?",
-      [p.id],
-    );
+    await expect
+      .poll(
+        async () =>
+          (
+            await one<{ d: string | null }>("select description_bn d from products where id = ?", [
+              p.id,
+            ])
+          )?.d,
+        { timeout: 20_000 },
+      )
+      .toBe("ই২ই অ্যাডমিন বাংলা বিবরণ।");
+    const row = await one<{
+      description: string;
+      description_bn: string;
+      flavor: string;
+      flavor_en: string | null;
+    }>("select description, description_bn, flavor, flavor_en from products where id = ?", [p.id]);
     expect(row?.description_bn).toBe("ই২ই অ্যাডমিন বাংলা বিবরণ।");
     expect(row?.description).toBe("E2E admin English description, edited.");
     expect(row?.flavor).toBe("ই২ই টক-ঝাল স্বাদ");
@@ -116,13 +163,24 @@ test.describe("products", () => {
     await expect(dd).toHaveAttribute("lang", "bn");
   });
 
-  test("sizes: add, reorder, delete; an ordered size can only be turned off", async ({ page, t, phone }) => {
-    test.skip(phone, "the size editor is checked at desktop width (phone rows are collapsed cards)");
+  test("sizes: add, reorder, delete; an ordered size can only be turned off", async ({
+    page,
+    t,
+    phone,
+  }) => {
+    test.skip(
+      phone,
+      "the size editor is checked at desktop width (phone rows are collapsed cards)",
+    );
     const pe = t.pedit;
     const p = await makeProduct();
     await page.goto(`/products/${p.id}`);
     // The ordered 250 g size: delete is refused, offering "Turn off".
-    await page.getByRole("button", { name: fill(pe.deleteAria, { label: "250 g" }) }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: fill(pe.deleteAria, { label: "250 g" }) })
+      .locator("visible=true")
+      .first()
+      .click();
     const dlg = page.getByRole("dialog").or(page.getByRole("alertdialog")).first();
     await expect(dlg).toContainText(fill(pe.inUseTitle, { label: "250 g" }));
     await dlg.getByRole("button", { name: pe.turnOff }).click();
@@ -135,16 +193,33 @@ test.describe("products", () => {
     await page.locator('input[id$="-p"]').last().fill("650");
     await page.locator('input[id$="-k"]').last().fill("7");
     // Move 500 g above 250 g: arrows on phones, drag on desktop.
-    const up = page.getByRole("button", { name: fill(pe.upAria, { label: "500 g" }) }).locator("visible=true");
+    const up = page
+      .getByRole("button", { name: fill(pe.upAria, { label: "500 g" }) })
+      .locator("visible=true");
     if (await up.count()) await up.first().click();
     else
       await page
         .getByRole("button", { name: fill(pe.dragAria, { label: "500 g" }) })
         .locator("visible=true")
         .first()
-        .dragTo(page.getByRole("button", { name: fill(pe.dragAria, { label: "250 g" }) }).locator("visible=true").first());
+        .dragTo(
+          page
+            .getByRole("button", { name: fill(pe.dragAria, { label: "250 g" }) })
+            .locator("visible=true")
+            .first(),
+        );
     await save(page, t);
-    await expect.poll(async () => (await q("select id from product_variants where product_id = ? and label = '1 kg'", [p.id])).length, { timeout: 20_000 }).toBe(1);
+    await expect
+      .poll(
+        async () =>
+          (
+            await q("select id from product_variants where product_id = ? and label = '1 kg'", [
+              p.id,
+            ])
+          ).length,
+        { timeout: 20_000 },
+      )
+      .toBe(1);
 
     const sizes = await q<{ label: string; is_active: number; price: number; stock: number }>(
       "select label, is_active, price, stock from product_variants where product_id = ? order by sort_order",
@@ -156,25 +231,56 @@ test.describe("products", () => {
 
     // Delete the new, never-ordered size.
     await page.reload();
-    await page.getByRole("button", { name: fill(pe.deleteAria, { label: "1 kg" }) }).locator("visible=true").first().click();
+    await page
+      .getByRole("button", { name: fill(pe.deleteAria, { label: "1 kg" }) })
+      .locator("visible=true")
+      .first()
+      .click();
     const del = page.getByRole("dialog").or(page.getByRole("alertdialog")).first();
     await del.getByRole("button", { name: pe.doDelete }).click();
     await save(page, t);
-    await expect.poll(async () => (await q("select id from product_variants where product_id = ? and label = '1 kg'", [p.id])).length).toBe(0);
+    await expect
+      .poll(
+        async () =>
+          (
+            await q("select id from product_variants where product_id = ? and label = '1 kg'", [
+              p.id,
+            ])
+          ).length,
+      )
+      .toBe(0);
   });
 
   test("cost and profit per unit", async ({ page, t, phone }) => {
     const p = await makeProduct();
     await page.goto(`/products/${p.id}`);
-    const cost = phone ? page.locator('input[id$="-$"]').first() : page.getByLabel(t.pedit.cost, { exact: true }).locator("visible=true").first();
+    const cost = phone
+      ? page.locator('input[id$="-$"]').first()
+      : page.getByLabel(t.pedit.cost, { exact: true }).locator("visible=true").first();
     await cost.fill("120");
     // 250 g sells at ৳200: profit ৳80.
     await expect(page.getByText(formatTaka(8000)).first()).toBeVisible();
     await cost.fill("250");
-    await expect(page.getByText(`-${formatTaka(5000)}`).or(page.getByText(`−${formatTaka(5000)}`)).or(page.getByText(formatTaka(-5000))).first()).toBeVisible();
+    await expect(
+      page
+        .getByText(`-${formatTaka(5000)}`)
+        .or(page.getByText(`−${formatTaka(5000)}`))
+        .or(page.getByText(formatTaka(-5000)))
+        .first(),
+    ).toBeVisible();
     await cost.fill("150");
     await save(page, t);
-    await expect.poll(async () => (await one<{ cost_price: number }>("select cost_price from product_variants where product_id = ? and label = '250 g'", [p.id]))?.cost_price).toBe(15000);
+    await expect
+      .poll(
+        async () =>
+          (
+            await one<{ cost_price: number }>(
+              "select cost_price from product_variants where product_id = ? and label = '250 g'",
+              [p.id],
+            )
+          )?.cost_price,
+      )
+      .toBe(15000);
   });
 
   test("validation summary and the slug-taken error", async ({ page, t }) => {
@@ -184,13 +290,26 @@ test.describe("products", () => {
     // A missing Bangla name: the summary and the field error.
     await page.locator("#pe-bn").fill("");
     await save(page, t);
-    await expect(page.getByText(pe.errTitle.split("{n}")[0] ?? "").locator("visible=true").first()).toBeVisible();
+    await expect(
+      page
+        .getByText(pe.errTitle.split("{n}")[0] ?? "")
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible();
     await expect(page.getByText(pe.errNameBn).locator("visible=true").first()).toBeVisible();
     // A slug another product has: refused by the server.
     await page.locator("#pe-bn").fill(p.nameBn);
     await page.locator("#pe-slug").fill("lemon");
     await save(page, t);
-    await expect(page.getByText(/another product has this slug|sumSlug/i).or(page.getByText(pe.sumSlug)).locator("visible=true").first()).toBeVisible({ timeout: 15_000 });
-    expect((await one<{ slug: string }>("select slug from products where id = ?", [p.id]))?.slug).toBe(p.slug);
+    await expect(
+      page
+        .getByText(/another product has this slug|sumSlug/i)
+        .or(page.getByText(pe.sumSlug))
+        .locator("visible=true")
+        .first(),
+    ).toBeVisible({ timeout: 15_000 });
+    expect(
+      (await one<{ slug: string }>("select slug from products where id = ?", [p.id]))?.slug,
+    ).toBe(p.slug);
   });
 });

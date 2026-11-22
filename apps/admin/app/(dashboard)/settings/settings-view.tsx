@@ -703,9 +703,7 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
         large={large}
         disabled={pending}
         onClick={() =>
-          data.codEnabled
-            ? setCodAsk(true)
-            : run(() => setCod({ enabled: true }), t.codSaved.on)
+          data.codEnabled ? setCodAsk(true) : run(() => setCod({ enabled: true }), t.codSaved.on)
         }
       />
     </div>

@@ -48,12 +48,7 @@ export function AddToBasket({
   }
   if (qty === 0) {
     return (
-      <button
-        type="button"
-        className={className}
-        aria-label={t.addName(name)}
-        onClick={addOne}
-      >
+      <button type="button" className={className} aria-label={t.addName(name)} onClick={addOne}>
         {plusIcon ?? <Icon name="plus" />}
       </button>
     );

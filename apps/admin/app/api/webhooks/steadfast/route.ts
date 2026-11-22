@@ -51,9 +51,7 @@ export async function POST(req: Request) {
     : consignment
       ? eq(o.consignmentId, consignment)
       : undefined;
-  const [order] = match
-    ? await db.select({ id: o.id, status: o.status }).from(o).where(match)
-    : [];
+  const [order] = match ? await db.select({ id: o.id, status: o.status }).from(o).where(match) : [];
 
   let result: "accepted" | "no_order" | "ignored" = order ? "accepted" : "no_order";
   if (order && type === "delivery_status" && status) {

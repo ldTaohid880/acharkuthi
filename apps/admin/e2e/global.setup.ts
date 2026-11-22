@@ -34,7 +34,11 @@ setup("create admin e2e accounts", async () => {
   };
   for (const who of ["owner", "staff", "customer"] as Who[]) {
     if (who === "owner" && realOwner) continue;
-    await post("/api/auth/sign-up/email", { name: `E2E Admin ${who}`, email: emails[who], password });
+    await post("/api/auth/sign-up/email", {
+      name: `E2E Admin ${who}`,
+      email: emails[who],
+      password,
+    });
     await exec("update user set role = ?, admin_lang = 'en' where email = ?", [
       who === "customer" ? "user" : who,
       emails[who],

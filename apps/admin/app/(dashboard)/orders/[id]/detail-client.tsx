@@ -10,7 +10,16 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/popover";
 import { cn } from "@repo/ui/lib/utils";
 import type { AdminLang } from "@repo/validators";
-import { CalendarDays, Check, CircleX, Copy, Ellipsis, Printer, RefreshCw, Truck } from "lucide-react";
+import {
+  CalendarDays,
+  Check,
+  CircleX,
+  Copy,
+  Ellipsis,
+  Printer,
+  RefreshCw,
+  Truck,
+} from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
@@ -572,7 +581,12 @@ export function CourierActions({
     <div className="flex flex-col gap-2">
       {status === "processing" && !booked ? (
         <>
-          <button type="button" disabled={pending} onClick={book} className={btn({ size: "lg", block: true, className: cls })}>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={book}
+            className={btn({ size: "lg", block: true, className: cls })}
+          >
             <Truck aria-hidden />
             {t.bookSf}
           </button>
@@ -615,7 +629,12 @@ export function CourierActions({
               {fill(t.settledOn, { d: orderDate(settledAt, lang, false) })}
               {payoutRef ? ` · ${payoutRef}` : ""}
             </span>
-            <button type="button" disabled={pending} onClick={unsettle} className="font-medium underline">
+            <button
+              type="button"
+              disabled={pending}
+              onClick={unsettle}
+              className="font-medium underline"
+            >
               {t.unsettle}
             </button>
           </div>

@@ -157,7 +157,11 @@ export async function tabCounts(q: OrderListQuery): Promise<Record<OrderTab, num
     out[tab] = rows
       .filter((r) => statuses === null || statuses.includes(r.status))
       .filter((r) =>
-        tab === "booked" ? Number(r.booked) === 1 : tab === "transit" ? Number(r.booked) === 0 : true,
+        tab === "booked"
+          ? Number(r.booked) === 1
+          : tab === "transit"
+            ? Number(r.booked) === 0
+            : true,
       )
       .reduce((n, r) => n + r.n, 0);
   }

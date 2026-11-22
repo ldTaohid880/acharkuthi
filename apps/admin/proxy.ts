@@ -11,5 +11,7 @@ export function proxy(request: NextRequest) {
 
 export const config = {
   // robots.txt is public so crawlers read "Disallow: /" instead of being sent to /login.
-  matcher: ["/((?!login|api/auth|api/webhooks|_next|favicon.ico|icon.png|apple-icon.png|robots.txt).*)"],
+  matcher: [
+    "/((?!login|api/auth|api/webhooks|_next|favicon.ico|icon.png|apple-icon.png|robots.txt).*)",
+  ],
 };

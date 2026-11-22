@@ -7,3 +7,4 @@ packages/db/drizzle
 playwright-report
 test-results
 .deploy
+.claude/worktrees

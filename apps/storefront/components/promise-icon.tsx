@@ -13,7 +13,10 @@ const ICONS: readonly React.ReactNode[] = [
     <path pathLength={1} d="M15.5 3.5V7H19" />
     <path pathLength={1} d="M8.8 10.2c1.2-.6 2.4.6 3.6 0s2.4-.6 3.4 0" />
     <path pathLength={1} d="M8.8 13.4c1.4-.5 2.6.5 4 0" />
-    <path pathLength={1} d="M13.2 17.6s-2.4-1.4-2.4-2.9c0-.8 1.2-1.3 2.4-.2 1.2-1.1 2.4-.6 2.4.2 0 1.5-2.4 2.9-2.4 2.9z" />
+    <path
+      pathLength={1}
+      d="M13.2 17.6s-2.4-1.4-2.4-2.9c0-.8 1.2-1.3 2.4-.2 1.2-1.1 2.4-.6 2.4.2 0 1.5-2.4 2.9-2.4 2.9z"
+    />
   </>,
   // শিল-পাটা: the flat grinding slab, its roller and a few spice grains.
   <>

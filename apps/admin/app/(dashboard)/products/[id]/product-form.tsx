@@ -420,7 +420,10 @@ export function ProductForm({
         if (r.ok) {
           setF((s) => ({
             ...s,
-            images: [...s.images, { key: nextKey(), url: r.url, src: r.url, alt: "", altBn: "", isFeatured: false }],
+            images: [
+              ...s.images,
+              { key: nextKey(), url: r.url, src: r.url, alt: "", altBn: "", isFeatured: false },
+            ],
           }));
         } else {
           toast({
@@ -1161,7 +1164,8 @@ export function ProductForm({
                             // Keyboard: ↑ / ↓ on the focused handle moves the size one place.
                             aria-keyshortcuts="ArrowUp ArrowDown"
                             onKeyDown={(ev) => {
-                              const to = i + (ev.key === "ArrowUp" ? -1 : ev.key === "ArrowDown" ? 1 : 0);
+                              const to =
+                                i + (ev.key === "ArrowUp" ? -1 : ev.key === "ArrowDown" ? 1 : 0);
                               if (to === i || to < 0 || to >= f.variants.length) return;
                               ev.preventDefault();
                               set({ variants: move(f.variants, i, to) });

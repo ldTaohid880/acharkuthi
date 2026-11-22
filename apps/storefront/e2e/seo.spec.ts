@@ -114,7 +114,14 @@ test.describe("robots, sitemap and llms.txt", () => {
     const res = await request.get("/robots.txt");
     expect(res.status()).toBe(200);
     const body = await res.text();
-    for (const p of ["/account", "/basket", "/checkout", "/en/account", "/en/basket", "/en/checkout"])
+    for (const p of [
+      "/account",
+      "/basket",
+      "/checkout",
+      "/en/account",
+      "/en/basket",
+      "/en/checkout",
+    ])
       expect(body).toContain(`Disallow: ${p}`);
     expect(body).toContain(`Sitemap: ${ORIGIN}/sitemap.xml`);
   });

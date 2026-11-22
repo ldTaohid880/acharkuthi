@@ -10,7 +10,10 @@ import type { Lang } from "@/lib/i18n/lang";
 export function DocPage({ html, lang }: { html: string; lang: Lang }) {
   return (
     <div className="page-doc">
-      <main className="wrap doc-main" dangerouslySetInnerHTML={{ __html: localizeLinks(html, lang) }} />
+      <main
+        className="wrap doc-main"
+        dangerouslySetInnerHTML={{ __html: localizeLinks(html, lang) }}
+      />
     </div>
   );
 }

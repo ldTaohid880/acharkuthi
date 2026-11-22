@@ -129,7 +129,11 @@ export function VariantPicker({ slug, name, nameBn, heat, variants }: Props) {
     <>
       <div className="pv">
         <div className="pv-price">
-          <span className="p" aria-live="polite" style={sale ? { color: "var(--heat)" } : undefined}>
+          <span
+            className="p"
+            aria-live="polite"
+            style={sale ? { color: "var(--heat)" } : undefined}
+          >
             {formatTaka(variant.price)}
           </span>
           {sale && variant.compareAtPrice !== null ? (
@@ -149,51 +153,51 @@ export function VariantPicker({ slug, name, nameBn, heat, variants }: Props) {
       </div>
 
       {many ? (
-      <div style={{ marginTop: 24 }} role="radiogroup" aria-label={t.packageSize}>
-        <p className="lab" lang={lang}>
-          {t.packageSize}
-        </p>
-        <div className="vars">
-          {variants.map((v) => {
-            const on = v.id === variant.id;
-            const off = v.stock === 0;
-            const detail = off ? (
-              <span lang={lang}>{t.soldOut}</span>
-            ) : (
-              <>
-                <span className="pr">{formatTaka(v.price)}</span>
-                {v.weightGrams ? ` · ${formatWeight(v.weightGrams)}` : null}
-              </>
-            );
-            return (
-              <button
-                key={v.id}
-                type="button"
-                role="radio"
-                aria-checked={on}
-                aria-disabled={off}
-                aria-label={`${v.label}, ${off ? t.soldOut : formatTaka(v.price)}`}
-                className={`var ${on ? "on" : ""} ${off ? "off" : ""}`}
-                onClick={() => {
-                  if (off) return;
-                  setVariantId(v.id);
-                  setQty((q) => Math.max(1, Math.min(q, v.stock)));
-                  setAdded(null);
-                  setFailed(false);
-                }}
-              >
-                <b lang={lang}>{v.label}</b>
-                <span>{detail}</span>
-              </button>
-            );
-          })}
-        </div>
-        {variants.some((v) => v.stock === 0) && variants.some((v) => v.stock > 0) ? (
-          <p className="ak-help" style={{ marginTop: 10 }} lang={lang}>
-            {t.sizeUnavailable}
+        <div style={{ marginTop: 24 }} role="radiogroup" aria-label={t.packageSize}>
+          <p className="lab" lang={lang}>
+            {t.packageSize}
           </p>
-        ) : null}
-      </div>
+          <div className="vars">
+            {variants.map((v) => {
+              const on = v.id === variant.id;
+              const off = v.stock === 0;
+              const detail = off ? (
+                <span lang={lang}>{t.soldOut}</span>
+              ) : (
+                <>
+                  <span className="pr">{formatTaka(v.price)}</span>
+                  {v.weightGrams ? ` · ${formatWeight(v.weightGrams)}` : null}
+                </>
+              );
+              return (
+                <button
+                  key={v.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={on}
+                  aria-disabled={off}
+                  aria-label={`${v.label}, ${off ? t.soldOut : formatTaka(v.price)}`}
+                  className={`var ${on ? "on" : ""} ${off ? "off" : ""}`}
+                  onClick={() => {
+                    if (off) return;
+                    setVariantId(v.id);
+                    setQty((q) => Math.max(1, Math.min(q, v.stock)));
+                    setAdded(null);
+                    setFailed(false);
+                  }}
+                >
+                  <b lang={lang}>{v.label}</b>
+                  <span>{detail}</span>
+                </button>
+              );
+            })}
+          </div>
+          {variants.some((v) => v.stock === 0) && variants.some((v) => v.stock > 0) ? (
+            <p className="ak-help" style={{ marginTop: 10 }} lang={lang}>
+              {t.sizeUnavailable}
+            </p>
+          ) : null}
+        </div>
       ) : null}
 
       {inStock ? (

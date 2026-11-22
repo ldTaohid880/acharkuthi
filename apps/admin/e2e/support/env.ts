@@ -16,7 +16,8 @@ export const AUTH_DIR = path.resolve(here, "../.auth");
 export const ADMIN_URL = "http://localhost:3001";
 export const STOREFRONT_URL = "http://localhost:3000";
 
-const readEnv = (f: string): Record<string, string> => (existsSync(f) ? parse(readFileSync(f)) : {});
+const readEnv = (f: string): Record<string, string> =>
+  existsSync(f) ? parse(readFileSync(f)) : {};
 const appEnv = readEnv(path.join(APP_DIR, ".env"));
 export const testEnv = readEnv(path.join(APP_DIR, ".env.test"));
 
@@ -60,5 +61,7 @@ export function saveCreds(c: Creds) {
 export const loadCreds = (): Creds => JSON.parse(readFileSync(CREDS, "utf8")) as Creds;
 /** Password for a user: the .env.test owner's, or the generated one. */
 export const passwordOf = (who: Who) =>
-  who === "owner" && loadCreds().realOwner ? (testEnv.ADMIN_OWNER_PASSWORD ?? "") : loadCreds().password;
+  who === "owner" && loadCreds().realOwner
+    ? (testEnv.ADMIN_OWNER_PASSWORD ?? "")
+    : loadCreds().password;
 export const stateFile = (who: Who) => path.join(AUTH_DIR, `${who}.json`);

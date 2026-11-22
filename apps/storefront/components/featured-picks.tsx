@@ -51,7 +51,13 @@ export function FeaturedPicks({
         <div className="fpk-grid">
           {/* The mockup's mango-leaf line art, redrawn whole in Gemini (owner: full leaves, no cut-outs). */}
           {/* eslint-disable-next-line @next/next/no-img-element -- static decorative image */}
-          <img className="fpk-sprig" src="/images/home/featured-sprig.webp" alt="" width={1000} height={813} />
+          <img
+            className="fpk-sprig"
+            src="/images/home/featured-sprig.webp"
+            alt=""
+            width={1000}
+            height={813}
+          />
           {products.map((p) => (
             <PickCard key={p.id} product={p} bestsellerId={bestsellerId} lang={lang} />
           ))}
@@ -82,7 +88,9 @@ function PickCard({
   const badge = featuredBadge(product, bestsellerId);
   const name = en ? product.name : (product.nameBn ?? product.name);
   // The site's own line first, the other language when it is empty (owner, 2026-11-16).
-  const tagline = en ? (product.taglineEn ?? product.tagline) : (product.tagline ?? product.taglineEn);
+  const tagline = en
+    ? (product.taglineEn ?? product.tagline)
+    : (product.tagline ?? product.taglineEn);
   const taglineLang = en ? (product.taglineEn ? "en" : "bn") : product.tagline ? "bn" : "en";
   return (
     <article className={inStock ? "fpk-card" : "fpk-card is-out"}>

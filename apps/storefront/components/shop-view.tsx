@@ -3,12 +3,7 @@
 import Link from "next/link";
 import type { Route } from "next";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
-import {
-  HEAT_LEVELS,
-  SHOP_SORTS,
-  shopQuery,
-  type ShopQuery,
-} from "@repo/validators";
+import { HEAT_LEVELS, SHOP_SORTS, shopQuery, type ShopQuery } from "@repo/validators";
 import { Container } from "@/components/container";
 import { Heat, Icon } from "@/components/icon";
 import { PriceRange } from "@/components/price-range";
@@ -306,9 +301,7 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
                   <circle cx="8" cy="17" r="2" />
                 </svg>
                 <span className="tb-l">{t.filter}</span>
-                {filterCount > 0 ? (
-                  <span className="n">{filterCount}</span>
-                ) : null}
+                {filterCount > 0 ? <span className="n">{filterCount}</span> : null}
               </summary>
             </details>
             <SortMenu query={query} link={link} on={on} className="sortw" label={t.sortBy} />
@@ -563,25 +556,25 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
           while Recipes is (lib/features). */}
       {RECIPES_LIVE ? (
         <section className="sh-band" aria-labelledby="sh-band-h">
-        <picture className="sh-bg">
-          <source media="(max-width: 720px)" srcSet="/images/shop/band-mobile-900.webp" />
-          <img
-            src="/images/shop/band-1440.webp"
-            srcSet="/images/shop/band-1440.webp 1440w, /images/shop/band-2400.webp 2400w"
-            sizes="100vw"
-            alt=""
-            loading="lazy"
-            decoding="async"
-          />
-        </picture>
-        <Container className="sh-copy">
-          <h2 className="h-l" id="sh-band-h">
-            {t.bandTitle}
-          </h2>
-          <Link className="ak-btn ak-btn--sun" href={localePath(lang, "/recipes")}>
-            {t.bandCta} <Icon name="arrow" />
-          </Link>
-        </Container>
+          <picture className="sh-bg">
+            <source media="(max-width: 720px)" srcSet="/images/shop/band-mobile-900.webp" />
+            <img
+              src="/images/shop/band-1440.webp"
+              srcSet="/images/shop/band-1440.webp 1440w, /images/shop/band-2400.webp 2400w"
+              sizes="100vw"
+              alt=""
+              loading="lazy"
+              decoding="async"
+            />
+          </picture>
+          <Container className="sh-copy">
+            <h2 className="h-l" id="sh-band-h">
+              {t.bandTitle}
+            </h2>
+            <Link className="ak-btn ak-btn--sun" href={localePath(lang, "/recipes")}>
+              {t.bandCta} <Icon name="arrow" />
+            </Link>
+          </Container>
         </section>
       ) : null}
     </main>

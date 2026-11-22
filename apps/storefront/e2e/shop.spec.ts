@@ -57,9 +57,9 @@ test.describe("shop", () => {
     await expect(page.locator(".more")).toHaveCount(0);
     // Card photos load as they scroll in.
     expect(
-      await page.locator(".page-shop .grid img:not(.chilli)").evaluateAll((im) =>
-        im.every((i) => i.getAttribute("loading") === "lazy"),
-      ),
+      await page
+        .locator(".page-shop .grid img:not(.chilli)")
+        .evaluateAll((im) => im.every((i) => i.getAttribute("loading") === "lazy")),
     ).toBe(true);
     // Every card links in the page language.
     for (const h of await cards(page).evaluateAll((as) => as.map((a) => a.getAttribute("href"))))
@@ -73,7 +73,10 @@ test.describe("shop", () => {
     );
     for (const s of shelves) {
       await page.goto(p(`/shop/${s.slug}`));
-      const want = all.filter((x) => x.shelf === s.slug).map((x) => x.slug).sort();
+      const want = all
+        .filter((x) => x.shelf === s.slug)
+        .map((x) => x.slug)
+        .sort();
       const [, matched] = await counts(page);
       expect(matched, s.slug).toBe(want.length);
       expect((await slugsShown(page)).sort(), s.slug).toEqual(want);

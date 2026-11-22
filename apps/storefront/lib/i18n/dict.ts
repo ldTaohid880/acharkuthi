@@ -152,7 +152,8 @@ const bn = {
     crumbShop: "আচার",
     eyebrow: "আচারকুঠির আয়োজন",
     heroTitle: "প্রতিটি স্বাদে, একটু আলাদা গল্প।",
-    heroLede: "টক, ঝাল, মিষ্টি কিংবা সরিষার তীব্র ঘ্রাণ। আপনার পছন্দের স্বাদ খুঁজে নিন আচারকুঠির আয়োজনে।",
+    heroLede:
+      "টক, ঝাল, মিষ্টি কিংবা সরিষার তীব্র ঘ্রাণ। আপনার পছন্দের স্বাদ খুঁজে নিন আচারকুঠির আয়োজনে।",
     bandTitle: "খাবারের সঙ্গে একটু আচার, ব্যস, জমে গেল!",
     bandCta: "রেসিপি দেখুন",
     category: "ধরন",
@@ -771,7 +772,8 @@ const bn = {
       "রোদে শুকাতে দেওয়া আমের ফালি, সরিষার তেলের ঝাঁজ, প্রজন্ম ধরে চলে আসা আচারের প্রণালী। আচারকুঠির জন্ম সেই ঐতিহ্য থেকে।",
     storyMob:
       "রোদে শুকানো আম, সরিষার তেলের ঝাঁজ, প্রজন্মের প্রণালী। আচারকুঠির জন্ম সেই ঐতিহ্য থেকে।",
-    kitchenAlt: "জলপাই সবুজ পটভূমিতে ট্রাভারটাইন পাথরে নবাবি লস্যির বয়াম, পাশে কাঁচা আম ও পিতলের বাটি",
+    kitchenAlt:
+      "জলপাই সবুজ পটভূমিতে ট্রাভারটাইন পাথরে নবাবি লস্যির বয়াম, পাশে কাঁচা আম ও পিতলের বাটি",
     readStory: "আমাদের গল্প পড়ুন",
     bestseller: "সেরা বিক্রি",
     // Reviews section (drawn in Bangla with an English eyebrow).
@@ -995,13 +997,22 @@ const bn = {
       "আচারকুঠি · ঐতিহ্যবাহী বাংলা আচার",
       "বহু পুরনো ঐতিহ্যবাহী রেসিপি। শিলে বাটা মসলা, খাঁটি ঘানি ভাঙা সরিষার তেল, কোনো প্রিজারভেটিভ নেই। সারা বাংলাদেশে ক্যাশ অন ডেলিভারি।",
     ] as readonly [string, string],
-    contact: ["যোগাযোগ", "হোয়াটসঅ্যাপ, ইমেইল বা মেসেজ পাঠিয়ে আচারকুঠির সাথে কথা বলুন।"] as readonly [string, string],
+    contact: [
+      "যোগাযোগ",
+      "হোয়াটসঅ্যাপ, ইমেইল বা মেসেজ পাঠিয়ে আচারকুঠির সাথে কথা বলুন।",
+    ] as readonly [string, string],
     faq: [
       "সাধারণ জিজ্ঞাসা",
       "আচারকুঠিতে অর্ডার, ডেলিভারি, পেমেন্ট, ফেরত ও রিভিউ নিয়ে সাধারণ প্রশ্নের উত্তর।",
     ] as readonly [string, string],
-    story: ["আমাদের গল্প", "রোদে শুকানো আম, সরিষার তেল আর বয়াম খোলার সেই মুহূর্ত। আচারকুঠির গল্প।"] as readonly [string, string],
-    privacy: ["গোপনীয়তা নীতি", "আচারকুঠি আপনার ব্যক্তিগত তথ্য কীভাবে সংগ্রহ, ব্যবহার ও সুরক্ষা করে।"] as readonly [string, string],
+    story: [
+      "আমাদের গল্প",
+      "রোদে শুকানো আম, সরিষার তেল আর বয়াম খোলার সেই মুহূর্ত। আচারকুঠির গল্প।",
+    ] as readonly [string, string],
+    privacy: [
+      "গোপনীয়তা নীতি",
+      "আচারকুঠি আপনার ব্যক্তিগত তথ্য কীভাবে সংগ্রহ, ব্যবহার ও সুরক্ষা করে।",
+    ] as readonly [string, string],
     returns: [
       "ফেরত ও রিফান্ড নীতি",
       "বয়াম ভাঙা, ভুল, কম বা নষ্ট? ২৪ ঘণ্টার মধ্যে ছবিসহ জানালে বিনা খরচে বদলে দেওয়া হয়, অথবা ৭ কর্মদিবসে বিকাশ বা নগদে টাকা ফেরত।",
@@ -1010,8 +1021,14 @@ const bn = {
       "ডেলিভারি নীতি",
       "বাংলাদেশের ৬৪ জেলায় ডেলিভারি: প্যাক করতে প্রায় ১ দিন, তারপর ঢাকায় ১–২ দিন, ঢাকার বাইরে ৩–৫ দিন। ক্যাশ অন ডেলিভারি, কোনো অগ্রিম নেই।",
     ] as readonly [string, string],
-    terms: ["শর্তাবলি", "আচারকুঠির ওয়েবসাইট ব্যবহার ও কেনাকাটার শর্তাবলি।"] as readonly [string, string],
-    recipes: ["রেসিপি", "রোজকার খাবার, সহজ পরিবেশন-ধারণা আর আচার উপভোগের নতুন কিছু উপায়।"] as readonly [string, string],
+    terms: ["শর্তাবলি", "আচারকুঠির ওয়েবসাইট ব্যবহার ও কেনাকাটার শর্তাবলি।"] as readonly [
+      string,
+      string,
+    ],
+    recipes: [
+      "রেসিপি",
+      "রোজকার খাবার, সহজ পরিবেশন-ধারণা আর আচার উপভোগের নতুন কিছু উপায়।",
+    ] as readonly [string, string],
     recipeMissing: "রেসিপি পাওয়া যায়নি",
     shop: "দোকান",
     crumbHome: "হোম",
@@ -1156,7 +1173,8 @@ const en: Dict = {
     crumbShop: "Shop",
     eyebrow: "The Acharkuthi collection",
     heroTitle: "Every taste, its own story.",
-    heroLede: "Sour, fiery, sweet or sharp with mustard. Find the one you love in the Acharkuthi collection.",
+    heroLede:
+      "Sour, fiery, sweet or sharp with mustard. Find the one you love in the Acharkuthi collection.",
     bandTitle: "A little achar with the meal, and it all comes together.",
     bandCta: "See recipes",
     category: "Category",
@@ -1826,7 +1844,8 @@ const en: Dict = {
       "Mango slices drying in the sun, the sharpness of mustard oil, a way of pickling handed down through generations. Acharkuthi comes from that heritage.",
     storyMob:
       "Mango drying in the sun, the sharpness of mustard oil, a craft handed down. Acharkuthi comes from that heritage.",
-    kitchenAlt: "A jar of Nobabi Lassi on travertine stone against olive green, with a raw mango and a small brass dish",
+    kitchenAlt:
+      "A jar of Nobabi Lassi on travertine stone against olive green, with a raw mango and a small brass dish",
     readStory: "Read our story",
     bestseller: "Bestseller",
     // Mirror rule: the English site puts the Bangla accent where the board has the English one.
@@ -1910,7 +1929,8 @@ const en: Dict = {
     eyebrow: "Get in touch",
     title: "Want to know something? We’re listening.",
     lede: "Talk to us about pickles, orders or anything else. Every message matters to us.",
-    heroAlt: "A jar of Roshun Morobba on a writing desk with an open envelope, a pen and a cup of tea",
+    heroAlt:
+      "A jar of Roshun Morobba on a writing desk with an open envelope, a pen and a cup of tea",
     ways: "Ways to reach us",
     wa: "Write on WhatsApp",
     mail: "Send an email",
@@ -2070,7 +2090,10 @@ const en: Dict = {
       "Our story",
       "Sun-dried mango, mustard oil and the moment a jar is opened. The story of Acharkuthi.",
     ],
-    privacy: ["Privacy policy", "How Acharkuthi collects, uses and protects your personal information."],
+    privacy: [
+      "Privacy policy",
+      "How Acharkuthi collects, uses and protects your personal information.",
+    ],
     returns: [
       "Returns and refunds",
       "Broken, wrong, missing or spoiled jar? Tell us within 24 hours with photos for a free replacement or a refund by bKash or Nagad within 7 working days.",
@@ -2079,7 +2102,10 @@ const en: Dict = {
       "Shipping and delivery",
       "Delivery to all 64 districts of Bangladesh: about 1 day to pack, then 1–2 days inside Dhaka and 3–5 days outside. Cash on delivery, no advance payment.",
     ],
-    terms: ["Terms and conditions", "The terms for using the Acharkuthi website and buying from it."],
+    terms: [
+      "Terms and conditions",
+      "The terms for using the Acharkuthi website and buying from it.",
+    ],
     recipes: ["Recipes", "Everyday meals, simple serving ideas and a few new ways to enjoy achar."],
     recipeMissing: "Recipe not found",
     shop: "Shop",

@@ -51,7 +51,14 @@ type Values = Record<
 type Status = "idle" | "loading" | "fail" | "uncertain" | "success" | "closed";
 /** "checking" / "ok": the live check while typing (owner request, 2026-11-15). */
 type CouponStat = "idle" | "applying" | "checking" | "ok" | CouponProblem;
-const COUPON_ERRORS: readonly CouponStat[] = ["invalid", "expired", "used", "first", "tries", "min"];
+const COUPON_ERRORS: readonly CouponStat[] = [
+  "invalid",
+  "expired",
+  "used",
+  "first",
+  "tries",
+  "min",
+];
 const isCouponError = (c: CouponStat): c is CouponProblem => COUPON_ERRORS.includes(c);
 
 const EMPTY: Values = {
@@ -95,10 +102,7 @@ const noSubscribe = () => () => undefined;
 function parseLastOrder(raw: string | null, who: string): PlacedOrder | null {
   try {
     const o = raw ? (JSON.parse(raw) as PlacedOrder & { who?: unknown }) : null;
-    return o &&
-      o.who === who &&
-      typeof o.orderNumber === "string" &&
-      Array.isArray(o.lines)
+    return o && o.who === who && typeof o.orderNumber === "string" && Array.isArray(o.lines)
       ? o
       : null;
   } catch {
@@ -139,7 +143,9 @@ export function CheckoutView({
   const ck = all.checkout;
   /** Coupon labels come with Latin digits; the Bangla site shows a percent in Bangla digits ("১০%"). Taka amounts keep the Latin price face. */
   const digitsFor = (text: string) =>
-    lang === "bn" && text.endsWith("%") ? text.replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)] ?? d) : text;
+    lang === "bn" && text.endsWith("%")
+      ? text.replace(/\d/g, (d) => "০১২৩৪৫৬৭৮৯"[Number(d)] ?? d)
+      : text;
 
   const [v, setV] = useState<Values>({ ...EMPTY, ...prefill });
   const [touched, setTouched] = useState<Partial<Record<CheckoutField, boolean>>>({});
@@ -1032,7 +1038,9 @@ export function CheckoutView({
                     req: true,
                     // The delivery zone follows the district (owner, 2026-11-22: no separate
                     // delivery-method step), so the field says which one applies and its fee.
-                    ...(zone ? { help: ck.zoneNote(ck.delivery[zone].title, formatTaka(fees[zone])) } : {}),
+                    ...(zone
+                      ? { help: ck.zoneNote(ck.delivery[zone].title, formatTaka(fees[zone])) }
+                      : {}),
                     input: (
                       <Select
                         lang={lang}

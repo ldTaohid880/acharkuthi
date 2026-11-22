@@ -24,7 +24,11 @@ async function savedAddress(userId: string): Promise<Partial<CheckoutValues>> {
     .select()
     .from(schema.addresses)
     .where(eq(schema.addresses.userId, userId))
-    .orderBy(desc(schema.addresses.isDefault), desc(schema.addresses.updatedAt), asc(schema.addresses.id))
+    .orderBy(
+      desc(schema.addresses.isDefault),
+      desc(schema.addresses.updatedAt),
+      asc(schema.addresses.id),
+    )
     .limit(1);
   if (!a?.division || !a.district || !isKnownLocation(a.division, a.district, a.city)) return {};
   return {

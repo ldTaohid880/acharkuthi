@@ -808,11 +808,7 @@ function Editor({
               ) : null}
             </div>
             <span className={help}>
-              {kind === "header"
-                ? t.headerImageHelp
-                : phone
-                  ? t.imageHelpPhone
-                  : t.imageHelp}
+              {kind === "header" ? t.headerImageHelp : phone ? t.imageHelpPhone : t.imageHelp}
             </span>
           </div>
         </div>

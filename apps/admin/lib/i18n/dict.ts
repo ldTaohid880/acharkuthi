@@ -745,7 +745,8 @@ const bn = {
     payDesc: "Payments · এখন শুধু ক্যাশ অন ডেলিভারি",
     codOn: "ক্যাশ অন ডেলিভারি চালু",
     codOffTitle: "ক্যাশ অন ডেলিভারি বন্ধ করবেন?",
-    codOffBody: "বন্ধ থাকলে ওয়েবসাইটে কোনো নতুন অর্ডার নেওয়া যাবে না। আবার চালু না করা পর্যন্ত চেকআউট বন্ধ থাকবে।",
+    codOffBody:
+      "বন্ধ থাকলে ওয়েবসাইটে কোনো নতুন অর্ডার নেওয়া যাবে না। আবার চালু না করা পর্যন্ত চেকআউট বন্ধ থাকবে।",
     codOffConfirm: "হ্যাঁ, বন্ধ করুন",
     codOffKeep: "চালু রাখুন",
     codOnShort: "COD চালু",
@@ -888,7 +889,8 @@ const bn = {
     remove: "মুছুন",
     open: "খুলুন",
     help: 'অনুমোদন দিলে সাইটে দেখাবে (পণ্যের রিভিউ পণ্য পেজে, সাইট রিভিউ হোমে)। লুকালে আবার "অনুমোদন বাকি"-তে ফিরে যায়।',
-    helpPending: "অনুমোদন দিলে সাইটে দেখাবে (পণ্যের রিভিউ পণ্য পেজে, সাইট রিভিউ হোমে)। স্প্যাম হলে মুছে ফেলুন।",
+    helpPending:
+      "অনুমোদন দিলে সাইটে দেখাবে (পণ্যের রিভিউ পণ্য পেজে, সাইট রিভিউ হোমে)। স্প্যাম হলে মুছে ফেলুন।",
     approved: "রিভিউ অনুমোদিত",
     hidden: 'রিভিউ লুকানো হয়েছে, আবার "অনুমোদন বাকি"-তে',
     deleted: "রিভিউ মুছে ফেলা হয়েছে",
@@ -1129,7 +1131,8 @@ const bn = {
     imageHelp: "JPG, PNG, WebP · ৫ MB পর্যন্ত · হোম পেজের তাকের গোল ছবি",
     imageHelpPhone: "হোম পেজের তাকের গোল ছবি",
     headerImage: "শপ পেজের হেডার ছবি",
-    headerImageHelp: "চওড়া ছবি, অন্তত ২৪০০×১০০০ · বয়াম ডান দিকে রাখুন, বাঁয়ে লেখা বসে · না দিলে ডিফল্ট ছবি",
+    headerImageHelp:
+      "চওড়া ছবি, অন্তত ২৪০০×১০০০ · বয়াম ডান দিকে রাখুন, বাঁয়ে লেখা বসে · না দিলে ডিফল্ট ছবি",
     uploading: "আপলোড হচ্ছে…",
     uploadType: "শুধু JPG, PNG বা WebP",
     uploadSize: "ছবি ৫ MB-এর বেশি",
@@ -1200,7 +1203,8 @@ const bn = {
     description: "বিবরণ",
     descriptionSub: "Description · পণ্য পেজের মূল লেখা",
     tagline: "ছোট লাইন",
-    taglineHelp: "হোম পেজের বিশেষ বাছাই কার্ডে নামের নিচে এক লাইন, যেমন \"মিষ্টি রসে ডোবানো আস্ত রসুন\"",
+    taglineHelp:
+      'হোম পেজের বিশেষ বাছাই কার্ডে নামের নিচে এক লাইন, যেমন "মিষ্টি রসে ডোবানো আস্ত রসুন"',
     details: "পণ্যের তথ্য",
     detailsSub: "Product details · খালি ঘর স্টোরে দেখায় না",
     detailsHelpPhone: "খালি ঘর স্টোরে দেখায় না।",
@@ -1278,7 +1282,8 @@ const bn = {
     keep: "রেখে দিন",
     doDelete: "মুছুন",
     images: "ছবি",
-    imagesSub: 'Images · টেনে সাজান। "মূল ছবি" কার্ডে ও পেজে প্রথমে দেখায়। "বিশেষ বাছাই" ছবিটি শুধু হোমের বিশেষ বাছাইয়ে দেখায়, পণ্যের পেজে নয়।',
+    imagesSub:
+      'Images · টেনে সাজান। "মূল ছবি" কার্ডে ও পেজে প্রথমে দেখায়। "বিশেষ বাছাই" ছবিটি শুধু হোমের বিশেষ বাছাইয়ে দেখায়, পণ্যের পেজে নয়।',
     imagesSubTab: 'Images · টেনে সাজান। "মূল ছবি" সবসময় প্রথমে থাকে।',
     imagesSubPhone: "লম্বা চেপে টেনে সাজান · মূল ছবি সবসময় প্রথমে",
     mainImage: "মূল ছবি",
@@ -2232,7 +2237,8 @@ const en: Dict = {
     payDesc: "Cash on delivery only for now",
     codOn: "Cash on delivery on",
     codOffTitle: "Turn off cash on delivery?",
-    codOffBody: "While it's off, the website takes no new orders. Checkout stays closed until you turn it back on.",
+    codOffBody:
+      "While it's off, the website takes no new orders. Checkout stays closed until you turn it back on.",
     codOffConfirm: "Yes, turn it off",
     codOffKeep: "Keep it on",
     codOnShort: "COD on",
@@ -2372,7 +2378,8 @@ const en: Dict = {
     remove: "Delete",
     open: "Open",
     help: 'Approved reviews show on the site (product reviews on the product page, site reviews on home). Hiding sends a review back to "Pending".',
-    helpPending: "Approved reviews show on the site (product reviews on the product page, site reviews on home). Delete spam.",
+    helpPending:
+      "Approved reviews show on the site (product reviews on the product page, site reviews on home). Delete spam.",
     approved: "Review approved",
     hidden: 'Review hidden, back in "Pending"',
     deleted: "Review deleted",
@@ -2616,7 +2623,8 @@ const en: Dict = {
     imageHelp: "JPG, PNG, WebP · up to 5 MB · the round shelf picture on Home",
     imageHelpPhone: "The round shelf picture on Home",
     headerImage: "Shop page header photo",
-    headerImageHelp: "Wide photo, at least 2400×1000 · keep the jar on the right, the text sits on the left · empty uses the default",
+    headerImageHelp:
+      "Wide photo, at least 2400×1000 · keep the jar on the right, the text sits on the left · empty uses the default",
     uploading: "Uploading…",
     uploadType: "Only JPG, PNG or WebP",
     uploadSize: "Image is over 5 MB",
@@ -2687,7 +2695,8 @@ const en: Dict = {
     description: "Description",
     descriptionSub: "Main text on the product page",
     tagline: "Short line",
-    taglineHelp: "One line under the name on the Home featured card, e.g. \"Whole garlic in sweet syrup\"",
+    taglineHelp:
+      'One line under the name on the Home featured card, e.g. "Whole garlic in sweet syrup"',
     details: "Product details",
     detailsSub: "Empty fields are hidden in the shop",
     detailsHelpPhone: "Empty fields are hidden in the shop.",
@@ -2765,7 +2774,8 @@ const en: Dict = {
     keep: "Keep",
     doDelete: "Delete",
     images: "Images",
-    imagesSub: 'Drag to arrange. The "main photo" comes first on cards and the page. The "Featured" photo shows only in the Home picks, not on the product page.',
+    imagesSub:
+      'Drag to arrange. The "main photo" comes first on cards and the page. The "Featured" photo shows only in the Home picks, not on the product page.',
     imagesSubTab: 'Drag to arrange. The "main photo" always comes first.',
     imagesSubPhone: "Press and drag to arrange · main photo first",
     mainImage: "Main photo",

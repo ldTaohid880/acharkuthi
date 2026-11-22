@@ -4,20 +4,13 @@
     {
       "name": "dev",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "run",
-        "dev"
-      ],
+      "runtimeArgs": ["run", "dev"],
       "port": 3000
     },
     {
       "name": "storefront",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "--filter",
-        "@acharkuthi/storefront",
-        "dev"
-      ],
+      "runtimeArgs": ["--filter", "@acharkuthi/storefront", "dev"],
       "port": 3000
     },
     {
@@ -42,11 +35,7 @@
     {
       "name": "admin",
       "runtimeExecutable": "pnpm",
-      "runtimeArgs": [
-        "--filter",
-        "@acharkuthi/admin",
-        "dev"
-      ],
+      "runtimeArgs": ["--filter", "@acharkuthi/admin", "dev"],
       "port": 3001
     },
     {

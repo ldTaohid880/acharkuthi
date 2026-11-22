@@ -11,13 +11,5 @@ export const metadata: Metadata = { title: "Stock" };
 export default async function StockPage() {
   const { role } = await requireAdmin();
   const [{ lang, t }, rows, limit] = await Promise.all([getDict(), listStock(), lowStockLimit()]);
-  return (
-    <StockView
-      rows={rows}
-      t={t.stock}
-      lang={lang}
-      staff={role === "staff"}
-      limit={limit}
-    />
-  );
+  return <StockView rows={rows} t={t.stock} lang={lang} staff={role === "staff"} limit={limit} />;
 }

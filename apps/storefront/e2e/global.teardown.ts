@@ -16,9 +16,7 @@ teardown("clean up e2e data", async () => {
   );
   for (const o of orders) await cancelOrder(o.order_number);
 
-  await exec(
-    "delete from restock_requests where contact like 'e2e-%@example.test'",
-  );
+  await exec("delete from restock_requests where contact like 'e2e-%@example.test'");
   await exec("delete from contact_messages where email like 'e2e-%@example.test'");
   await exec("delete from newsletter_subscribers where email like 'e2e-%@example.test'");
   await exec("delete from site_reviews where name like 'E2E %'");

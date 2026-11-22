@@ -15,11 +15,18 @@ async function signIn(page: Page, p: (s: string) => string, email: string, passw
 }
 
 /** The newest reset link for `email`: from the server log (dev mail), else the reset token row. */
-async function resetLink(email: string, callbackURL: string): Promise<{ url: string; from: string }> {
+async function resetLink(
+  email: string,
+  callbackURL: string,
+): Promise<{ url: string; from: string }> {
   if (existsSync(SERVER_LOG)) {
     const lines = readFileSync(SERVER_LOG, "utf8").split("\n").reverse();
     const hit = lines.find((l) => l.includes(`password reset link for ${email}:`));
-    if (hit) return { url: hit.slice(hit.indexOf(": ", hit.indexOf(email)) + 2).trim(), from: "server log" };
+    if (hit)
+      return {
+        url: hit.slice(hit.indexOf(": ", hit.indexOf(email)) + 2).trim(),
+        from: "server log",
+      };
   }
   const user = await one<{ id: string }>("select id from user where email = ?", [email]);
   const row = await one<{ identifier: string }>(
@@ -103,7 +110,9 @@ test.describe("account: sign-up, sign-in, sign-out, password reset", () => {
     const mailed = await page.getByRole("heading", { name: a.mailTitle }).isVisible();
     test.info().annotations.push({
       type: "reset-mail",
-      description: mailed ? "reset link sent (dev log)" : "production server without SMTP: send failed",
+      description: mailed
+        ? "reset link sent (dev log)"
+        : "production server without SMTP: send failed",
     });
 
     const { url: link, from } = await resetLink(who, redirectTo);
@@ -131,10 +140,10 @@ test.describe("account pages (signed in)", () => {
   test.use({
     storageState: async ({}, use, info) => use(stateFile(info.project.name)),
   });
-  const shopper = () => one<{ id: string; email: string }>(
-    "select id, email from user where email = ?",
-    [loadCreds().shoppers[test.info().project.name]],
-  );
+  const shopper = () =>
+    one<{ id: string; email: string }>("select id, email from user where email = ?", [
+      loadCreds().shoppers[test.info().project.name],
+    ]);
 
   test("overview and orders list", async ({ page, p, t, slot }) => {
     const me = await shopper();
@@ -148,7 +157,9 @@ test.describe("account pages (signed in)", () => {
     );
     try {
       await page.goto(p("/account"));
-      await expect(page.getByRole("heading", { level: 1 })).toContainText(t.account.hello("E2E").split(",")[0] ?? "");
+      await expect(page.getByRole("heading", { level: 1 })).toContainText(
+        t.account.hello("E2E").split(",")[0] ?? "",
+      );
       await page.goto(p("/account/orders"));
       const card = page.locator("li.oc").filter({ hasText: number });
       await expect(card).toBeVisible();
@@ -171,7 +182,9 @@ test.describe("account pages (signed in)", () => {
     await page.goto(p("/account/addresses"));
     await page.getByRole("button", { name: a.addAddr }).click();
     await page.getByRole("button", { name: a.saveAddr }).click();
-    await expect(page.getByText(a.err["ঠিকানার একটি নাম দিন"] ?? "ঠিকানার একটি নাম দিন")).toBeVisible();
+    await expect(
+      page.getByText(a.err["ঠিকানার একটি নাম দিন"] ?? "ঠিকানার একটি নাম দিন"),
+    ).toBeVisible();
 
     const add = async (label: string, place: [string, string]) => {
       await page.locator("#ad-label").fill(label);
@@ -190,7 +203,13 @@ test.describe("account pages (signed in)", () => {
     await page.getByRole("button", { name: a.newAddr }).click();
     await add("E2E Office", ["চট্টগ্রাম", "চট্টগ্রাম"]);
 
-    const rows = await q<{ label: string; division: string; district: string; city: string; is_default: number }>(
+    const rows = await q<{
+      label: string;
+      division: string;
+      district: string;
+      city: string;
+      is_default: number;
+    }>(
       "select label, division, district, city, is_default from addresses where user_id = ? order by id",
       [me?.id],
     );
@@ -213,7 +232,15 @@ test.describe("account pages (signed in)", () => {
     await office2.getByRole("button", { name: a.setDefault }).click();
     await expect(office2.getByText(a.default)).toBeVisible();
     await expect
-      .poll(async () => (await one<{ is_default: number }>("select is_default from addresses where label = 'E2E Office 2' and user_id = ?", [me?.id]))?.is_default)
+      .poll(
+        async () =>
+          (
+            await one<{ is_default: number }>(
+              "select is_default from addresses where label = 'E2E Office 2' and user_id = ?",
+              [me?.id],
+            )
+          )?.is_default,
+      )
       .toBe(1);
 
     // Delete the home address (confirm).
@@ -237,11 +264,14 @@ test.describe("account pages (signed in)", () => {
     await page.locator("section[aria-labelledby=sp1] button.lk").first().click();
     const name = page.getByPlaceholder(t.account.fullName);
     await name.fill(`E2E Renamed ${slot}`);
-    await page.locator("section[aria-labelledby=sp1]").getByRole("button", { name: t.account.save }).click();
+    await page
+      .locator("section[aria-labelledby=sp1]")
+      .getByRole("button", { name: t.account.save })
+      .click();
     await expect(page.getByText(t.account.profSaved)).toBeVisible();
     const me = await shopper();
-    expect((await one<{ name: string }>("select name from user where id = ?", [me?.id]))?.name).toBe(
-      `E2E Renamed ${slot}`,
-    );
+    expect(
+      (await one<{ name: string }>("select name from user where id = ?", [me?.id]))?.name,
+    ).toBe(`E2E Renamed ${slot}`);
   });
 });

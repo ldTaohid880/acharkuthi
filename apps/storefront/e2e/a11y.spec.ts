@@ -25,7 +25,9 @@ for (const path of PAGES) {
   test(`axe: ${path}`, async ({ page, p }, info) => {
     await page.goto(p(path));
     await page.waitForLoadState("networkidle");
-    const result = await new AxeBuilder({ page }).withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"]).analyze();
+    const result = await new AxeBuilder({ page })
+      .withTags(["wcag2a", "wcag2aa", "wcag21a", "wcag21aa"])
+      .analyze();
     const bad = result.violations.filter((v) => v.impact === "serious" || v.impact === "critical");
     writeFileSync(info.outputPath("axe-violations.json"), JSON.stringify(bad, null, 2));
     await info.attach("axe-violations.json", {
@@ -33,7 +35,8 @@ for (const path of PAGES) {
       contentType: "application/json",
     });
     const summary = bad.map(
-      (v) => `${v.impact} ${v.id}: ${v.help} (${v.nodes.length}) e.g. ${v.nodes[0]?.target.join(" ")}`,
+      (v) =>
+        `${v.impact} ${v.id}: ${v.help} (${v.nodes.length}) e.g. ${v.nodes[0]?.target.join(" ")}`,
     );
     expect(summary, summary.join("\n")).toEqual([]);
   });

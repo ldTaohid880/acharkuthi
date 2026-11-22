@@ -1,16 +1,7 @@
 import { formatTaka } from "@repo/ui/lib/utils";
 import { DIVISIONS, placeName, upazilasOf } from "@repo/validators";
 import type { Page } from "@playwright/test";
-import {
-  E2E_SLUG,
-  SLOTS,
-  SLOT_PRICE,
-  cancelOrder,
-  exec,
-  one,
-  q,
-  testPhone,
-} from "./support/db";
+import { E2E_SLUG, SLOTS, SLOT_PRICE, cancelOrder, exec, one, q, testPhone } from "./support/db";
 import { expect, test, type Dict } from "./support/fixtures";
 import { DHAKA, OUTSIDE, basketWithSlot, fillCheckout, pick, placeButton } from "./support/shop";
 
@@ -21,7 +12,15 @@ const fees = () =>
 
 /** Orders placed by this project's test phone, newest first. */
 const ordersOf = (phone: string) =>
-  q<{ order_number: string; status: string; subtotal: number; shipping_fee: number; total: number; delivery_zone: string; source: string }>(
+  q<{
+    order_number: string;
+    status: string;
+    subtotal: number;
+    shipping_fee: number;
+    total: number;
+    delivery_zone: string;
+    source: string;
+  }>(
     "select order_number, status, subtotal, shipping_fee, total, delivery_zone, source from orders where customer_phone = ? order by id desc",
     [phone],
   );
@@ -34,7 +33,12 @@ test.describe("checkout", () => {
     for (const o of await ordersOf(testPhone(slot))) await cancelOrder(o.order_number);
   });
 
-  test("every required field shows its error in the page language", async ({ page, p, t, slot }) => {
+  test("every required field shows its error in the page language", async ({
+    page,
+    p,
+    t,
+    slot,
+  }) => {
     const ck = t.checkout;
     await basketWithSlot(page, slot);
     await page.goto(p("/checkout"));
@@ -93,7 +97,9 @@ test.describe("checkout", () => {
     const upas = (await page.getByRole("option").allInnerTexts()).slice(1);
     expect(upas).toEqual(upazilasOf("ঢাকা", "ঢাকা"));
     for (const u of upas) expect(u).toMatch(/[ঀ-৿]/);
-    await expect(page.locator(".ak-sel").filter({ has: page.getByRole("listbox") })).toHaveAttribute("lang", "bn");
+    await expect(
+      page.locator(".ak-sel").filter({ has: page.getByRole("listbox") }),
+    ).toHaveAttribute("lang", "bn");
   });
 
   test("the delivery fee is the inside-Dhaka or outside fee from Settings", async ({
@@ -198,7 +204,13 @@ test.describe("checkout", () => {
           JSON.stringify({
             state: {
               lines: [
-                { variantId: id, productName: "E2E Test Pickle", variantLabel: "x", unitPrice: 30000, quantity: 1 },
+                {
+                  variantId: id,
+                  productName: "E2E Test Pickle",
+                  variantLabel: "x",
+                  unitPrice: 30000,
+                  quantity: 1,
+                },
               ],
             },
             version: 0,
@@ -219,7 +231,9 @@ test.describe("checkout", () => {
       await page.waitForLoadState("networkidle");
       expect(await ordersOf(testPhone(slot))).toHaveLength(before);
       // And the shopper is told on screen.
-      await expect(page.getByText(ck.goneTitle).locator("visible=true").first()).toBeVisible({ timeout: 4000 });
+      await expect(page.getByText(ck.goneTitle).locator("visible=true").first()).toBeVisible({
+        timeout: 4000,
+      });
     } finally {
       await exec("delete from product_variants where sku = ?", [sku]);
     }
@@ -307,7 +321,9 @@ test.describe("checkout coupons", () => {
     await expect(box.getByRole("alert")).toHaveText(ck.coupon.expired);
     // Minimum order not reached: refused, saying how much more to add (owner, 2026-11-19).
     box = await tryCode(page, t, c.min);
-    await expect(box.getByRole("alert")).toContainText((ck.coupon.min.split("{amount}")[0] ?? "").trim());
+    await expect(box.getByRole("alert")).toContainText(
+      (ck.coupon.min.split("{amount}")[0] ?? "").trim(),
+    );
     // Valid percent coupon: 10% off.
     box = await tryCode(page, t, c.ok);
     await expect(box.locator(".cp-ok")).toContainText(c.ok);

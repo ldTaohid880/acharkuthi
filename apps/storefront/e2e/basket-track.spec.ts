@@ -42,7 +42,11 @@ test.describe("basket", () => {
     const summary = page.locator("main");
     await expect(summary).toContainText(t.basket.deliveryLater);
     await expect(summary).toContainText(t.basket.couponLater);
-    await page.getByRole("link", { name: t.basket.checkout }).locator("visible=true").first().click();
+    await page
+      .getByRole("link", { name: t.basket.checkout })
+      .locator("visible=true")
+      .first()
+      .click();
     await expect(page).toHaveURL(new RegExp(`${p("/checkout")}$`));
   });
 
@@ -67,7 +71,9 @@ test.describe("track an order", () => {
        values (?, 'processing', 'E2E Tracker', ?, 'বাড়ি ১, ঢাকা', 'ধানমন্ডি', 'ঢাকা', 'in', 'website', 30000, 7000, 37000)`,
       [number(slot), testPhone(slot)],
     );
-    const o = await one<{ id: number }>("select id from orders where order_number = ?", [number(slot)]);
+    const o = await one<{ id: number }>("select id from orders where order_number = ?", [
+      number(slot),
+    ]);
     await exec(
       `insert into order_items (order_id, product_name, variant_label, unit_price, quantity)
        values (?, 'E2E Test Pickle', '100 g', 30000, 1)`,

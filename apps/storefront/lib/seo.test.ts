@@ -77,7 +77,11 @@ describe("productJsonLd", () => {
     const bn = productJsonLd({ ...base, lang: "bn" });
     expect(bn).toMatchObject({ name: "লেবুর আচার", alternateName: "Lemon Pickle" });
     expect(bn.url).toMatch(/[^n]\/pickles\/lemon$/);
-    expect(bn.additionalProperty).toContainEqual({ "@type": "PropertyValue", name: "উপকরণ", value: "লেবু, লবণ" });
+    expect(bn.additionalProperty).toContainEqual({
+      "@type": "PropertyValue",
+      name: "উপকরণ",
+      value: "লেবু, লবণ",
+    });
   });
   it("averages approved reviews", () => {
     const at = new Date("2026-11-01T00:00:00Z");

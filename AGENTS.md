@@ -56,6 +56,7 @@ canvas's `project/admin.css` (theme variables in `apps/admin/app/globals.css`), 
 design system or `design*.css`.
 
 **Admin scrolling (owner rule, 2026-11-13).** This applies to every admin page:
+
 - Use shadcn ScrollArea (`@repo/ui/components/scroll-area`) for anything that scrolls. Never a
   bare `overflow-y-auto` showing the browser scrollbar.
 - Scroll the content, not the whole page. Headers, the attention board, search, filters, bulk

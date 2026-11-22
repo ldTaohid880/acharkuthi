@@ -246,7 +246,9 @@ export function BasketView() {
                     .join(" ");
                   return (
                     <li className={cls} key={line.variantId}>
-                      <div className={`bk-th ${r.index % 2 ? "t2" : ""} ${r.img === "/jar.svg" ? "" : "ph"}`}>
+                      <div
+                        className={`bk-th ${r.index % 2 ? "t2" : ""} ${r.img === "/jar.svg" ? "" : "ph"}`}
+                      >
                         {/* eslint-disable-next-line @next/next/no-img-element -- product photos and the local jar SVG */}
                         <img src={r.img} alt="" />
                       </div>

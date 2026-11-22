@@ -17,7 +17,9 @@ export const test = base.extend<Fixtures>({
   storageState: async ({ as }, use) => use(stateFile(as)),
   t: async ({ as }, use) => {
     const email = loadCreds().emails[as];
-    const row = await one<{ admin_lang: string }>("select admin_lang from user where email = ?", [email]);
+    const row = await one<{ admin_lang: string }>("select admin_lang from user where email = ?", [
+      email,
+    ]);
     await use(dicts[row?.admin_lang === "bn" ? "bn" : "en"]);
   },
   phone: async ({ viewport }, use) => use((viewport?.width ?? 1440) < 768),

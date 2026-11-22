@@ -146,7 +146,12 @@ export async function getDashboard(role: AdminRole): Promise<DashboardData> {
       db
         .select({ n: sql<number>`count(distinct ${schema.orderStatusEvents.orderId})` })
         .from(schema.orderStatusEvents)
-        .where(and(eq(schema.orderStatusEvents.status, "delivered"), gte(schema.orderStatusEvents.createdAt, since))),
+        .where(
+          and(
+            eq(schema.orderStatusEvents.status, "delivered"),
+            gte(schema.orderStatusEvents.createdAt, since),
+          ),
+        ),
     ),
     one(
       db

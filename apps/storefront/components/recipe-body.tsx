@@ -162,7 +162,7 @@ export function RecipeBody({
                   </p>
                   <ul className="rd-il">
                     {g.items.map((it) => (
-                      <li key={it.i} className={`rd-ing${ingOn[it.i] ? " is-on" : ""}`}>
+                      <li key={it.i} className={`rd-ing ${ingOn[it.i] ? "is-on" : ""}`}>
                         <label className="rd-chk">
                           <input
                             type="checkbox"
@@ -218,7 +218,7 @@ export function RecipeBody({
                   return (
                     <li
                       key={i}
-                      className={`rd-st${done ? " is-done" : i === next ? " is-next" : ""}`}
+                      className={`rd-st ${done ? "is-done" : i === next ? "is-next" : ""}`}
                       id={`st${i + 1}`}
                     >
                       <div

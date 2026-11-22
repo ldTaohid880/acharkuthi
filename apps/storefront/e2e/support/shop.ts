@@ -38,7 +38,12 @@ export async function fillCheckout(
 export const placeButton = (page: Page) => page.locator("button.place:visible").first();
 
 /** Puts `quantity` of this project's test-pickle size into the basket. */
-export async function basketWithSlot(page: Page, slot: number, quantity = 1, unitPrice = SLOT_PRICE) {
+export async function basketWithSlot(
+  page: Page,
+  slot: number,
+  quantity = 1,
+  unitPrice = SLOT_PRICE,
+) {
   const v = await variantBySku(slotSku(slot));
   if (!v) throw new Error("test pickle size missing: run the setup project");
   await page.goto("/unavailable");

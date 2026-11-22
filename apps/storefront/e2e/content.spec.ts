@@ -58,25 +58,33 @@ test.describe("contact form", () => {
     const form = page.locator(".fcard form");
     await form.locator("button[type=submit]").click();
     // The form is reset to the server's echo when the action answers: wait for that first.
-    await expect(form.locator("button[type=submit][aria-busy=true], button[type=submit] .spin:visible")).toHaveCount(0);
+    await expect(
+      form.locator("button[type=submit][aria-busy=true], button[type=submit] .spin:visible"),
+    ).toHaveCount(0);
     await page.waitForLoadState("networkidle");
     await expect(page.locator(".fcard .summary")).toBeVisible();
     for (const bn of ["নামটি লিখুন", "ইমেইল লিখুন", "একটি বিষয় বেছে নিন", "আপনার বার্তা লিখুন"])
-      await expect(form.locator(".ak-help.is-error").getByText(msg(bn), { exact: true })).toBeVisible();
+      await expect(
+        form.locator(".ak-help.is-error").getByText(msg(bn), { exact: true }),
+      ).toBeVisible();
 
     await form.locator('input[name="email"]').fill("nope");
     await form.locator('input[name="phone"]').fill("123");
     await form.locator('textarea[name="message"]').fill("short");
     await form.locator("button[type=submit]").click();
     // The form is reset to the server's echo when the action answers: wait for that first.
-    await expect(form.locator("button[type=submit][aria-busy=true], button[type=submit] .spin:visible")).toHaveCount(0);
+    await expect(
+      form.locator("button[type=submit][aria-busy=true], button[type=submit] .spin:visible"),
+    ).toHaveCount(0);
     await page.waitForLoadState("networkidle");
     for (const bn of [
       "ইমেইলটি ঠিক মনে হচ্ছে না, যেমন: name@example.com",
       "ফোন নম্বরটি ঠিক করুন, যেমন: 01XXXXXXXXX",
       "আরেকটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)",
     ])
-      await expect(form.locator(".ak-help.is-error").getByText(msg(bn), { exact: true })).toBeVisible();
+      await expect(
+        form.locator(".ak-help.is-error").getByText(msg(bn), { exact: true }),
+      ).toBeVisible();
 
     const email = `e2e-contact-${slot}-${Date.now()}@example.test`;
     // A fresh form for the send (React resets an action form to the server's echo when it answers).
@@ -144,7 +152,10 @@ test.describe("recipes", () => {
     const r = t.recipes;
     await page.goto(p("/recipes/khichuri"));
     const sv = page.getByRole("group", { name: r.howManyAria });
-    await expect(sv.getByRole("button", { name: r.people(4) })).toHaveAttribute("aria-pressed", "true");
+    await expect(sv.getByRole("button", { name: r.people(4) })).toHaveAttribute(
+      "aria-pressed",
+      "true",
+    );
     // Base 4 people: rice is 1 cup. For 8 people it doubles.
     const first = page.locator(".rd-chk .qt").first();
     await expect(first).toHaveText(lang === "en" ? "1 cup" : "১ কাপ");
@@ -169,7 +180,9 @@ test.describe("recipes", () => {
       };
     });
     await page.getByRole("button", { name: r.print }).first().click();
-    expect(await page.evaluate(() => (window as unknown as { __printed: number }).__printed)).toBe(1);
+    expect(await page.evaluate(() => (window as unknown as { __printed: number }).__printed)).toBe(
+      1,
+    );
   });
 
   test("a missing recipe shows the recipe 404", async ({ page, p, t }) => {
@@ -185,14 +198,19 @@ test.describe("error pages", () => {
     expect(res?.status()).toBe(404);
     await expect(page.locator("html")).toHaveAttribute("lang", lang);
     await expect(page.getByRole("heading", { level: 1 })).toBeVisible();
-    await expect(page.getByRole("link", { name: lang === "en" ? /home|shop/i : /হোম|আচার|দোকান/ }).first()).toBeVisible();
+    await expect(
+      page.getByRole("link", { name: lang === "en" ? /home|shop/i : /হোম|আচার|দোকান/ }).first(),
+    ).toBeVisible();
   });
 
   test("/unavailable", async ({ page, p, t }) => {
     const res = await page.goto(p("/unavailable"));
     expect(res?.status()).toBe(200);
     await expect(page.getByRole("heading", { level: 1 })).toHaveText(t.errors.unTitle);
-    await expect(page.getByRole("link", { name: t.errors.unShop })).toHaveAttribute("href", p("/shop"));
+    await expect(page.getByRole("link", { name: t.errors.unShop })).toHaveAttribute(
+      "href",
+      p("/shop"),
+    );
   });
 
   test("error page (app/[lang]/error.tsx)", async () => {
@@ -213,6 +231,8 @@ test.describe("newsletter", () => {
     await form.locator('input[name="email"]').fill(email);
     await form.locator("button[type=submit]").click();
     await expect(form.getByRole("status")).toHaveText(t.newsletter.ok);
-    expect(await one("select id from newsletter_subscribers where email = ?", [email])).toBeTruthy();
+    expect(
+      await one("select id from newsletter_subscribers where email = ?", [email]),
+    ).toBeTruthy();
   });
 });

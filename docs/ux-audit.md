@@ -27,17 +27,18 @@ Owner overrides treated as intentional (not defects): checkout uses site chrome,
 
 ## Summary
 
-| Priority | Count |
-| -------- | ----- |
-| P0: blocks buying or loses data | 1 |
-| P1: broken flow or clear design mismatch | 11 |
-| P2: polish | 15 |
-| Questions for the owner | 8 |
+| Priority                                 | Count |
+| ---------------------------------------- | ----- |
+| P0: blocks buying or loses data          | 1     |
+| P1: broken flow or clear design mismatch | 11    |
+| P2: polish                               | 15    |
+| Questions for the owner                  | 8     |
 
 No console errors other than the expected 401 (wrong password test) and 404s (404 tests). No sideways
 scrolling on any page at 390. Every page has exactly one `h1`. Prices seen were all `৳` via
 `formatTaka`, and basket, checkout, confirmation and tracking totals matched (৳250 + ৳60 = ৳310; 2 × ৳250
-+ ৳60 = ৳560).
+
+- ৳60 = ৳560).
 
 ## Fix log
 
@@ -167,8 +168,7 @@ scrolling on any page at 390. Every page has exactly one `h1`. Prices seen were 
 
 10. **Unknown recipe shows the generic 404 with HTTP 200.** `/recipes/nope-xyz` returns status 200 and the
     site 404 ("এই পাতাটা খুঁজে পাওয়া গেল না!"). RecipeDetail.dc.html has its own state: "এই রেসিপিটি খুঁজে
-    পাওয়া গেল না · লিংকটি পুরনো হতে পারে… · সব রেসিপি দেখুন / আচারের দোকানে যান", and it should return
-    404. File: `app/recipes/[slug]/page.tsx`.
+    পাওয়া গেল না · লিংকটি পুরনো হতে পারে… · সব রেসিপি দেখুন / আচারের দোকানে যান", and it should return 404. File: `app/recipes/[slug]/page.tsx`.
 
 ### Shop — `/shop/[category]`
 
@@ -242,14 +242,14 @@ scrolling on any page at 390. Every page has exactly one `h1`. Prices seen were 
 
 ## Journeys
 
-| Journey | 1440 | 390 | Notes |
-| --- | --- | --- | --- |
-| a. Home → Shop → search/filter → Product → variant → add → mini-basket → Basket → Checkout → placed → Track | **Fail** | **Fail** | Works with a valid phone (orders placed, totals right, double-submit blocked, track by order + phone works). Fails on P0 (invalid phone), P1 #4 (back closes page) and #5 (refresh loses confirmation). |
-| b. Register → sign out → sign in → Account (orders, addresses) → reorder / track | **Fail** | not run | Register, sign-out confirm, wrong password ("ইমেইল বা পাসওয়ার্ড মিলছে না"), sign in, order history, saved address and track all work. Reorder is missing (P1 #9). |
-| c. Signed out: `/checkout`, `/account` | Pass | Pass (code path is the same) | `/checkout` allows guest checkout, as designed. `/account` redirects to `/login?next=%2Faccount`. |
-| d. Recipes → Recipe details → buy the pickle | Pass (with content issues) | not run | "পণ্য দেখুন" goes to `/pickles/raw-mango`. Placeholder image slots (P1 #1). |
-| e. Contact / newsletter / site review, valid + invalid | Pass with P2s | not run | All three save and confirm, and their buttons disable while sending. The empty-submit check on the review dialog didn't run, so it is unverified. |
-| f. Broken paths | **Fail** | — | 404 works for an unknown URL and an unknown product. The unknown recipe (#10) and unknown shelf (#11) are wrong. The out-of-stock product shows "স্টক শেষ" and blocks adding. Empty checkout redirects to the basket. Wrong password works. A failed checkout (server error) was not forced, so it is untested. |
+| Journey                                                                                                     | 1440                       | 390                          | Notes                                                                                                                                                                                                                                                                                                           |
+| ----------------------------------------------------------------------------------------------------------- | -------------------------- | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| a. Home → Shop → search/filter → Product → variant → add → mini-basket → Basket → Checkout → placed → Track | **Fail**                   | **Fail**                     | Works with a valid phone (orders placed, totals right, double-submit blocked, track by order + phone works). Fails on P0 (invalid phone), P1 #4 (back closes page) and #5 (refresh loses confirmation).                                                                                                         |
+| b. Register → sign out → sign in → Account (orders, addresses) → reorder / track                            | **Fail**                   | not run                      | Register, sign-out confirm, wrong password ("ইমেইল বা পাসওয়ার্ড মিলছে না"), sign in, order history, saved address and track all work. Reorder is missing (P1 #9).                                                                                                                                              |
+| c. Signed out: `/checkout`, `/account`                                                                      | Pass                       | Pass (code path is the same) | `/checkout` allows guest checkout, as designed. `/account` redirects to `/login?next=%2Faccount`.                                                                                                                                                                                                               |
+| d. Recipes → Recipe details → buy the pickle                                                                | Pass (with content issues) | not run                      | "পণ্য দেখুন" goes to `/pickles/raw-mango`. Placeholder image slots (P1 #1).                                                                                                                                                                                                                                     |
+| e. Contact / newsletter / site review, valid + invalid                                                      | Pass with P2s              | not run                      | All three save and confirm, and their buttons disable while sending. The empty-submit check on the review dialog didn't run, so it is unverified.                                                                                                                                                               |
+| f. Broken paths                                                                                             | **Fail**                   | —                            | 404 works for an unknown URL and an unknown product. The unknown recipe (#10) and unknown shelf (#11) are wrong. The out-of-stock product shows "স্টক শেষ" and blocks adding. Empty checkout redirects to the basket. Wrong password works. A failed checkout (server error) was not forced, so it is untested. |
 
 ## Questions for the owner
 

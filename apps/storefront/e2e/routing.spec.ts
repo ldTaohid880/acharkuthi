@@ -25,8 +25,10 @@ test.describe("language routing", () => {
     ] as const) {
       const res = await request.get(from, { maxRedirects: 0 });
       expect(res.status(), from).toBe(308);
-      expect(new URL(res.headers().location ?? "", "http://localhost:3000").pathname +
-        new URL(res.headers().location ?? "", "http://localhost:3000").search).toBe(to);
+      expect(
+        new URL(res.headers().location ?? "", "http://localhost:3000").pathname +
+          new URL(res.headers().location ?? "", "http://localhost:3000").search,
+      ).toBe(to);
     }
   });
 

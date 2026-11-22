@@ -73,7 +73,8 @@ export function formatQty(q: number, lang: Lang = "bn"): string {
   const r = Math.round(q * 4) / 4;
   if (r <= 0) return lang === "bn" ? "সামান্য" : "a pinch";
   const whole = Math.floor(r);
-  const frac = ({ 0: "", 0.25: "¼", 0.5: "½", 0.75: "¾" } as Record<number, string>)[r - whole] ?? "";
+  const frac =
+    ({ 0: "", 0.25: "¼", 0.5: "½", 0.75: "¾" } as Record<number, string>)[r - whole] ?? "";
   const out = (whole ? String(whole) : "") + frac;
   return lang === "bn" ? toBn(out) : out;
 }
@@ -141,7 +142,10 @@ interface StoredTip {
  * One item in the page language: the English site uses an item's English twin when its main
  * field (name / title) is translated, else the whole Bangla item, so a line never mixes languages.
  */
-export function localIngredient(i: StoredIngredient, lang: Lang): IngredientLine & { group: string } {
+export function localIngredient(
+  i: StoredIngredient,
+  lang: Lang,
+): IngredientLine & { group: string } {
   const en = lang === "en" && !!i.nameEn?.trim();
   const f = (bn: string | undefined, e: string | undefined) => (en ? (e ?? bn) : bn);
   const unit = f(i.unit, i.unitEn);
@@ -180,7 +184,20 @@ export function localTip(t: StoredTip, lang: Lang): { lang: Lang; title: string;
 }
 
 /** A recipe's headline text in the page language: title, the small accent line, summary, alt. */
-export function recipeText(r: Pick<RecipeCard, "title" | "titleEn" | "subtitle" | "subtitleBn" | "summary" | "summaryEn" | "imageAlt" | "imageAltBn">, lang: Lang): {
+export function recipeText(
+  r: Pick<
+    RecipeCard,
+    | "title"
+    | "titleEn"
+    | "subtitle"
+    | "subtitleBn"
+    | "summary"
+    | "summaryEn"
+    | "imageAlt"
+    | "imageAltBn"
+  >,
+  lang: Lang,
+): {
   title: LocalText;
   accent: LocalText | null;
   summary: LocalText | null;

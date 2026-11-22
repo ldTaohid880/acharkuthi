@@ -338,12 +338,14 @@ function timeline(o: OrderDetail, t: OT, lang: AdminLang): Step[] {
       done = o.booked;
       now = !ended && o.status === "processing" && !o.booked;
       if (o.booked && o.courier.bookedAt) sub = orderDate(o.courier.bookedAt, lang);
-      if (o.courier.consignmentId && done) sub = [sub, o.courier.consignmentId].filter(Boolean).join(" · ");
+      if (o.courier.consignmentId && done)
+        sub = [sub, o.courier.consignmentId].filter(Boolean).join(" · ");
     }
     if (f.tone === "settled") {
       done = o.settledAt !== null;
       now = o.status === "delivered" && o.settledAt === null;
-      if (o.settledAt) sub = [orderDate(o.settledAt, lang, false), o.payoutRef].filter(Boolean).join(" · ");
+      if (o.settledAt)
+        sub = [orderDate(o.settledAt, lang, false), o.payoutRef].filter(Boolean).join(" · ");
     }
     if (f.status === "pending") sub = `${orderDate(o.createdAt, lang)} · ${d.sources[o.source]}`;
     else if (done && f.status) sub = when(last.get(f.status));

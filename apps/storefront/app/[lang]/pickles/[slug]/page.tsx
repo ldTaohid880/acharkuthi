@@ -135,12 +135,11 @@ export default async function ProductPage({ params, searchParams }: Props) {
   // Owner (2026-11-22): the photo flagged for Home's "বিশেষ বাছাই" stays off the product page
   // (unless it is the only photo).
   const gallery = sorted.filter((i) => !i.isFeatured);
-  const images = (gallery.length > 0 ? gallery : sorted)
-    .map((i) => ({
-      url: i.url,
-      alt: pickString(lang, i.altBn, i.alt) || t.jar(displayName),
-      fit: i.width && i.height ? fitFor(i.width, i.height) : undefined,
-    }));
+  const images = (gallery.length > 0 ? gallery : sorted).map((i) => ({
+    url: i.url,
+    alt: pickString(lang, i.altBn, i.alt) || t.jar(displayName),
+    fit: i.width && i.height ? fitFor(i.width, i.height) : undefined,
+  }));
   // Stored detail text in the page language, or the other language until it is translated.
   const local = (bn: string | null, en: string | null) => pickText(lang, bn, en);
   const description = local(product.descriptionBn, product.description);
@@ -155,10 +154,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
   const care = (
     [
       [t.ingredients, local(product.ingredients, product.ingredientsEn)],
-      [
-        t.netWeight,
-        weights.length ? { text: weights.map(formatWeight).join(" / "), lang } : null,
-      ],
+      [t.netWeight, weights.length ? { text: weights.map(formatWeight).join(" / "), lang } : null],
       [t.storage, local(product.storage, product.storageEn)],
       [t.shelfLife, local(product.shelfLife, product.shelfLifeEn)],
       [t.allergens, local(product.allergens, product.allergensEn)],
@@ -390,11 +386,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
                     })}
                   </ul>
                 </div>
-                <ReviewForm
-                  productId={product.id}
-                  productName={displayName}
-                  signedIn={!!session}
-                />
+                <ReviewForm productId={product.id} productName={displayName} signedIn={!!session} />
                 <div className="rctl">
                   <div className="chips" role="group" aria-label={t.filterByRating}>
                     <Link
@@ -520,11 +512,7 @@ export default async function ProductPage({ params, searchParams }: Props) {
               </>
             ) : (
               <>
-                <ReviewForm
-                  productId={product.id}
-                  productName={displayName}
-                  signedIn={!!session}
-                />
+                <ReviewForm productId={product.id} productName={displayName} signedIn={!!session} />
                 <div className="rstate">
                   <b lang={lang}>{t.noneTitle}</b>
                   <span lang={lang}>{t.noneText}</span>

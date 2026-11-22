@@ -2,7 +2,10 @@ import { exec, one } from "./env";
 
 let seq = 0;
 /** A test order straight in the database (no stock involved: the line has no size). */
-export async function makeOrder(status = "pending", o: { zone?: "in" | "out"; name?: string } = {}) {
+export async function makeOrder(
+  status = "pending",
+  o: { zone?: "in" | "out"; name?: string } = {},
+) {
   const number = `AK-261116-9${String((Date.now() + seq++) % 100000).padStart(5, "0")}`;
   const zone = o.zone ?? "in";
   const fee = zone === "in" ? 7000 : 12000;
@@ -19,7 +22,10 @@ export async function makeOrder(status = "pending", o: { zone?: "in" | "out"; na
      values (?, 'E2E Admin Pickle', '300 g', 30000, 1)`,
     [row?.id],
   );
-  await exec("insert into payments (order_id, method, amount) values (?, 'cod', ?)", [row?.id, 30000 + fee]);
+  await exec("insert into payments (order_id, method, amount) values (?, 'cod', ?)", [
+    row?.id,
+    30000 + fee,
+  ]);
   return { id: Number(row?.id), number };
 }
 

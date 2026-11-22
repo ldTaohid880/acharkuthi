@@ -22,7 +22,13 @@ export function DashSync({
   label: string;
   owner: boolean;
   lang: AdminLang;
-  t: { sfKeys: string; sfKeysSub: string; toastSynced: string; saveFailed: string; saveFailedSub: string };
+  t: {
+    sfKeys: string;
+    sfKeysSub: string;
+    toastSynced: string;
+    saveFailed: string;
+    saveFailedSub: string;
+  };
 }) {
   const toast = useToast();
   const [pending, start] = useTransition();

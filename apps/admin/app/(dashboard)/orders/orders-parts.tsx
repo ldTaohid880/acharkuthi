@@ -493,7 +493,9 @@ export function SettleDialog({
           className="border-border fixed top-1/2 left-1/2 z-50 flex w-[380px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl border bg-white p-5 shadow-lg"
         >
           <div>
-            <Dialog.Title className="text-base leading-6 font-semibold">{t.settleTitle}</Dialog.Title>
+            <Dialog.Title className="text-base leading-6 font-semibold">
+              {t.settleTitle}
+            </Dialog.Title>
             <p className="text-muted-foreground text-[13px] leading-5">
               {fill(t.settleBody, { n: digits(ids.length, lang) })}
             </p>
@@ -517,7 +519,9 @@ export function SettleDialog({
                 aria-labelledby="settle-day"
                 className={cn(inputCls, "flex h-11 items-center justify-between font-normal")}
               >
-                <span>{day ? orderDate(new Date(`${day}T12:00:00+06:00`), lang, false) : t.paidOnToday}</span>
+                <span>
+                  {day ? orderDate(new Date(`${day}T12:00:00+06:00`), lang, false) : t.paidOnToday}
+                </span>
                 <Calendar className="text-muted-foreground size-4" aria-hidden />
               </PopoverTrigger>
               <PopoverContent align="start" className="w-auto rounded-lg p-0 shadow-md">
@@ -533,7 +537,9 @@ export function SettleDialog({
             </Popover>
           </div>
           <div className="flex gap-2">
-            <Dialog.Close className={btn({ variant: "outline", size: "lg", className: "flex-1 basis-0" })}>
+            <Dialog.Close
+              className={btn({ variant: "outline", size: "lg", className: "flex-1 basis-0" })}
+            >
               {t.settleClose}
             </Dialog.Close>
             <button

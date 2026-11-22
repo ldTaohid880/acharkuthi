@@ -38,7 +38,8 @@ const BN: StoryCopy = {
     ["০২", "কারিগরি"],
     ["০৩", "দর্শন"],
   ],
-  heroAlt: "গাঢ় সবুজ পটভূমিতে পাথরের বেদিতে নবাবি লস্যির বয়াম, পাশে পিতলের বাটিতে আচার আর দুটি কাঁচা আম",
+  heroAlt:
+    "গাঢ় সবুজ পটভূমিতে পাথরের বেদিতে নবাবি লস্যির বয়াম, পাশে পিতলের বাটিতে আচার আর দুটি কাঁচা আম",
   c1: {
     eyebrow: "অধ্যায় এক",
     title: "যেখান থেকে স্মৃতির শুরু",
@@ -106,7 +107,8 @@ const EN: StoryCopy = {
     ["02", "Craft"],
     ["03", "Philosophy"],
   ],
-  heroAlt: "A jar of Nobabi Lassi on a stone plinth against deep green, with pickle in a brass dish and two raw mangoes",
+  heroAlt:
+    "A jar of Nobabi Lassi on a stone plinth against deep green, with pickle in a brass dish and two raw mangoes",
   c1: {
     eyebrow: "Chapter one",
     title: "Where the memories begin",
@@ -117,7 +119,12 @@ const EN: StoryCopy = {
   craft: {
     eyebrow: "Chapter two",
     title: "The craft behind the flavours",
-    pills: ["Heritage recipes", "Stone-ground spices", "Wood-pressed mustard oil", "No preservatives"],
+    pills: [
+      "Heritage recipes",
+      "Stone-ground spices",
+      "Wood-pressed mustard oil",
+      "No preservatives",
+    ],
     cards: [
       {
         title: "Raw mango",
@@ -144,7 +151,10 @@ const EN: StoryCopy = {
     title: "Let the familiar stay familiar.",
     lede: "New flavours are easy to find. The taste you grew up with is harder to come by, and it is the one you miss.",
     points: [
-      ["Familiar flavour", "We would rather keep the taste of our heritage than chase something new."],
+      [
+        "Familiar flavour",
+        "We would rather keep the taste of our heritage than chase something new.",
+      ],
       ["Unhurried", "Good achar takes the time it takes."],
       ["Plain", "Simple ingredients, plainly said."],
     ],
