@@ -43,3 +43,16 @@ test-results
 
 # Review photos (dev storage)
 apps/storefront/public/uploads/
+
+# E2E: generated passwords, storage states, server log
+**/e2e/.auth/
+/e2e-report/
+
+# Deploy bundles and secrets (scripts/deploy)
+/.deploy/
+/.env.deploy
+/deploy/env/*.env
+
+# QA and audit output (screenshots, reports); keep it outside the repo
+/reports/
+/docs/testing/

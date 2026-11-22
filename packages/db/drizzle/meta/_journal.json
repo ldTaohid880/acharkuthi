@@ -127,6 +127,111 @@
       "when": 1794585825924,
       "tag": "0017_shop_settings_courier_note",
       "breakpoints": true
+    },
+    {
+      "idx": 18,
+      "version": "5",
+      "when": 1794592749705,
+      "tag": "0018_variant_sort_order",
+      "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "5",
+      "when": 1794631932067,
+      "tag": "0019_spice_scale_0_3",
+      "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "5",
+      "when": 1794635692774,
+      "tag": "0020_customer_notes",
+      "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1794636935315,
+      "tag": "0021_review_replies",
+      "breakpoints": true
+    },
+    {
+      "idx": 22,
+      "version": "5",
+      "when": 1794676155827,
+      "tag": "0022_messages_inbox",
+      "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1794677772708,
+      "tag": "0023_settings_steadfast",
+      "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1794679766632,
+      "tag": "0024_coupon_per_person",
+      "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "5",
+      "when": 1794680921656,
+      "tag": "0025_coupon_use_details",
+      "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1794682204480,
+      "tag": "0026_courier_settle_cost",
+      "breakpoints": true
+    },
+    {
+      "idx": 27,
+      "version": "5",
+      "when": 1794742748020,
+      "tag": "0027_product_image_size",
+      "breakpoints": true
+    },
+    {
+      "idx": 28,
+      "version": "5",
+      "when": 1794831226940,
+      "tag": "0028_catalog_bilingual",
+      "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1795097390994,
+      "tag": "0029_order_checkout_key",
+      "breakpoints": true
+    },
+    {
+      "idx": 30,
+      "version": "5",
+      "when": 1795280615134,
+      "tag": "0030_product_tagline",
+      "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "5",
+      "when": 1795331271079,
+      "tag": "0031_category_header_image",
+      "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1795334890786,
+      "tag": "0032_product_image_featured",
+      "breakpoints": true
     }
   ]
 }

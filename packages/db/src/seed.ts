@@ -10,6 +10,7 @@ import {
   type RecipeStep,
   type RecipeTip,
 } from "./schema";
+import { withEnglish } from "./sample-recipes-en";
 
 const SHELVES = [
   { name: "Mango", nameBn: "আম", slug: "mango", sortOrder: 1 },
@@ -31,8 +32,64 @@ interface SeedProduct {
   isFeatured?: boolean;
   /** Photo under apps/storefront/public; products without one fall back to /jar.svg. */
   image?: { url: string; alt: string };
+  /** Real products (owner, 2026-11-22): Bangla copy, the Home card line and confirmed details. */
+  descriptionBn?: string;
+  tagline?: string;
+  taglineEn?: string;
+  details?: Details;
+  /** Photos in order (the first is the card photo), each with English and Bangla alt text. */
+  images?: { url: string; alt: string; altBn: string; width: number; height: number }[];
   /** [sku, label, grams, price (paisa), compareAt (paisa)?, stock] */
   variants: [string, string, number, number, number | null, number][];
+}
+
+type DetailKey =
+  "ingredients" | "flavor" | "texture" | "serving" | "storage" | "shelfLife" | "allergens";
+/** [Bangla, English] for each confirmed detail; missing ones stay empty (hidden on the page). */
+type Details = Partial<Record<DetailKey, [string, string]>>;
+
+const STORAGE: [string, string] = [
+  "ঘরের স্বাভাবিক তাপমাত্রায় রাখুন, সবসময় শুকনো চামচ ব্যবহার করুন",
+  "Keep at room temperature; always use a dry spoon",
+];
+/** Where the seed product photos live (R2 bucket "acharkuthi", public custom domain). */
+const PRODUCT_PHOTOS = "https://img.acharkuthi.store/products";
+
+const SHELF_LIFE: [string, string] = ["প্রায় ৬ মাস ভালো থাকে", "Keeps well for about 6 months"];
+
+/**
+ * The generated photos, stored in R2 under products/ (owner, 2026-11-22: product photos never
+ * live in the app's public folder; image studio "final/"): the
+ * flavour-colour featured photo first when there is one (Home card), else the sage still life.
+ */
+function photos(slug: string, name: string, nameBn: string, featured: boolean) {
+  const shot = (s: string, alt: string, altBn: string, width = 1400, height = 1400) => ({
+    url: `${PRODUCT_PHOTOS}/${slug}-${s}.webp`,
+    alt,
+    altBn,
+    width,
+    height,
+  });
+  return [
+    ...(featured
+      ? [
+          shot(
+            "featured",
+            `A jar of ${name} with a clay plate of it in front`,
+            `${nameBn}র বয়াম, সামনে মাটির থালায় আচার`,
+            1195,
+            1600,
+          ),
+        ]
+      : []),
+    shot(
+      "still-life",
+      `A jar of ${name} beside a clay plate of it`,
+      `${nameBn}র বয়াম আর মাটির থালায় আচার`,
+    ),
+    shot("hero", `A jar of ${name}`, `${nameBn}র বয়াম`),
+    shot("served", `${name} served on a clay plate`, `মাটির থালায় পরিবেশন করা ${nameBn}`),
+  ];
 }
 
 const PRODUCTS: SeedProduct[] = [
@@ -44,9 +101,9 @@ const PRODUCTS: SeedProduct[] = [
     searchTerms: "kancha aam amer achar am mango jhal spicy",
     description: "Sour green mango in spices ground at home and pure wood-pressed mustard oil.",
     spiceLevel: 3,
-    isFeatured: true,
+    isFeatured: false,
     image: {
-      url: "/images/products/raw-mango-pickle.webp",
+      url: `${PRODUCT_PHOTOS}/raw-mango-pickle.webp`,
       alt: "A jar of raw mango pickle beside a green mango and a clay bowl",
     },
     variants: [
@@ -62,7 +119,7 @@ const PRODUCTS: SeedProduct[] = [
     searchTerms: "lebu lebur achar lemon mild",
     description: "Whole lemons, salted in the sun and cured gently until soft and sharp.",
     spiceLevel: 1,
-    isFeatured: true,
+    isFeatured: false,
     variants: [["LEMON-300", "300 g", 300, 22000, null, 40]],
   },
   {
@@ -73,7 +130,7 @@ const PRODUCTS: SeedProduct[] = [
     searchTerms: "jolpai jalpai jolpaier achar olive mild",
     description: "Tangy jolpai cured in mustard oil with panch phoron.",
     spiceLevel: 1,
-    isFeatured: true,
+    isFeatured: false,
     variants: [["OLIVE-300", "300 g", 300, 22000, null, 25]],
   },
   {
@@ -83,8 +140,8 @@ const PRODUCTS: SeedProduct[] = [
     slug: "spicy-garlic",
     searchTerms: "roshun rosun roshuner achar garlic jhal spicy hot",
     description: "Whole garlic cloves, slow-cooked in chili and mustard oil. Hot.",
-    spiceLevel: 5,
-    isFeatured: true,
+    spiceLevel: 3,
+    isFeatured: false,
     variants: [["GARLIC-300", "300 g", 300, 23400, 26000, 18]],
   },
   {
@@ -95,7 +152,7 @@ const PRODUCTS: SeedProduct[] = [
     searchTerms: "tetul tentul tetuler achar tamarind mild",
     description: "Sweet-sour tetul with roasted cumin and a little jaggery.",
     spiceLevel: 1,
-    isFeatured: true,
+    isFeatured: false,
     variants: [["TAMARIND-300", "300 g", 300, 21000, null, 0]],
   },
   {
@@ -107,6 +164,155 @@ const PRODUCTS: SeedProduct[] = [
     description: "A little of everything from the kitchen shelf, in one jar.",
     spiceLevel: 3,
     variants: [["MIXED-300", "300 g", 300, 24000, null, 35]],
+  },
+  // ── Acharkuthi's real pickles (owner, 2026-11-22). Prices, stock, spice and all copy confirmed
+  // by the owner question by question. The Home cards follow insertion order (getFeaturedProducts
+  // sorts by id): Nobabi Lassi, Roshun Morobba, Bombai Khaja.
+  {
+    shelf: "mango",
+    name: "Nobabi Lassi",
+    nameBn: "নবাবি লস্যি",
+    slug: "nobabi-lassi",
+    searchTerms: "nobabi nawabi lassi lossi aam mango shorisha mustard tok jhal misti",
+    description:
+      "Shredded raw mango in pure mustard oil with dried red chilli and mustard seed. Sour, hot and sweet together, with the sharp aroma of mustard.",
+    descriptionBn:
+      "কুচি করা কাঁচা আম, খাঁটি সরিষার তেল, শুকনো মরিচ আর সরিষা দানায় তৈরি। সরিষার ঝাঁঝ ও সুগন্ধের সঙ্গে টক, ঝাল ও মিষ্টির সমন্বয়।",
+    tagline: "সরিষার ঝাঁঝে টক-ঝাল-মিষ্টি আমের আচার",
+    taglineEn: "Sweet, sour and hot mango with a mustard-oil kick",
+    spiceLevel: 1,
+    isFeatured: true,
+    details: {
+      ingredients: [
+        "কাঁচা আম, সরিষার তেল, শুকনো মরিচ, সরিষা ও অন্যান্য মশলা",
+        "Raw mango, mustard oil, dried red chilli, mustard seed and other spices",
+      ],
+      flavor: [
+        "টক, ঝাল আর মিষ্টির মিশেল, সঙ্গে সরিষার ঝাঁঝ",
+        "Sour, hot and sweet, with a mustard kick",
+      ],
+      texture: [
+        "চিকন কুচি আম, তেলে ভেজা, নরম কিন্তু গলে যায় না",
+        "Fine mango shreds, soft but not mushy, steeped in oil",
+      ],
+      serving: [
+        "গরম ভাত, খিচুড়ি, পরোটা বা মুড়ির সাথে",
+        "With hot rice, khichuri, paratha or muri",
+      ],
+      storage: STORAGE,
+      shelfLife: SHELF_LIFE,
+      allergens: ["এতে সরিষা আছে", "Contains mustard"],
+    },
+    images: photos("nobabi-lassi", "Nobabi Lassi", "নবাবি লস্যি", true),
+    variants: [["NOBABI-400", "400 g", 400, 49900, null, 30]],
+  },
+  {
+    shelf: "special",
+    name: "Roshun Morobba",
+    nameBn: "রসুন মোরব্বা",
+    slug: "roshun-morobba",
+    searchTerms: "roshun rosun rasun morobba murabba garlic naga misti sweet",
+    description:
+      "Whole garlic cloves coated in a thick, sticky mix of a little mango and spices. Sweet, with a gentle heat and the aroma of naga chilli.",
+    descriptionBn:
+      "আস্ত রসুনের কোয়া, সামান্য আম আর নানা মশলায় তৈরি ঘন, আঠালো মাখায় জড়ানো। মিষ্টি স্বাদের সঙ্গে হালকা ঝাল আর নাগা মরিচের সুবাস।",
+    tagline: "নাগা মরিচের সুবাসে রসুনের মিষ্টি মোরব্বা",
+    taglineEn: "Sweet garlic morobba with the aroma of naga chilli",
+    spiceLevel: 1,
+    isFeatured: true,
+    details: {
+      ingredients: [
+        "রসুন, সামান্য আম, চিনি, সরিষার তেল, নাগা মরিচ ও অন্যান্য মশলা",
+        "Garlic, a little mango, sugar, mustard oil, naga chilli and other spices",
+      ],
+      flavor: [
+        "মিষ্টি, হালকা ঝাল, নাগা মরিচের সুবাস",
+        "Sweet, gently hot, with the aroma of naga chilli",
+      ],
+      texture: [
+        "আস্ত নরম রসুনের কোয়া, ঘন আঠালো মাখায় জড়ানো",
+        "Whole soft garlic cloves in a thick, sticky coating",
+      ],
+      serving: [
+        "গরম ভাত, খিচুড়ি, পরোটা বা রুটির সাথে",
+        "With hot rice, khichuri, paratha or roti",
+      ],
+      storage: STORAGE,
+      shelfLife: SHELF_LIFE,
+    },
+    images: photos("roshun-morobba", "Roshun Morobba", "রসুন মোরব্বা", true),
+    variants: [["ROSHUN-400", "400 g", 400, 49900, null, 30]],
+  },
+  {
+    shelf: "mango",
+    name: "Aam Borfi",
+    nameBn: "আম বরফি",
+    slug: "aam-borfi",
+    searchTerms: "aam am borfi barfi mango ada roshun ginger garlic misti sweet",
+    description:
+      "Large, soft mango chunks with thin slivers of ginger and garlic and a little chilli. Sweet, with a gentle touch of heat.",
+    descriptionBn:
+      "বড় নরম আমের টুকরো, পাতলা কুচি আদা-রসুন আর অল্প মরিচ দিয়ে তৈরি। মিষ্টি স্বাদের সঙ্গে হালকা ঝালের ছোঁয়া।",
+    tagline: "আদা-রসুনের ছোঁয়ায় মিষ্টি আমের বরফি",
+    taglineEn: "Sweet mango borfi with a touch of ginger and garlic",
+    spiceLevel: 1,
+    details: {
+      ingredients: [
+        "আম, আদা, রসুন, চিনি, সরিষার তেল, মরিচ ও অন্যান্য মশলা",
+        "Mango, ginger, garlic, sugar, mustard oil, chilli and other spices",
+      ],
+      flavor: [
+        "মিষ্টি, সঙ্গে হালকা ঝাল আর আদা-রসুনের সুবাস",
+        "Sweet, gently hot, with ginger and garlic",
+      ],
+      texture: [
+        "বড় নরম আমের টুকরো, চকচকে ঘন রসে",
+        "Large soft mango chunks in a glossy, thick syrup",
+      ],
+      serving: [
+        "গরম ভাত, খিচুড়ি, পরোটা বা রুটির সাথে",
+        "With hot rice, khichuri, paratha or roti",
+      ],
+      storage: STORAGE,
+      shelfLife: SHELF_LIFE,
+    },
+    images: photos("aam-borfi", "Aam Borfi", "আম বরফি", false),
+    variants: [["BORFI-400", "400 g", 400, 49900, null, 30]],
+  },
+  {
+    shelf: "special",
+    name: "Bombai Khaja",
+    nameBn: "বোম্বাই খাজা",
+    slug: "bombai-khaja",
+    searchTerms: "bombai bombay khaja til badam sesame peanut morich chili jhal hot",
+    description:
+      "Sesame, peanuts and Bombai chilli ground and slow-cooked in oil into a thick paste. Sitting in red chilli oil, fiercely hot.",
+    descriptionBn:
+      "তিল, বাদাম আর বোম্বাই মরিচ বেটে তেলে ধীরে রান্না করা ঘন মাখা। লাল তেলে ডোবানো, তীব্র ঝালের আচার।",
+    tagline: "তিল-বাদামে বোম্বাই মরিচের তীব্র ঝাল",
+    taglineEn: "Fierce Bombai chilli heat with sesame and peanut",
+    spiceLevel: 3,
+    isFeatured: true,
+    details: {
+      ingredients: [
+        "তিল, বাদাম, বোম্বাই মরিচ, সরিষার তেল ও অন্যান্য মশলা",
+        "Sesame, peanuts, Bombai chilli, mustard oil and other spices",
+      ],
+      flavor: ["তীব্র ঝাল, তিল-বাদামের বাদামি স্বাদ", "Fiercely hot, with nutty sesame and peanut"],
+      texture: [
+        "ঘন দানাদার মাখা, লাল তেলে ডোবানো",
+        "Thick, coarse paste sitting in red chilli oil",
+      ],
+      serving: [
+        "গরম ভাত, খিচুড়ি বা মুড়ির সাথে অল্প করে",
+        "A little with hot rice, khichuri or muri",
+      ],
+      storage: STORAGE,
+      shelfLife: SHELF_LIFE,
+      allergens: ["এতে বাদাম ও তিল আছে", "Contains peanuts and sesame"],
+    },
+    images: photos("bombai-khaja", "Bombai Khaja", "বোম্বাই খাজা", true),
+    variants: [["KHAJA-300", "300 g", 300, 39900, null, 30]],
   },
 ];
 
@@ -354,10 +560,41 @@ const RECIPES: SeedRecipe[] = [
   },
 ];
 
+const DETAIL_KEYS: DetailKey[] = [
+  "ingredients",
+  "flavor",
+  "texture",
+  "serving",
+  "storage",
+  "shelfLife",
+  "allergens",
+];
+
+/** Bangla columns and their `…En` twins; details not given are cleared (null). */
+function detailColumns(d: Details) {
+  const out: Record<string, string | null> = { packaging: null, packagingEn: null };
+  for (const k of DETAIL_KEYS) {
+    out[k] = d[k]?.[0] ?? null;
+    out[`${k}En`] = d[k]?.[1] ?? null;
+  }
+  return out;
+}
+
+/**
+ * SEED_LAUNCH=1 (production, 2026-11-22): only the owner-confirmed pickles (the ones with
+ * `details`) and the shelves they sit on. No placeholder products, no sample recipes.
+ */
+const LAUNCH = process.env.SEED_LAUNCH === "1";
+const SEED_PRODUCTS = LAUNCH ? PRODUCTS.filter((p) => p.details) : PRODUCTS;
+const SEED_SHELVES = LAUNCH
+  ? SHELVES.filter((s) => SEED_PRODUCTS.some((p) => p.shelf === s.slug))
+  : SHELVES;
+const SEED_RECIPES = LAUNCH ? [] : RECIPES;
+
 /** Idempotent: re-running updates the seeded rows (matched by slug / sku) instead of failing. */
 async function main() {
   const shelfIds = new Map<Shelf, number>();
-  for (const shelf of SHELVES) {
+  for (const shelf of SEED_SHELVES) {
     await db
       .insert(categories)
       .values(shelf)
@@ -369,7 +606,7 @@ async function main() {
     shelfIds.set(shelf.slug, row.id);
   }
 
-  for (const p of PRODUCTS) {
+  for (const p of SEED_PRODUCTS) {
     const values = {
       categoryId: shelfIds.get(p.shelf) ?? null,
       name: p.name,
@@ -379,7 +616,14 @@ async function main() {
       spiceLevel: p.spiceLevel,
       searchTerms: p.searchTerms,
       isFeatured: p.isFeatured ?? false,
-      ...DUMMY_DETAILS,
+      ...(p.details
+        ? {
+            descriptionBn: p.descriptionBn ?? null,
+            tagline: p.tagline ?? null,
+            taglineEn: p.taglineEn ?? null,
+            ...detailColumns(p.details),
+          }
+        : DUMMY_DETAILS),
     };
     await db.insert(products).values(values).onDuplicateKeyUpdate({ set: values });
     const row = await db.query.products.findFirst({ where: eq(products.slug, p.slug) });
@@ -395,20 +639,27 @@ async function main() {
         .where(and(eq(productImages.productId, row.id), eq(productImages.url, p.image.url)));
       await db.insert(productImages).values({ productId: row.id, ...p.image, sortOrder: 0 });
     }
+    if (p.images) {
+      // Replace this product's photos so reseeding stays idempotent.
+      await db.delete(productImages).where(eq(productImages.productId, row.id));
+      await db
+        .insert(productImages)
+        .values(p.images.map((im, i) => ({ productId: row.id, ...im, sortOrder: i })));
+    }
   }
-  for (const [i, r] of RECIPES.entries()) {
+  for (const [i, r] of SEED_RECIPES.entries()) {
     const pickle = r.pickle
       ? await db.query.products.findFirst({ where: eq(products.slug, r.pickle) })
       : undefined;
     const { featuredOrder, ...rest } = r;
     delete (rest as { pickle?: string }).pickle;
-    const values = {
+    const values = withEnglish({
       ...rest,
       featuredOrder: featuredOrder ?? null,
       productId: pickle?.id ?? null,
       isSample: true,
       sortOrder: i,
-    };
+    });
     await db.insert(recipes).values(values).onDuplicateKeyUpdate({ set: values });
   }
   // Hide the placeholder rows from the original scaffold seed (kept, just inactive).

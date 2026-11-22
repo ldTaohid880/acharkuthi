@@ -25,7 +25,7 @@ export function Icon({ name, className }: { name: IconName; className?: string }
 }
 
 /** The design's three heat pods. `pods` is how many are filled. */
-export function Heat({ pods, word }: { pods: 1 | 2 | 3; word?: string }) {
+export function Heat({ pods, word }: { pods: 0 | 1 | 2 | 3; word?: string }) {
   return (
     <span className="ak-heat">
       <span className="pods" aria-hidden="true">

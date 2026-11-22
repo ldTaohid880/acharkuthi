@@ -3,7 +3,6 @@
 import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { cn, formatTaka } from "@repo/ui/lib/utils";
 import {
-  DELIVERY_FEES,
   MANUAL_ORDER_SOURCES,
   zoneForDistrict,
   type AdminLang,
@@ -52,10 +51,13 @@ const chip = (on: boolean) =>
 
 export function NewOrderForm({
   variants,
+  fees,
   t,
   lang,
 }: {
   variants: SellableVariant[];
+  /** Settings "ডেলিভারি চার্জ" (paisa); the action re-reads them when saving. */
+  fees: { in: number; out: number };
   t: OT;
   lang: AdminLang;
 }) {
@@ -81,6 +83,8 @@ export function NewOrderForm({
     }
   >({});
   const [formError, setFormError] = useState("");
+  /** After the first save attempt, field errors follow the fields: fixing one clears it. */
+  const [tried, setTried] = useState(false);
 
   const byId = useMemo(() => new Map(variants.map((v) => [v.id, v])), [variants]);
   const matches = useMemo(() => {
@@ -93,7 +97,7 @@ export function NewOrderForm({
 
   const subtotal = lines.reduce((n, l) => n + (byId.get(l.id)?.price ?? 0) * l.qty, 0);
   const zone = zoneForDistrict(addr.district || undefined);
-  const fee = zone ? DELIVERY_FEES[zone] : 0;
+  const fee = zone ? fees[zone] : 0;
 
   function add(v: SellableVariant) {
     setLines((ls) =>
@@ -107,11 +111,23 @@ export function NewOrderForm({
   const setQty = (id: number, qty: number) =>
     setLines((ls) => ls.map((l) => (l.id === id ? { ...l, qty } : l)));
 
-  function submit() {
+  const fieldErrors = (): typeof errors => {
     const errs: typeof errors = addressErrors(addr, t.address);
     if (email && !/^[^@\s]+@[^@\s]+\.[^@\s]+$/.test(email)) errs.email = t.address.errEmail;
     if (!lines.length) errs.items = c.errNoItems;
-    setErrors(errs);
+    return errs;
+  };
+  // After the first save attempt, field errors are worked out from the fields on every render,
+  // so fixing a field clears its error. `errors` then holds only what the server said.
+  const live = tried ? fieldErrors() : {};
+  const shown: typeof errors = { ...errors, ...live };
+  const shownFormError =
+    formError === c.errFields && tried && !Object.keys(live).length ? "" : formError;
+
+  function submit() {
+    const errs = fieldErrors();
+    setTried(true);
+    setErrors({});
     if (Object.keys(errs).length) {
       setFormError(c.errFields);
       return;
@@ -137,6 +153,7 @@ export function NewOrderForm({
         }
         if (r.reason === "location") setErrors({ upazila: t.address.errPick });
         if (r.reason === "coupon") setErrors({ coupon: c.errCoupon });
+        if (r.reason === "couponUsed") setErrors({ coupon: c.errCouponUsed });
         setFormError(
           r.reason === "stock"
             ? c.errStock
@@ -144,7 +161,9 @@ export function NewOrderForm({
               ? c.errProduct
               : r.reason === "coupon"
                 ? c.errCoupon
-                : c.errFields,
+                : r.reason === "couponUsed"
+                  ? c.errCouponUsed
+                  : c.errFields,
         );
       } catch {
         toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub });
@@ -215,9 +234,9 @@ export function NewOrderForm({
 
       <ScrollArea className="min-h-0 flex-1">
         <div className="tab:gap-4 tab:px-6 tab:pt-0 tab:pb-8 wide:px-8 wide:pb-12 desk:flex-row desk:flex-wrap desk:items-start flex flex-col gap-3 p-4 pb-[110px]">
-          {formError ? (
+          {shownFormError ? (
             <p role="alert" className="text-destructive max-tab:hidden desk:w-full text-sm">
-              {formError}
+              {shownFormError}
             </p>
           ) : null}
           <div className="desk:flex-[1.6_1_0] max-tab:gap-3 flex min-w-0 flex-col gap-4">
@@ -251,7 +270,7 @@ export function NewOrderForm({
                     onChange={(e) => setQ(e.target.value)}
                     placeholder={c.searchPh}
                     aria-label={c.searchPh}
-                    className={cn(fieldCls(!!errors.items, true), "wide:h-9 wide:text-sm pl-9")}
+                    className={cn(fieldCls(!!shown.items, true), "wide:h-9 wide:text-sm pl-9")}
                   />
                   {q.trim() ? (
                     <div className="border-border absolute inset-x-0 top-full z-20 mt-1 overflow-hidden rounded-lg border bg-white shadow-md">
@@ -282,8 +301,8 @@ export function NewOrderForm({
                     </div>
                   ) : null}
                 </div>
-                {errors.items ? (
-                  <span className="text-destructive -mt-1 text-xs leading-4">{errors.items}</span>
+                {shown.items ? (
+                  <span className="text-destructive -mt-1 text-xs leading-4">{shown.items}</span>
                 ) : null}
 
                 {lines.length === 0 ? (
@@ -369,7 +388,7 @@ export function NewOrderForm({
                 <AddressFields
                   value={addr}
                   onChange={setAddr}
-                  errors={errors}
+                  errors={shown}
                   t={t.address}
                   idPrefix="no"
                   large
@@ -382,7 +401,7 @@ export function NewOrderForm({
                     </>
                   }
                   htmlFor="no-email"
-                  error={errors.email}
+                  error={shown.email}
                 >
                   <input
                     id="no-email"
@@ -390,7 +409,7 @@ export function NewOrderForm({
                     value={email}
                     maxLength={255}
                     onChange={(e) => setEmail(e.target.value)}
-                    className={fieldCls(!!errors.email, true)}
+                    className={fieldCls(!!shown.email, true)}
                   />
                 </Field>
                 {zone ? (
@@ -461,10 +480,10 @@ export function NewOrderForm({
                     setCoupon(e.target.value.toUpperCase());
                     setErrors((er) => ({ ...er, coupon: undefined }));
                   }}
-                  className={cn(fieldCls(!!errors.coupon, true), "font-mono")}
+                  className={cn(fieldCls(!!shown.coupon, true), "font-mono")}
                 />
-                {errors.coupon ? (
-                  <span className="text-destructive text-xs leading-4">{errors.coupon}</span>
+                {shown.coupon ? (
+                  <span className="text-destructive text-xs leading-4">{shown.coupon}</span>
                 ) : null}
               </div>
             </section>
@@ -489,9 +508,9 @@ export function NewOrderForm({
 
       {/* Phone: fixed bottom bar */}
       <div className="border-border tab:hidden fixed inset-x-0 bottom-0 z-40 flex flex-col gap-2 border-t bg-white px-4 pt-3 pb-6">
-        {formError ? (
+        {shownFormError ? (
           <p role="alert" className="text-destructive text-sm">
-            {formError}
+            {shownFormError}
           </p>
         ) : null}
         {submitBtn("w-full")}

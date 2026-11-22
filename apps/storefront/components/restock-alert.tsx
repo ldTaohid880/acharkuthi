@@ -2,6 +2,7 @@
 
 import { useId, useRef, useState, useTransition } from "react";
 import { requestRestockAlert } from "@/app/actions/restock";
+import { useLang } from "@/lib/i18n/lang-context";
 
 /**
  * "স্টকে এলে জানান" inside the out-of-stock box (Product.dc.html, ProductStates.dc.html C).
@@ -22,11 +23,13 @@ export function RestockAlert({
   const [error, setError] = useState("");
   const [state, setState] = useState<"idle" | "ok" | "fail">("idle");
   const [pending, start] = useTransition();
+  const { lang, t: all } = useLang();
+  const t = all.restock;
 
   if (state === "ok") {
     return (
-      <p className="ak-help" role="status" lang="bn">
-        ধন্যবাদ! স্টকে এলে আপনাকে জানাব।
+      <p className="ak-help" role="status" lang={lang}>
+        {t.done}
       </p>
     );
   }
@@ -36,13 +39,13 @@ export function RestockAlert({
       <button
         type="button"
         className="ak-btn ak-btn--line"
-        lang="bn"
+        lang={lang}
         onClick={() => {
           setOpen(true);
           requestAnimationFrame(() => input.current?.focus());
         }}
       >
-        স্টকে এলে জানান
+        {t.open}
       </button>
     );
   }
@@ -58,7 +61,8 @@ export function RestockAlert({
         setError("");
         setState("ok");
       } else if (res.status === "invalid") {
-        setError(res.message);
+        // The server's message is Bangla; show the page language's own.
+        setError(lang === "bn" ? res.message : t.invalid);
         input.current?.focus();
       } else {
         setState("fail");
@@ -67,10 +71,11 @@ export function RestockAlert({
   };
 
   return (
-    <form className="rs-form" onSubmit={submit} noValidate>
+    <form className="rs-form" onSubmit={submit} noValidate lang={lang}>
       <label className="ak-field">
-        <span lang="bn">
-          মোবাইল নম্বর বা ইমেইল<em aria-hidden="true">*</em>
+        <span>
+          {t.field}
+          <em aria-hidden="true">*</em>
         </span>
         <input
           ref={input}
@@ -79,7 +84,7 @@ export function RestockAlert({
           inputMode="email"
           autoComplete="email"
           autoFocus={startOpen}
-          placeholder="01XXXXXXXXX বা name@example.com"
+          placeholder={t.placeholder}
           value={value}
           aria-required="true"
           aria-invalid={!!error}
@@ -90,7 +95,7 @@ export function RestockAlert({
           }}
         />
         {error ? (
-          <span id={`${id}-err`} className="ak-help is-error" role="alert" lang="bn">
+          <span id={`${id}-err`} className="ak-help is-error" role="alert">
             {error}
           </span>
         ) : null}
@@ -98,17 +103,16 @@ export function RestockAlert({
       <button
         type="submit"
         className="ak-btn ak-btn--line"
-        lang="bn"
         disabled={pending}
         aria-busy={pending || undefined}
       >
-        {pending ? "জমা হচ্ছে…" : "জানাতে বলুন"}
+        {pending ? t.sending : t.submit}
       </button>
       {state === "fail" ? (
         // ErrorPatterns.dc.html §1, error level.
         <div className="alert" role="alert">
-          <b lang="bn">কাজটি সম্পন্ন করা যায়নি</b>
-          <span lang="bn">আপনার দেওয়া তথ্য রয়ে গেছে। আবার চেষ্টা করুন।</span>
+          <b>{t.failTitle}</b>
+          <span>{t.failText}</span>
         </div>
       ) : null}
     </form>

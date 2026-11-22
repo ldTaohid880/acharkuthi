@@ -9,6 +9,27 @@ export const env = createEnv({
     BETTER_AUTH_URL: z.url(),
     GOOGLE_CLIENT_ID: z.string().min(1),
     GOOGLE_CLIENT_SECRET: z.string().min(1),
+    /**
+     * Shop email (a Hostinger mailbox over SMTP), used for "পাসওয়ার্ড ভুলে গেছেন?" reset links
+     * (read by @repo/auth). Optional in development, where the link is logged instead; required in
+     * production, or reset emails fail with "লিংকটি পাঠানো যায়নি".
+     */
+    SMTP_HOST: z.string().min(1).optional(),
+    SMTP_PORT: z.coerce.number().int().positive().optional(),
+    SMTP_USER: z.string().min(1).optional(),
+    SMTP_PASS: z.string().min(1).optional(),
+    /** Sender, e.g. "আচারকুঠি <info@acharkuthi.store>". Defaults to SMTP_USER. */
+    MAIL_FROM: z.string().min(1).optional(),
+    /**
+     * Review photos go to the admin's Cloudflare R2 bucket (Hostinger replaces the app folder on
+     * deploy). Optional in development, where photos land in public/uploads/reviews; required in
+     * production, or a review with a photo fails.
+     */
+    R2_ACCOUNT_ID: z.string().min(1).optional(),
+    R2_ACCESS_KEY_ID: z.string().min(1).optional(),
+    R2_SECRET_ACCESS_KEY: z.string().min(1).optional(),
+    R2_BUCKET: z.string().min(1).optional(),
+    R2_PUBLIC_URL: z.url().optional(),
   },
   client: {},
   experimental__runtimeEnv: {},

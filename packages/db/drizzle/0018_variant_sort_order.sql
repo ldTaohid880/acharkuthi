@@ -1,0 +1,1 @@
+ALTER TABLE `product_variants` ADD `sort_order` int DEFAULT 0 NOT NULL;

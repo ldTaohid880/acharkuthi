@@ -1,4 +1,4 @@
-import { asc, db, inArray, schema } from "@repo/db";
+import { bySortOrder, db, inArray, schema } from "@repo/db";
 
 /** Server only. Reads the basket's variants from the database, so the basket never shows a cart price as current. */
 
@@ -43,9 +43,7 @@ export async function quoteVariants(variantIds: number[]): Promise<BasketQuote[]
   const rows = await db.query.productVariants.findMany({
     where: inArray(schema.productVariants.id, ids),
     with: {
-      product: {
-        with: { images: { orderBy: [asc(schema.productImages.sortOrder)], limit: 1 } },
-      },
+      product: { with: { images: true } },
     },
   });
   const byId = new Map(rows.map((r) => [r.id, r]));
@@ -63,7 +61,7 @@ export async function quoteVariants(variantIds: number[]): Promise<BasketQuote[]
       slug: product?.slug ?? null,
       variantLabel: row?.label ?? "",
       spiceLevel: product?.spiceLevel ?? 0,
-      imageUrl: product?.images[0]?.url ?? null,
+      imageUrl: product?.images.sort(bySortOrder)[0]?.url ?? null,
       unitPrice: row?.price ?? 0,
       compareAtPrice: showWas ? row.compareAtPrice : null,
       stock: row?.stock ?? 0,

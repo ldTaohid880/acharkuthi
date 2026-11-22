@@ -8,7 +8,7 @@ import { createContext, useCallback, useContext, useEffect, useRef, useState } f
 export interface ToastInput {
   tone: "ok" | "err" | "busy";
   title: string;
-  sub?: string;
+  sub?: string | undefined;
   action?: { label: string; onClick: () => void };
 }
 

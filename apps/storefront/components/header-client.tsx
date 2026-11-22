@@ -1,29 +1,39 @@
 "use client";
 
 import Link from "next/link";
-import { useEffect, useId, useState } from "react";
-import { productHref, shopHref, soon } from "@/lib/routes";
+import { usePathname } from "next/navigation";
+import { useEffect, useId, useRef, useState } from "react";
+import { splitLangPath } from "@/lib/i18n/lang";
+import { useLang } from "@/lib/i18n/lang-context";
+import { productHref, shopHref } from "@/lib/routes";
 import { useBasketUi } from "@/lib/basket-ui";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
 import { Icon } from "./icon";
+import { LangToggle } from "./lang-toggle";
 import { MobileDrawer } from "./mobile-drawer";
-import { shelfBlurb, shelfIcon } from "./shelf-icon";
+import { ShelfArt } from "./shelf-art";
+import { RECIPES_LIVE } from "@/lib/features";
 
 interface Shelf {
   slug: string;
   name: string;
   nameBn: string | null;
+  imageUrl: string | null;
 }
 interface Feature {
   slug: string;
+  /** The product main photo from admin; the drawn jar when it has none. */
+  photo: string | null;
   name: string;
+  /** Language of `name` (the Bangla name in Bangla when there is one). */
+  nameLang: "bn" | "en";
   meta: string;
 }
 
 const NAV = [
-  { href: "/our-story", label: "Our story" },
-  { href: "/recipes", label: "Recipes" },
-  { href: "/contact", label: "Contact" },
+  { href: "/our-story", key: "ourStory" },
+  ...(RECIPES_LIVE ? ([{ href: "/recipes", key: "recipes" }] as const) : []),
+  { href: "/contact", key: "contact" },
 ] as const;
 
 const BLOT = ["", "v2", "v3", ""] as const;
@@ -34,6 +44,30 @@ export function HeaderClient({ shelves, feature }: { shelves: Shelf[]; feature: 
   const [mobileOpen, setMobileOpen] = useState(false);
   const { count } = useHydratedCart();
   const openBasket = useBasketUi((s) => s.openBasket);
+  const { lang, t, href } = useLang();
+  const headerRef = useRef<HTMLElement>(null);
+  // Current page without its language prefix, for the active nav item.
+  const path = splitLangPath(usePathname()).path;
+  const isOn = (p: string) => path === p || path.startsWith(`${p}/`);
+  const shopOn = isOn("/shop") || isOn("/pickles");
+
+  // Close the shop menu when the page changes (also on back/forward), adjusting state during
+  // render rather than in an effect.
+  const [menuPath, setMenuPath] = useState(path);
+  if (menuPath !== path) {
+    setMenuPath(path);
+    setMegaOpen(false);
+  }
+
+  // Close the shop menu on a click or tap anywhere outside the header.
+  useEffect(() => {
+    if (!megaOpen) return;
+    const onDown = (e: PointerEvent) => {
+      if (headerRef.current && !headerRef.current.contains(e.target as Node)) setMegaOpen(false);
+    };
+    document.addEventListener("pointerdown", onDown);
+    return () => document.removeEventListener("pointerdown", onDown);
+  }, [megaOpen]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -60,49 +94,55 @@ export function HeaderClient({ shelves, feature }: { shelves: Shelf[]; feature: 
   };
   return (
     <>
-      <header className="hd">
+      <header className="hd" lang={lang} ref={headerRef}>
         <div className="wrap hd-in">
           <button
             type="button"
             className="ib hd-menu"
             aria-expanded={mobileOpen}
             aria-controls={`${menuId}-m`}
-            aria-label="Open menu"
+            aria-label={t.header.openMenu}
             onClick={() => setMobileOpen((o) => !o)}
           >
             <Icon name="menu" />
           </button>
-          <Link className="ak-logo" href="/" aria-label="Acharkuthi home" onClick={close}>
+          <Link className="ak-logo" href={href("/")} aria-label={t.header.home} onClick={close}>
             {/* eslint-disable-next-line @next/next/no-img-element -- static brand art */}
             <img src="/brand/mark-96.png" alt="" />
             {/* eslint-disable-next-line @next/next/no-img-element -- static brand art */}
             <img className="wm" src="/brand/wordmark-80.png" alt="" />
           </Link>
-          <nav className="nv" aria-label="Main">
+          <nav className="nv" aria-label={t.header.main}>
             <button
               type="button"
-              className={megaOpen ? "on" : undefined}
+              className={megaOpen || shopOn ? "on" : undefined}
               aria-expanded={megaOpen}
               aria-controls={menuId}
               onClick={() => setMegaOpen((o) => !o)}
             >
-              Shop <span className={megaOpen ? "chev up" : "chev"} aria-hidden="true" />
+              {t.nav.shop} <span className={megaOpen ? "chev up" : "chev"} aria-hidden="true" />
             </button>
             {NAV.map((n) => (
-              <Link key={n.href} href={n.href === "/recipes" ? "/recipes" : soon(n.href)}>
-                {n.label}
+              <Link
+                key={n.href}
+                href={href(n.href)}
+                className={isOn(n.href) ? "on" : undefined}
+                aria-current={isOn(n.href) ? "page" : undefined}
+              >
+                {t.nav[n.key]}
               </Link>
             ))}
           </nav>
           <div className="tools">
-            {/* The language toggle is hidden until the Bengali version exists (owner decision). */}
-            <Link className="ib hd-acct" href={soon("/account")} aria-label="Your account">
+            {/* EN / বাং (Main.dc.html header tools); the phone boards show it in the footer only. */}
+            <LangToggle className="hd-lang" />
+            <Link className="ib hd-acct" href={href("/account")} aria-label={t.header.account}>
               <Icon name="user" />
             </Link>
             <button
               type="button"
               className="ib"
-              aria-label={`Basket, ${count} ${count === 1 ? "item" : "items"}`}
+              aria-label={t.header.basket(count)}
               aria-haspopup="dialog"
               onClick={openBasket}
             >
@@ -112,41 +152,49 @@ export function HeaderClient({ shelves, feature }: { shelves: Shelf[]; feature: 
           </div>
         </div>
 
-        {megaOpen ? (
-          <div className="mega" id={menuId}>
-            <div className="wrap mega-in">
-              {shelves.map((s, i) => (
-                <Link key={s.slug} className="mcat" href={shopHref(s.slug)} onClick={close}>
-                  <span className={`db ${i % 2 ? "b" : "f"} ak-blot ${BLOT[i % 4]}`}>
-                    <Icon name={shelfIcon(s.slug)} />
+        {/* Always rendered so it can fade out; inert while closed. */}
+        <div className={megaOpen ? "mega is-open" : "mega"} id={menuId} inert={!megaOpen}>
+          <div className="wrap mega-in">
+            {shelves.map((s, i) => (
+              <Link key={s.slug} className="mcat" href={href(shopHref(s.slug))} onClick={close}>
+                <span className={`db ${i % 2 ? "b" : "f"} ak-blot ${BLOT[i % 4]}`}>
+                  <ShelfArt slug={s.slug} imageUrl={s.imageUrl} />
+                </span>
+                <span>
+                  {/* Short shelf names, like the English "Mango" (the menu tiles use the longer labels). */}
+                  <b>{lang === "bn" ? (s.nameBn ?? t.shelf.label[s.slug] ?? s.name) : s.name}</b>
+                  <small>{t.shelf.blurb[s.slug] ?? ""}</small>
+                </span>
+              </Link>
+            ))}
+            {feature ? (
+              <Link className="mfeat" href={href(productHref(feature.slug))} onClick={close}>
+                {/* eslint-disable-next-line @next/next/no-img-element -- admin photo or static brand art */}
+                <img
+                  className={feature.photo ? "is-photo" : undefined}
+                  src={feature.photo ?? "/jar.svg"}
+                  alt=""
+                />
+                <span>
+                  <span className="ak-eyebrow">{t.header.bestseller}</span>
+                  <span
+                    className="peek-n"
+                    lang={feature.nameLang}
+                    style={{ display: "block", marginTop: 6 }}
+                  >
+                    {feature.name}
                   </span>
-                  <span>
-                    <b>{s.name}</b>
-                    <small>{shelfBlurb(s.slug)}</small>
-                  </span>
-                </Link>
-              ))}
-              {feature ? (
-                <Link className="mfeat" href={productHref(feature.slug)} onClick={close}>
-                  {/* eslint-disable-next-line @next/next/no-img-element -- static brand art */}
-                  <img src="/jar.svg" alt="" />
-                  <span>
-                    <span className="ak-eyebrow">Bestseller</span>
-                    <span className="peek-n" style={{ display: "block", marginTop: 6 }}>
-                      {feature.name}
-                    </span>
-                    <span className="peek-m">{feature.meta}</span>
-                  </span>
-                </Link>
-              ) : null}
-              <div className="mall">
-                <Link href={shopHref()} onClick={close}>
-                  Shop all pickles <Icon name="arrow" />
-                </Link>
-              </div>
+                  <span className="peek-m">{feature.meta}</span>
+                </span>
+              </Link>
+            ) : null}
+            <div className="mall">
+              <Link href={href(shopHref())} onClick={close}>
+                {t.header.shopAll} <Icon name="arrow" />
+              </Link>
             </div>
           </div>
-        ) : null}
+        </div>
       </header>
       <MobileDrawer
         id={`${menuId}-m`}

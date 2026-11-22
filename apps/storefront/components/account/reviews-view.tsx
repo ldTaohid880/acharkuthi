@@ -3,23 +3,26 @@
 import { useState } from "react";
 import { Icon } from "@/components/icon";
 import type { AccountReview } from "@/lib/account";
+import type { Dict } from "@/lib/i18n/dict";
+import { useLang } from "@/lib/i18n/lang-context";
 
-const TABS = {
+const tabs = (t: Dict["account"]) => ({
   product: {
-    t: "পণ্যের রিভিউ",
-    where: "এই রিভিউগুলো শুধু সংশ্লিষ্ট আচারের পাতায় দেখা যায়।",
-    emptyT: "এখনও কোনো পণ্যের রিভিউ নেই",
-    emptyS: "কেনা আচারের পাতা থেকে রিভিউ লিখতে পারবেন।",
-    live: "পণ্যের পাতায় দেখা যায়",
+    t: t.prodTab,
+    where: t.prodWhere,
+    emptyT: t.prodEmpty,
+    emptyS: t.prodEmptyText,
+    live: t.prodLive,
   },
   overall: {
-    t: "Acharkuthi নিয়ে রিভিউ",
-    where: "এই রিভিউগুলো শুধু হোমপেজে দেখা যায়, কোনো নির্দিষ্ট আচারের সাথে যুক্ত নয়।",
-    emptyT: "Acharkuthi নিয়ে এখনও কিছু লেখেননি",
-    emptyS: "হোমপেজ থেকে আপনার সামগ্রিক অভিজ্ঞতা জানাতে পারবেন।",
-    live: "হোমপেজে দেখা যায়",
+    t: t.siteTab,
+    where: t.siteWhere,
+    emptyT: t.siteEmpty,
+    emptyS: t.siteEmptyText,
+    live: t.siteLive,
   },
-} as const;
+});
+type TabKey = "product" | "overall";
 
 const stars = (n: number) => "★".repeat(n) + "☆".repeat(5 - n);
 
@@ -31,19 +34,22 @@ export function ReviewsView({
   product: AccountReview[];
   overall: AccountReview[];
 }) {
-  const [tab, setTab] = useState<keyof typeof TABS>("product");
+  const { lang, t: all } = useLang();
+  const t = all.account;
+  const TABS = tabs(t);
+  const [tab, setTab] = useState<TabKey>("product");
   const T = TABS[tab];
   const list = tab === "product" ? product : overall;
   return (
     <div>
-      <h1 className="h1a" lang="bn">
-        আমার রিভিউ
+      <h1 className="h1a" lang={lang}>
+        {t.myReviews}
       </h1>
-      <p className="sub" lang="bn">
-        পণ্যের রিভিউ আর Acharkuthi নিয়ে রিভিউ আলাদা। দুটোই এখানে দেখতে পাবেন।
+      <p className="sub" lang={lang}>
+        {t.reviewsSub}
       </p>
-      <div className="tabs2" role="tablist" aria-label="রিভিউয়ের ধরন">
-        {(Object.keys(TABS) as (keyof typeof TABS)[]).map((k) => (
+      <div className="tabs2" role="tablist" aria-label={t.reviewKinds}>
+        {(["product", "overall"] as const).map((k) => (
           <button
             key={k}
             type="button"
@@ -51,13 +57,13 @@ export function ReviewsView({
             className={tab === k ? "on" : ""}
             aria-selected={tab === k}
             onClick={() => setTab(k)}
-            lang="bn"
+            lang={lang}
           >
             {TABS[k].t}
           </button>
         ))}
       </div>
-      <p className="where" lang="bn">
+      <p className="where" lang={lang}>
         {T.where}
       </p>
       {list.length > 0 ? (
@@ -69,9 +75,9 @@ export function ReviewsView({
               </span>
               <div>
                 <div className="rv-t">
-                  <b lang="bn">{r.title}</b>
-                  <span className="chip2" lang="bn">
-                    {r.approved ? T.live : "যাচাইয়ের অপেক্ষায়"}
+                  <b lang={lang}>{r.title}</b>
+                  <span className="chip2" lang={lang}>
+                    {r.approved ? T.live : t.pending}
                   </span>
                 </div>
                 <div className="rv-s">
@@ -90,8 +96,8 @@ export function ReviewsView({
           <span className="eic ak-blot v2" aria-hidden="true">
             <Icon name="sun" />
           </span>
-          <b lang="bn">{T.emptyT}</b>
-          <p lang="bn">{T.emptyS}</p>
+          <b lang={lang}>{T.emptyT}</b>
+          <p lang={lang}>{T.emptyS}</p>
         </div>
       )}
     </div>

@@ -1,9 +1,12 @@
 import { db, schema } from "@repo/db";
 import { betterAuth } from "better-auth";
+import { APIError, createAuthMiddleware, getSessionFromCtx } from "better-auth/api";
 import { drizzleAdapter } from "better-auth/adapters/drizzle";
 import { nextCookies } from "better-auth/next-js";
 import { admin } from "better-auth/plugins";
 import { adminAc, userAc } from "better-auth/plugins/admin/access";
+import { CHANGE_EMAIL_LINK_SECONDS, sendChangeEmail } from "./change-email";
+import { RESET_LINK_SECONDS, sendResetEmail } from "./reset-email";
 
 export const auth = betterAuth({
   database: drizzleAdapter(db, {
@@ -18,6 +21,11 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
     minPasswordLength: 8,
+    // "পাসওয়ার্ড ভুলে গেছেন?": the link opens /login?token=… (or ?error=INVALID_TOKEN).
+    sendResetPassword: ({ user, url }) => sendResetEmail(user.email, user.name, url),
+    resetPasswordTokenExpiresIn: RESET_LINK_SECONDS,
+    // A new password signs the account out everywhere else.
+    revokeSessionsOnPasswordReset: true,
   },
   socialProviders: {
     google: {
@@ -31,7 +39,28 @@ export const auth = betterAuth({
     // A Google sign-in with the same verified email joins the existing account.
     accountLinking: { enabled: true, trustedProviders: ["google"] },
   },
+  // Only used by the admin's email "বদলান" (My account): the link goes to the new address and
+  // the email changes once it is opened. Never sent on sign-up or sign-in.
+  emailVerification: {
+    sendVerificationEmail: ({ user, url }) => sendChangeEmail(user.email, user.name, url),
+    sendOnSignUp: false,
+    sendOnSignIn: false,
+    expiresIn: CHANGE_EMAIL_LINK_SECONDS,
+  },
+  hooks: {
+    before: createAuthMiddleware(async (ctx) => {
+      // Email change is for the admin owner only (staff: "ইমেইল বদলাতে মালিককে বলুন।"), and a
+      // stand-alone verification email has no use here, so nobody can trigger one.
+      if (ctx.path === "/send-verification-email") throw new APIError("NOT_FOUND");
+      if (ctx.path === "/change-email") {
+        const session = await getSessionFromCtx(ctx);
+        if (session?.user.role !== "owner") throw new APIError("FORBIDDEN");
+      }
+    }),
+  },
   user: {
+    // Admin My account → email "বদলান" (owner only, see hooks).
+    changeEmail: { enabled: true },
     additionalFields: {
       // Admin UI language (bn | en). Set only by the admin app, never from sign-up input.
       adminLang: { type: "string", defaultValue: "bn", input: false },

@@ -1,7 +1,8 @@
 "use client";
 
-import { useCart, type CartLine } from "@/lib/cart-store";
+import { lineName, useCart, type CartLine } from "@/lib/cart-store";
 import { useBasketUi } from "@/lib/basket-ui";
+import { useLang } from "@/lib/i18n/lang-context";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
 import { Icon } from "./icon";
 
@@ -14,20 +15,26 @@ export function AddToBasket({
   wide = false,
   plusIcon,
   className = "ak-btn ak-btn--round above",
+  label,
 }: {
   line: Omit<CartLine, "quantity">;
   wide?: boolean;
   /** Replaces the round button's plus mark (product card uses the Figma mark). */
   plusIcon?: React.ReactNode;
   className?: string;
+  /** Wide button text when it differs from the card's (Home featured picks: "কার্টে যোগ করুন"). */
+  label?: string;
 }) {
   const { lines } = useHydratedCart();
   const add = useCart((s) => s.add);
   const setQuantity = useCart((s) => s.setQuantity);
   const notifyAdded = useBasketUi((s) => s.notifyAdded);
+  const { lang, t: all } = useLang();
+  const t = all.card;
+  const name = lineName(line, lang);
   const addOne = () => {
     add({ ...line, quantity: 1 });
-    notifyAdded(line.productName);
+    notifyAdded(name);
   };
   const qty = lines.find((l) => l.variantId === line.variantId)?.quantity ?? 0;
 
@@ -35,7 +42,7 @@ export function AddToBasket({
     return (
       <button type="button" className="ak-btn ak-btn--brand above" onClick={addOne}>
         <Icon name="basket" />
-        Add to basket
+        {label ?? t.add}
       </button>
     );
   }
@@ -44,7 +51,7 @@ export function AddToBasket({
       <button
         type="button"
         className={className}
-        aria-label={`Add ${line.productName} to basket`}
+        aria-label={t.addName(name)}
         onClick={addOne}
       >
         {plusIcon ?? <Icon name="plus" />}
@@ -55,7 +62,7 @@ export function AddToBasket({
     <span className="qty above">
       <button
         type="button"
-        aria-label={`Remove one ${line.productName}`}
+        aria-label={t.lessName(name)}
         onClick={() => setQuantity(line.variantId, qty - 1)}
       >
         <Icon name="minus" />
@@ -63,7 +70,7 @@ export function AddToBasket({
       <output aria-live="polite">{qty}</output>
       <button
         type="button"
-        aria-label={`Add one more ${line.productName}`}
+        aria-label={t.moreName(name)}
         onClick={() => setQuantity(line.variantId, qty + 1)}
       >
         <Icon name="plus" />
@@ -72,7 +79,7 @@ export function AddToBasket({
   );
   return wide ? (
     <span className="card-acts above">
-      <span className="ok">Added</span>
+      <span className="ok">{t.added}</span>
       {pill}
     </span>
   ) : (

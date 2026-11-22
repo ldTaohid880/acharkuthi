@@ -7,10 +7,12 @@ export interface CartLine {
   variantId: number;
   slug?: string; // product slug, for linking back to the product page
   productName: string;
+  /** Bangla name, shown first on the Bangla site (display only, like the basket page). */
+  productNameBn?: string | undefined;
   variantLabel: string;
   unitPrice: number; // paisa — display only; the server re-prices at checkout
   quantity: number;
-  heat?: "Mild" | "Medium" | "Hot"; // display only, for the mini-basket row
+  heat?: "Not spicy" | "Mild" | "Medium" | "Hot"; // display only, for the mini-basket row
   maxQty?: number; // stock cap seen when added — display only; checkout re-checks stock
 }
 
@@ -25,6 +27,10 @@ interface CartState {
   acceptPrice: (variantId: number, unitPrice: number) => void;
   clear: () => void;
 }
+
+/** The name to show for a basket line in this language: Bangla first on the Bangla site. */
+export const lineName = (l: Pick<CartLine, "productName" | "productNameBn">, lang: string) =>
+  lang === "bn" && l.productNameBn ? l.productNameBn : l.productName;
 
 export const useCart = create<CartState>()(
   persist(
@@ -68,3 +74,10 @@ export const useCart = create<CartState>()(
 
 export const cartTotal = (lines: CartLine[]) =>
   lines.reduce((sum, l) => sum + l.unitPrice * l.quantity, 0);
+
+/**
+ * Empty basket art (drawer and basket page), owner 2026-11-22: a watercolour of an empty jar, its
+ * lid, a raw mango and two dried chillies, in the shelf-disc illustration style, on white paper.
+ * components/empty-basket-art.tsx clips it to a blob.
+ */
+export const EMPTY_JAR = "/images/basket/empty-illustration.webp";

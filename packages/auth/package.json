@@ -14,12 +14,14 @@
   "dependencies": {
     "@repo/db": "workspace:*",
     "better-auth": "^1.7.18",
+    "nodemailer": "^10.5.0",
     "react": "19.2.8"
   },
   "devDependencies": {
     "@repo/eslint-config": "workspace:*",
     "@repo/typescript-config": "workspace:*",
     "@types/node": "26.4.1",
+    "@types/nodemailer": "^8.0.2",
     "eslint": "10.9.1",
     "typescript": "7.0.2"
   }

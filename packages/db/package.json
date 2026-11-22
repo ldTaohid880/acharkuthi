@@ -13,6 +13,7 @@
     "db:push": "drizzle-kit push",
     "db:studio": "drizzle-kit studio",
     "db:seed": "tsx --env-file=.env src/seed.ts",
+    "db:backfill-recipes": "tsx --env-file=.env src/backfill-recipe-en.ts",
     "lint": "eslint . --max-warnings 0",
     "check-types": "tsc --noEmit"
   },

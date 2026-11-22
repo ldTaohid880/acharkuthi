@@ -7,13 +7,19 @@
     "lint": "turbo run lint",
     "check-types": "turbo run check-types",
     "test": "turbo run test",
-    "test:e2e": "turbo run test:e2e",
+    "test:e2e": "turbo run test:e2e --concurrency=1 --continue",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "db:generate": "turbo run db:generate",
     "db:migrate": "turbo run db:migrate",
     "db:studio": "pnpm --filter @repo/db db:studio",
-    "db:seed": "pnpm --filter @repo/db db:seed"
+    "db:seed": "pnpm --filter @repo/db db:seed",
+    "clean": "node scripts/clean.mjs",
+    "deploy:prepare": "node scripts/deploy/prepare.mjs",
+    "deploy:push": "node scripts/deploy/hostinger.mjs push",
+    "deploy:env": "node scripts/deploy/hostinger.mjs env",
+    "deploy:status": "node scripts/deploy/hostinger.mjs status",
+    "deploy": "node scripts/deploy/prepare.mjs && node scripts/deploy/hostinger.mjs push"
   },
   "devDependencies": {
     "prettier": "3.9.6",

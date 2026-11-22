@@ -16,7 +16,9 @@ import { GoogleButton } from "./google-button";
 export function LoginForm() {
   const router = useRouter();
   const id = useId();
-  const [failed, setFailed] = useState(false);
+  // "empty": a field was left blank (not a wrong password); "wrong": the server refused it.
+  const [failure, setFailure] = useState<"empty" | "wrong" | null>(null);
+  const failed = failure !== null;
   const [pending, setPending] = useState(false);
   const [show, setShow] = useState(false);
 
@@ -24,17 +26,18 @@ export function LoginForm() {
     e.preventDefault();
     // Not a form action: React would reset the fields after it, losing the typed email.
     const formData = new FormData(e.currentTarget);
-    setFailed(false);
+    setFailure(null);
     const parsed = signInInput.safeParse(Object.fromEntries(formData));
     if (!parsed.success) {
-      setFailed(true);
+      const blank = (k: string) => !String(formData.get(k) ?? "").trim();
+      setFailure(blank("email") || blank("password") ? "empty" : "wrong");
       return;
     }
     setPending(true);
     const { error } = await signIn.email(parsed.data);
     if (error) {
       setPending(false);
-      setFailed(true);
+      setFailure("wrong");
       return;
     }
     router.replace("/");
@@ -69,7 +72,9 @@ export function LoginForm() {
             <div>
               <div className="font-medium">ঢোকা গেল না</div>
               <div className="text-xs leading-4">
-                ইমেইল বা পাসওয়ার্ড মিলছে না। আবার চেষ্টা করুন।
+                {failure === "empty"
+                  ? "ইমেইল আর পাসওয়ার্ড দুটোই লিখুন।"
+                  : "ইমেইল বা পাসওয়ার্ড মিলছে না। আবার চেষ্টা করুন।"}
               </div>
             </div>
           </div>
@@ -113,7 +118,7 @@ export function LoginForm() {
               placeholder="••••••••"
               disabled={pending}
               aria-invalid={failed || undefined}
-              aria-describedby={failed ? `${id}-pass-err` : undefined}
+              aria-describedby={failure === "wrong" ? `${id}-pass-err` : undefined}
               className="placeholder:text-muted-foreground min-w-0 flex-auto bg-transparent outline-none"
             />
             <button
@@ -130,7 +135,7 @@ export function LoginForm() {
               {show ? <EyeOff aria-hidden /> : <Eye aria-hidden />}
             </button>
           </div>
-          {failed ? (
+          {failure === "wrong" ? (
             <span id={`${id}-pass-err`} className="text-destructive text-xs leading-4 font-medium">
               পাসওয়ার্ড ভুল
             </span>

@@ -39,7 +39,7 @@ export const productInput = z.object({
   slug,
   description: z.string().trim().max(10000).optional(),
   ingredients: z.string().trim().max(2000).optional(),
-  spiceLevel: z.number().int().min(0).max(5).default(0),
+  spiceLevel: z.number().int().min(0).max(3).default(0),
   isActive: z.boolean().default(true),
   isFeatured: z.boolean().default(false),
   variants: z.array(variantInput).min(1, "Add at least one variant"),
@@ -110,6 +110,23 @@ export const authRegisterForm = z
 
 export const authForgotForm = z.object({ email: authEmail });
 
+/** "নতুন পাসওয়ার্ড দিন" after the reset link (owner-approved, 2026-11-15): same rules as sign-up. */
+export const authResetForm = z
+  .object({
+    password: z
+      .string()
+      .min(1, "একটি পাসওয়ার্ড দিন")
+      .refine(
+        (pw) => authPasswordRules.length(pw) && authPasswordRules.mix(pw),
+        "পাসওয়ার্ডের শর্তগুলো পূরণ করুন",
+      ),
+    confirm: z.string().min(1, "পাসওয়ার্ডটি আবার লিখুন"),
+  })
+  .refine((v) => v.confirm === "" || v.confirm === v.password, {
+    path: ["confirm"],
+    message: "দুটি পাসওয়ার্ড মিলছে না",
+  });
+
 /** A same-site path to return to after sign-in; anything else is dropped. */
 export const authNextPath = z
   .string()
@@ -118,12 +135,11 @@ export const authNextPath = z
 
 /** Storefront shop listing filters, parsed from the URL query string. */
 export const SHOP_SORTS = ["popular", "newest", "price-asc", "price-desc"] as const;
-export const HEAT_LEVELS = ["mild", "medium", "hot"] as const;
+/** Shop heat filter keys; spice level 0–3 = none, mild, medium, hot (owner decision 2026-11-14). */
+export const HEAT_LEVELS = ["none", "mild", "medium", "hot"] as const;
 
 const queryList = <T extends z.ZodType>(item: T) =>
   z.preprocess((v) => (v === undefined ? [] : Array.isArray(v) ? v : [v]), z.array(item));
-
-export const SHOP_PAGE_SIZE = 6;
 
 export const shopQuery = z.object({
   sort: z.enum(SHOP_SORTS).catch("popular"),
@@ -135,8 +151,6 @@ export const shopQuery = z.object({
   maxPrice: z.coerce.number().int().min(0).max(1_000_000).optional().catch(undefined),
   /** Variant label, e.g. "300 g". */
   size: z.string().trim().max(40).optional().catch(undefined),
-  /** How many jars to show; "Load more" raises it by SHOP_PAGE_SIZE. */
-  show: z.coerce.number().int().min(SHOP_PAGE_SIZE).max(1000).optional().catch(undefined),
 });
 export type ShopQuery = z.infer<typeof shopQuery>;
 
@@ -362,10 +376,18 @@ export type CheckoutField = keyof CheckoutContact | "delivery";
 const couponCode = z.string().trim().toUpperCase().max(40);
 
 /** Re-prices the checkout. Quantities only; prices always come from the database. */
+/** SHA-256 hex of browser traits (checkout's device fingerprint, for the coupon per-person limit). */
+const deviceFingerprint = z.string().regex(/^[0-9a-f]{64}$/);
+
 export const checkoutQuoteInput = z.object({
   items: z.array(cartItem).min(1).max(50),
   district: z.string().trim().max(80).optional(),
   couponCode: couponCode.optional(),
+  /** Typed so far; lets the per-person coupon check run before the order is placed. */
+  phone: z.string().trim().max(20).optional(),
+  /** The check while the code is being typed: a miss isn't a wrong try (it may be half typed). */
+  live: z.boolean().optional(),
+  fp: deviceFingerprint.optional().catch(undefined),
 });
 export type CheckoutQuoteInput = z.infer<typeof checkoutQuoteInput>;
 
@@ -377,6 +399,18 @@ export const placeOrderInput = z.object({
   items: z.array(cartItem).min(1).max(50),
   /** The unit prices (paisa) the customer was shown; a mismatch stops the order so they can review. */
   seenPrices: z.record(z.string(), paisa),
+  /**
+   * Items the customer was shown as unavailable ("মোট থেকে বাদ দেওয়া হয়েছে"). Any other item that
+   * is unavailable now went missing after their last quote: the order stops so they can review.
+   */
+  seenGone: z.array(z.number().int().positive()).max(50).default([]),
+  fp: deviceFingerprint.optional().catch(undefined),
+  /** One per checkout attempt (crypto.randomUUID in the browser): a repeat submit returns the first order. */
+  checkoutKey: z
+    .string()
+    .regex(/^[A-Za-z0-9-]{16,64}$/)
+    .optional()
+    .catch(undefined),
 });
 export type PlaceOrderInput = z.infer<typeof placeOrderInput>;
 
@@ -430,8 +464,8 @@ const accountPhoneMsg = "নম্বরটি ঠিক নয়। ১১ স
 /** Add / edit a saved address. `id` is absent for a new one. */
 export const addressInput = z.object({
   id: z.coerce.number().int().positive().optional(),
-  label: z.string().trim().min(1, "ঠিকানার একটি নাম দিন").max(60, "ঠিকানার একটি নাম দিন"),
-  name: z.string().trim().min(1, "নাম লিখুন").max(120, "নাম লিখুন"),
+  label: z.string().trim().min(1, "ঠিকানার একটি নাম দিন").max(60, "নামটি ৬০ অক্ষরের মধ্যে রাখুন"),
+  name: z.string().trim().min(1, "নাম লিখুন").max(120, "নাম ১২০ অক্ষরের মধ্যে রাখুন"),
   phone: z
     .string()
     .transform(normalisePhone)
@@ -444,7 +478,7 @@ export const addressInput = z.object({
     .trim()
     .min(1, "বিস্তারিত ঠিকানা লিখুন")
     .min(10, "বাড়ি, রাস্তা ও কাছের পরিচিত জায়গা লিখলে ডেলিভারি সহজ হবে")
-    .max(255),
+    .max(255, "ঠিকানা ২৫৫ অক্ষরের মধ্যে রাখুন"),
   isDefault: z.boolean(),
 });
 export type AddressInput = z.infer<typeof addressInput>;
@@ -488,6 +522,32 @@ export const reorderInput = z.object({
 export const ADMIN_LANGS = ["bn", "en"] as const;
 export const adminLangInput = z.object({ lang: z.enum(ADMIN_LANGS) });
 export type AdminLang = (typeof ADMIN_LANGS)[number];
+
+/*
+ * Admin "আমার অ্যাকাউন্ট" (Account-*.dc.html). The admin is bilingual, so these carry no
+ * messages: the page maps each failing field to its own Bangla / English text.
+ * Name and phone reuse `profileInput` (same rules as the storefront account).
+ */
+
+/** "পাসওয়ার্ড বদলান": 8+ characters (Better Auth's minimum and the board's help text). */
+export const adminPasswordInput = z
+  .object({
+    /** Absent when a Google-only admin sets a first password. */
+    current: z.string().min(1).max(128).optional(),
+    next: z.string().min(8).max(128),
+    /** The phone board has no "আবার লিখুন" field. */
+    confirm: z.string().max(128).optional(),
+  })
+  .refine((v) => v.confirm === undefined || v.confirm === v.next, { path: ["confirm"] });
+export type AdminPasswordInput = z.infer<typeof adminPasswordInput>;
+
+/** Email "বদলান" (owner only): a verification link goes to the new address. */
+export const adminEmailChangeInput = z.object({
+  email: z.string().trim().toLowerCase().max(255).pipe(z.email()),
+});
+
+/** "বের করুন" on one signed-in device. */
+export const adminSessionIdInput = z.object({ id: z.string().min(1).max(36) });
 
 /** Admin top-bar search (⌘K): order number, name, phone or email. */
 export const adminSearchInput = z.object({ q: z.string().trim().min(1).max(80) });
@@ -540,7 +600,8 @@ export type OrderListQuery = z.infer<typeof orderListQuery>;
 /** Status steps the list can do: New → Confirmed (কনফার্ম), Confirmed → Packed (প্যাক). */
 export const orderAdvanceInput = z.object({
   ids: z.array(z.number().int().positive()).min(1).max(200),
-  step: z.enum(["confirm", "pack"]),
+  /** ship / deliver: the manual steps for orders not booked with Steadfast (owner, 2026-11-15). */
+  step: z.enum(["confirm", "pack", "ship", "deliver"]),
 });
 /** "ফিরিয়ে নিন" on the toast: undo the step just done on these orders. */
 export const orderUndoInput = orderAdvanceInput;
@@ -657,3 +718,277 @@ export const stockSaveInput = z.object({
     .min(1)
     .max(500),
 });
+
+/** Products list "লুকান" / "চালু করুন": whether the product shows in the shop. */
+export const productActiveInput = z.object({
+  id: z.number().int().positive(),
+  active: z.boolean(),
+});
+
+/**
+ * "৳ 420" / "1,450.50" typed in the admin → integer paisa, without floating point.
+ * Returns null for an empty or malformed amount.
+ */
+export function takaToPaisa(input: string): number | null {
+  const s = input.replace(/[\s,৳]/g, "").replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
+  const m = /^(\d{1,7})(?:\.(\d{1,2}))?$/.exec(s);
+  if (!m) return null;
+  return Number(m[1]) * 100 + Number((m[2] ?? "").padEnd(2, "0"));
+}
+
+const productText = z.string().trim().max(5000);
+
+/** Product edit (ProductEdit-* boards). Array order is the saved order; missing ids are removed. */
+export const productSaveInput = z.object({
+  id: z.number().int().positive().optional(),
+  nameBn: z.string().trim().min(1).max(200),
+  name: z.string().trim().min(1).max(200),
+  slug,
+  categoryId: z.number().int().positive().nullable(),
+  spiceLevel: z.number().int().min(0).max(3),
+  searchTerms: z
+    .array(z.string().trim().min(1).max(60))
+    .max(40)
+    .refine((t) => t.join(", ").length <= 500),
+  /** English; `descriptionBn` is its Bangla twin. The detail fields are Bangla, `…En` English. */
+  description: productText,
+  descriptionBn: productText,
+  /** One short line for the Home featured card; `taglineEn` is its English twin. */
+  tagline: z.string().trim().max(120),
+  taglineEn: z.string().trim().max(120),
+  ingredients: productText,
+  ingredientsEn: productText,
+  flavor: productText,
+  flavorEn: productText,
+  texture: productText,
+  textureEn: productText,
+  serving: productText,
+  servingEn: productText,
+  storage: productText,
+  storageEn: productText,
+  shelfLife: productText,
+  shelfLifeEn: productText,
+  allergens: productText,
+  allergensEn: productText,
+  packaging: productText,
+  packagingEn: productText,
+  isActive: z.boolean(),
+  isFeatured: z.boolean(),
+  variants: z
+    .array(
+      z.object({
+        id: z.number().int().positive().optional(),
+        label: z.string().trim().min(1).max(80),
+        weightGrams: z.number().int().positive().max(100000).nullable(),
+        sku: z.string().trim().min(1).max(64),
+        price: paisa.min(1),
+        compareAtPrice: paisa.nullable(),
+        /** What one unit costs to make (owner only, for profit). */
+        costPrice: paisa.nullable(),
+        stock: z.number().int().nonnegative().max(100000),
+        isActive: z.boolean(),
+      }),
+    )
+    .min(1)
+    .max(20),
+  images: z
+    .array(
+      z.object({
+        id: z.number().int().positive().optional(),
+        url: z.string().trim().min(1).max(500),
+        alt: z.string().trim().max(200),
+        altBn: z.string().trim().max(200),
+        /** Home "বিশেষ বাছাই" photo; at most one per product. */
+        isFeatured: z.boolean().default(false),
+      }),
+    )
+    .max(12)
+    .refine((list) => list.filter((im) => im.isFeatured).length <= 1, {
+      message: "Only one featured photo",
+    }),
+});
+export type ProductSaveInput = z.input<typeof productSaveInput>;
+
+/** Photo upload: the product's slug names the file. The file itself is checked separately. */
+export const productImageUploadInput = z.object({ slug });
+
+/** Admin "ক্যাটাগরি এডিট" (Categories-* boards). */
+export const adminCategoryInput = z.object({
+  id: z.number().int().positive().optional(),
+  nameBn: z.string().trim().min(1).max(120),
+  name: z.string().trim().min(1).max(120),
+  slug,
+  /** English; `descriptionBn` is its Bangla twin (bilingual storefront). */
+  description: z.string().trim().max(2000),
+  descriptionBn: z.string().trim().max(2000),
+  imageUrl: z.string().trim().max(500).nullable(),
+  /** Shop page header photo for this shelf; null uses the default. */
+  headerImageUrl: z.string().trim().max(500).nullable(),
+  isActive: z.boolean(),
+});
+export type AdminCategoryInput = z.input<typeof adminCategoryInput>;
+
+/** "টেনে ক্রম বদলান": every category id in the new order. */
+export const categoryOrderInput = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(200),
+});
+
+export const categoryDeleteInput = z.object({ id: z.number().int().positive() });
+
+/** Restock alerts "সবাইকে এখন জানান": every open request for one size. */
+export const restockNotifyAllInput = z.object({ variantId: z.number().int().positive() });
+
+/** Customers list (Customers-*.dc.html): search, sort, page; `sel` = 1194 split-view preview. */
+export const CUSTOMER_SORTS = ["last", "spent", "orders", "new"] as const;
+export type CustomerSort = (typeof CUSTOMER_SORTS)[number];
+export const customerListQuery = z.object({
+  q: z.string().trim().max(80).catch(""),
+  sort: z.enum(CUSTOMER_SORTS).catch("last"),
+  page: z.coerce.number().int().min(1).max(10000).catch(1),
+  /** Phone "আরও দেখুন": how many rows to show. */
+  n: z.coerce.number().int().min(20).max(500).catch(20),
+  sel: z.string().trim().min(1).max(36).optional().catch(undefined),
+});
+export type CustomerListQuery = z.infer<typeof customerListQuery>;
+
+/** Lifts a customer's ban (the split-view switch; banning needs reason + date on the detail page). */
+export const customerUnbanInput = z.object({ userId: z.string().trim().min(1).max(36) });
+
+/** CustomerDetail ban card: "কারণ" and "কবে পর্যন্ত" (empty = permanent, "ফাঁকা রাখলে স্থায়ী।"). */
+export const customerBanInput = z.object({
+  userId: z.string().trim().min(1).max(36),
+  reason: z.string().trim().max(500),
+  until: isoDay.optional(),
+});
+export type CustomerBanInput = z.infer<typeof customerBanInput>;
+
+/** CustomerDetail "নোট যোগ করুন": internal note on a customer, owner only. */
+export const customerNoteInput = z.object({
+  userId: z.string().trim().min(1).max(36),
+  body: z.string().trim().min(1).max(1000),
+});
+
+/** Reviews page (Reviews-*.dc.html). `sel` is "p12" (product review 12) or "s3" (shop review 3). */
+export const REVIEW_STATUSES = ["pending", "approved"] as const;
+export const REVIEW_KINDS = ["all", "product", "site"] as const;
+const reviewKey = z.string().regex(/^[ps][1-9]\d{0,9}$/);
+export const reviewListQuery = z.object({
+  status: z.enum(REVIEW_STATUSES).catch("pending"),
+  kind: z.enum(REVIEW_KINDS).catch("all"),
+  product: z.coerce.number().int().positive().optional().catch(undefined),
+  rating: z.coerce.number().int().min(1).max(5).optional().catch(undefined),
+  /** Phone / 834 "আরও দেখুন": how many to show. */
+  n: z.coerce.number().int().min(20).max(500).catch(20),
+  sel: reviewKey.optional().catch(undefined),
+});
+export type ReviewListQuery = z.infer<typeof reviewListQuery>;
+
+/** অনুমোদন / লুকান / delete on one review. */
+export const reviewKeyInput = z.object({ key: reviewKey });
+/** "উত্তর সংরক্ষণ": empty text removes the reply. */
+export const reviewReplyInput = z.object({
+  key: reviewKey,
+  reply: z.string().trim().max(1000),
+});
+
+/** Messages inbox (Messages-*.dc.html). `sel` = 1194 / desktop split view selection. */
+export const MESSAGE_BOXES = ["inbox", "archive"] as const;
+export const messageListQuery = z.object({
+  box: z.enum(MESSAGE_BOXES).catch("inbox"),
+  q: z.string().trim().max(80).catch(""),
+  subject: z.enum(CONTACT_SUBJECTS).optional().catch(undefined),
+  n: z.coerce.number().int().min(30).max(500).catch(30),
+  sel: z.coerce.number().int().positive().optional().catch(undefined),
+});
+export type MessageListQuery = z.infer<typeof messageListQuery>;
+
+export const messageIdInput = z.object({ id: z.number().int().positive() });
+/** "উত্তর পাঠান" (email reply) and "ফোন নোট" (staff note). */
+export const messageReplyInput = z.object({
+  id: z.number().int().positive(),
+  kind: z.enum(["email", "note"]),
+  body: z.string().trim().min(1).max(5000),
+});
+
+/** Newsletter subscribers (Subscribers-*.dc.html): email search, page; phone "আরও দেখুন". */
+export const subscriberListQuery = z.object({
+  q: z.string().trim().max(120).catch(""),
+  page: z.coerce.number().int().min(1).max(10000).catch(1),
+  n: z.coerce.number().int().min(30).max(1000).catch(30),
+});
+export type SubscriberListQuery = z.infer<typeof subscriberListQuery>;
+
+/**
+ * Coupon editor (Coupons-Desktop drawer, CouponEdit-*). Amounts are paisa (the form converts with
+ * takaToPaisa); dates are Bangladesh days, start of day to end of day. Empty limit = no limit.
+ */
+export const couponSaveInput = z
+  .object({
+    id: z.number().int().positive().optional(),
+    code: z
+      .string()
+      .trim()
+      .toUpperCase()
+      .regex(/^[A-Z0-9_-]{3,40}$/, "৩–৪০ অক্ষর: ইংরেজি অক্ষর, সংখ্যা, - বা _"),
+    type: z.enum(["percent", "fixed"]),
+    value: z.number().int().min(1).max(10_000_000),
+    minOrder: z.number().int().min(0).max(10_000_000),
+    startsOn: isoDay.optional(),
+    endsOn: isoDay.optional(),
+    maxUses: z.number().int().min(1).max(1_000_000).optional(),
+    /** Uses per person; missing = no per-person limit (the editor starts at 1). */
+    perPersonLimit: z.number().int().min(1).max(1000).optional(),
+    /** Percent coupons only: cap in paisa. */
+    maxDiscount: z.number().int().min(1).max(10_000_000).optional(),
+    firstOrderOnly: z.boolean(),
+    isActive: z.boolean(),
+  })
+  .refine((c) => c.type !== "percent" || c.value <= 100, {
+    path: ["value"],
+    message: "শতাংশ ১–১০০ হতে হবে",
+  })
+  .refine((c) => !c.startsOn || !c.endsOn || c.endsOn >= c.startsOn, {
+    path: ["endsOn"],
+    message: "শেষের তারিখ শুরুর পরে হতে হবে",
+  });
+export type CouponSaveInput = z.infer<typeof couponSaveInput>;
+export const couponIdInput = z.object({ id: z.number().int().positive() });
+
+/** Settings "দোকানের তথ্য" (Settings-* boards). */
+export const shopInfoInput = z.object({
+  phone: z
+    .string()
+    .trim()
+    .regex(/^(01[3-9]\d{8})?$/, "01 দিয়ে শুরু ১১ সংখ্যার নম্বর দিন"),
+  email: z.union([z.literal(""), z.email("সঠিক ইমেইল দিন")]),
+  pickupAddress: z.string().trim().max(500),
+});
+/** Settings "ডেলিভারি চার্জ" (paisa). */
+export const deliveryFeesInput = z.object({
+  in: z.number().int().min(0).max(1_000_000),
+  out: z.number().int().min(0).max(1_000_000),
+});
+export const codSwitchInput = z.object({ enabled: z.boolean() });
+/** Settings "কুরিয়ার: Steadfast" key change. */
+export const steadfastKeysInput = z.object({
+  apiKey: z.string().trim().min(8).max(200),
+  secretKey: z.string().trim().min(8).max(200),
+});
+
+/** Steadfast booking from the order list / detail ("বুক করুন"): packed orders only. */
+export const courierBookInput = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(100),
+});
+/** "কুরিয়ার সিঙ্ক": these orders, or every booked order still with the courier when empty. */
+export const courierSyncInput = z.object({
+  ids: z.array(z.number().int().positive()).max(500).optional(),
+});
+/** "টাকা পাওয়া গেছে": delivered orders; payout reference and day are optional. */
+export const orderSettleInput = z.object({
+  ids: z.array(z.number().int().positive()).min(1).max(500),
+  payoutRef: z.string().trim().max(80).optional(),
+  paidOn: isoDay.optional(),
+});
+export const orderUnsettleInput = z.object({ id: z.number().int().positive() });
+/** Stock "সীমা". */
+export const lowStockLimitInput = z.object({ limit: z.number().int().min(1).max(10_000) });

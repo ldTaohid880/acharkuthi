@@ -24,9 +24,9 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { Dialog } from "radix-ui";
 import { useEffect, useMemo, useRef, useState, useTransition } from "react";
+import { bookCourier, syncCourier } from "@/app/actions/courier";
 import { advanceOrders, countFilteredOrders, undoAdvance } from "@/app/actions/orders";
 import { btn } from "@/components/btn";
-import { NeedsStorage } from "@/components/needs-storage";
 import { StatusChip } from "@/components/status-chip";
 import { useToast } from "@/components/toast";
 import { ScrollArea } from "@repo/ui/components/scroll-area";
@@ -53,6 +53,7 @@ import {
   PRESETS,
   Radio,
   RowMenu,
+  SettleDialog,
   type OT,
 } from "./orders-parts";
 import { AttentionBoard, StatusMenu } from "./attention";
@@ -92,6 +93,8 @@ export function OrdersView(p: Props) {
   const [cancelling, setCancelling] = useState<{ id: number; number: string } | null>(null);
   const [expanded, setExpanded] = useState<Set<number>>(new Set());
   const [sheet, setSheet] = useState(false);
+  /** Delivered orders waiting for the "টাকা পাওয়া গেছে" dialog. */
+  const [settling, setSettling] = useState<number[]>([]);
   const [previewOpen, setPreviewOpen] = useState(true);
   const [search, setSearch] = useState(q.q);
 
@@ -182,10 +185,61 @@ export function OrdersView(p: Props) {
     });
   }
 
+  /** "বুক করুন": hands packed orders to Steadfast (they become shipped). */
+  function book(ids: number[]) {
+    start(async () => {
+      try {
+        const r = await bookCourier({ ids });
+        setSel(new Set());
+        if (!r.ok) {
+          toast({ tone: "err", title: t.sfKeys, sub: t.sfKeysSub });
+          return;
+        }
+        const failed = r.failed.map((f) => f.number).join(", ");
+        if (r.booked.length)
+          toast({
+            tone: "ok",
+            title:
+              r.booked.length === 1
+                ? t.toastBookedOne
+                : fill(t.toastBooked, { n: digits(r.booked.length, lang) }),
+            ...(failed ? { sub: fill(t.toastBookFailed, { list: failed }) } : {}),
+          });
+        else if (failed)
+          toast({
+            tone: "err",
+            title: fill(t.toastBookFailed, { list: failed }),
+            sub: r.failed[0]?.message ?? t.saveFailedSub,
+          });
+      } catch {
+        toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub });
+      }
+    });
+  }
+
+  /** "কুরিয়ার সিঙ্ক": fetches Steadfast statuses for booked orders still on the way. */
+  function sync() {
+    start(async () => {
+      try {
+        const r = await syncCourier({});
+        if (!r.ok) toast({ tone: "err", title: t.sfKeys, sub: t.sfKeysSub });
+        else if (!r.checked) toast({ tone: "ok", title: t.toastSyncNone });
+        else
+          toast({
+            tone: "ok",
+            title: fill(t.toastSynced, { n: digits(r.checked, lang), c: digits(r.changed, lang) }),
+          });
+      } catch {
+        toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub });
+      }
+    });
+  }
+
   const rowAction = (o: OrderRow) => STEP_OF[o.status];
   const runRow = (o: OrderRow) => {
     const s = rowAction(o);
     if (s === "confirm" || s === "pack") advance([o.id], s, [o.number]);
+    else if (s === "book") book([o.id]);
   };
 
   const pageIds = p.rows.map((r) => r.id);
@@ -201,6 +255,8 @@ export function OrdersView(p: Props) {
   const toggleAll = () => setSel(allOn ? new Set() : new Set(pageIds));
   const selRows = p.rows.filter((r) => sel.has(r.id));
   const selPending = selRows.filter((r) => r.status === "pending");
+  const selPacked = selRows.filter((r) => r.status === "processing" && !r.booked);
+  const selDelivered = selRows.filter((r) => r.status === "delivered" && !r.settled);
 
   const tabLabel = (tab: OrderTab, short = false) =>
     short && (tab === "booked" || tab === "problem") ? t.tabsShort[tab] : t.tabs[tab];
@@ -344,8 +400,8 @@ export function OrdersView(p: Props) {
                         <span className="flex items-center justify-between gap-2">
                           <span className="truncate">{o.name}</span>
                           <StatusChip
-                            tone={statusTone(o.status)}
-                            label={statusLabel(statusTone(o.status), lang)}
+                            tone={statusTone(o.status, o)}
+                            label={statusLabel(statusTone(o.status, o), lang)}
                           />
                         </span>
                         <span className="text-muted-foreground truncate text-xs leading-4">
@@ -370,6 +426,7 @@ export function OrdersView(p: Props) {
                         t={t}
                         lang={lang}
                         onStep={(s) => advance([preview.id], s, [preview.number])}
+                        onBook={() => book([preview.id])}
                         onCancel={() => setCancelling({ id: preview.id, number: preview.number })}
                         onClose={() => setPreviewOpen(false)}
                       />
@@ -396,10 +453,9 @@ export function OrdersView(p: Props) {
             </p>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            <NeedsStorage />
             <button
               type="button"
-              disabled
+              onClick={sync}
               className={btn({
                 variant: "outline",
                 size: "lg",
@@ -412,7 +468,7 @@ export function OrdersView(p: Props) {
             {role === "owner" ? (
               <button
                 type="button"
-                disabled
+                onClick={() => go({ status: "delivered", multi: undefined, sel: undefined })}
                 className={btn({
                   variant: "outline",
                   size: "lg",
@@ -491,10 +547,25 @@ export function OrdersView(p: Props) {
               <Check aria-hidden className="wide:block hidden" />
               {t.confirm}
             </button>
-            <button type="button" disabled title="needs storage" className={barBtn("light")}>
+            <button
+              type="button"
+              disabled={selPacked.length === 0}
+              onClick={() => book(selPacked.map((r) => r.id))}
+              className={barBtn("light")}
+            >
               <Truck aria-hidden className="wide:block hidden" />
-              {fill(t.bookN, { n: digits(sel.size, lang) })}
+              {fill(t.bookN, { n: digits(selPacked.length, lang) })}
             </button>
+            {role === "owner" && selDelivered.length ? (
+              <button
+                type="button"
+                onClick={() => setSettling(selDelivered.map((r) => r.id))}
+                className={barBtn("dim")}
+              >
+                <Check aria-hidden className="wide:block hidden" />
+                {fill(t.settleN, { n: digits(selDelivered.length, lang) })}
+              </button>
+            ) : null}
             <Link
               href={`/orders/print?ids=${[...sel].join(",")}` as Route}
               className={barBtn("dim")}
@@ -549,7 +620,7 @@ export function OrdersView(p: Props) {
                   const on = sel.has(o.id);
                   const open = expanded.has(o.id);
                   const act = rowAction(o);
-                  const tone = statusTone(o.status);
+                  const tone = statusTone(o.status, o);
                   return (
                     <RowGroup key={o.id}>
                       <tr
@@ -626,8 +697,6 @@ export function OrdersView(p: Props) {
                             {act ? (
                               <button
                                 type="button"
-                                disabled={act === "book"}
-                                title={act === "book" ? "needs storage" : undefined}
                                 onClick={() => runRow(o)}
                                 className={btn({
                                   variant: "outline",
@@ -768,6 +837,13 @@ export function OrdersView(p: Props) {
         }}
       />
       <CancelDialog order={cancelling} t={t} onClose={() => setCancelling(null)} />
+      <SettleDialog
+        ids={settling}
+        t={t}
+        lang={lang}
+        onClose={() => setSettling([])}
+        onDone={() => setSel(new Set())}
+      />
     </>
   );
 }
@@ -869,7 +945,7 @@ function PhoneCard({
   lang: AdminLang;
   onAction: () => void;
 }) {
-  const tone = statusTone(o.status);
+  const tone = statusTone(o.status, o);
   const act = STEP_OF[o.status];
   return (
     <article className="border-border flex flex-col gap-2.5 rounded-xl border bg-white px-4 py-3.5 shadow-xs">
@@ -910,8 +986,6 @@ function PhoneCard({
           </a>
           <button
             type="button"
-            disabled={act === "book"}
-            title={act === "book" ? "needs storage" : undefined}
             onClick={onAction}
             className={btn({ size: "lg", className: "flex-[2] basis-0" })}
           >
@@ -973,6 +1047,7 @@ function Preview({
   t,
   lang,
   onStep,
+  onBook,
   onCancel,
   onClose,
 }: {
@@ -980,11 +1055,12 @@ function Preview({
   t: OT;
   lang: AdminLang;
   onStep: (s: Step) => void;
+  onBook: () => void;
   onCancel: () => void;
   onClose: () => void;
 }) {
   const toast = useToast();
-  const tone = statusTone(o.status);
+  const tone = statusTone(o.status, o);
   const act = STEP_OF[o.status];
   const method = o.payment ? t.methods[o.payment.method] : t.methods.cod;
   const sec = "border-border flex flex-col gap-3 rounded-xl border bg-white p-4";
@@ -1026,9 +1102,7 @@ function Preview({
         {act ? (
           <button
             type="button"
-            disabled={act === "book"}
-            title={act === "book" ? "needs storage" : undefined}
-            onClick={() => act !== "book" && onStep(act)}
+            onClick={() => (act === "book" ? onBook() : onStep(act))}
             className={btn({ size: "lg" })}
           >
             {act === "book" ? <Truck aria-hidden /> : <Check aria-hidden />}
@@ -1144,19 +1218,38 @@ function Preview({
       <div className={cn(sec, "border-[#c7d2fe]")}>
         <div className="flex items-center justify-between gap-2">
           <div className="text-[15px] font-semibold">{t.courierTitle}</div>
-          <span className="flex items-center gap-1.5">
-            <NeedsStorage />
+          {o.booked ? null : (
             <span className="text-muted-foreground text-xs leading-4">{t.notBooked}</span>
-          </span>
+          )}
         </div>
-        <p className="text-muted-foreground text-xs leading-4">{t.courierHelp}</p>
-        <label className="flex flex-col gap-2 text-sm font-medium">
-          {t.courierNote}
-          <textarea disabled className={cn(inputCls, "h-auto min-h-16 py-2 font-normal")} />
-        </label>
-        <button type="button" disabled className={btn({ size: "lg", block: true })}>
-          {t.bookSf}
-        </button>
+        {o.booked ? (
+          <dl className="m-0 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-xs leading-4">
+            <dt className="text-muted-foreground">{t.consignmentLabel}</dt>
+            <dd className="m-0 font-mono">{o.courier.consignmentId}</dd>
+            <dt className="text-muted-foreground">{t.trackingCode}</dt>
+            <dd className="m-0 font-mono">{o.courier.trackingCode ?? "—"}</dd>
+            <dt className="text-muted-foreground">{t.courierStatusLabel}</dt>
+            <dd className="m-0">
+              {o.courier.status ? (t.sfStatus[o.courier.status] ?? o.courier.status) : "—"}
+            </dd>
+            {o.courier.bookedAt ? (
+              <>
+                <dt className="text-muted-foreground">{t.bookedAt}</dt>
+                <dd className="m-0">{orderDate(o.courier.bookedAt, lang)}</dd>
+              </>
+            ) : null}
+          </dl>
+        ) : (
+          <>
+            <p className="text-muted-foreground text-xs leading-4">{t.courierHelp}</p>
+            {o.status === "processing" ? (
+              <button type="button" onClick={onBook} className={btn({ size: "lg", block: true })}>
+                <Truck aria-hidden />
+                {t.bookSf}
+              </button>
+            ) : null}
+          </>
+        )}
       </div>
     </>
   );

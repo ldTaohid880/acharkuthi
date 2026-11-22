@@ -5,9 +5,9 @@ import { cn } from "@repo/ui/lib/utils";
 import type { AdminLang } from "@repo/validators";
 import { Minus, Plus, Search } from "lucide-react";
 import { useState, useTransition } from "react";
+import { saveLowStockLimit } from "@/app/actions/settings";
 import { saveStock } from "@/app/actions/stock";
 import { btn } from "@/components/btn";
-import { NeedsStorage } from "@/components/needs-storage";
 import { PhoneHeader } from "@/components/shell/page";
 import { useToast } from "@/components/toast";
 import { digits, fill } from "@/lib/format";
@@ -50,6 +50,25 @@ export function StockView({
   const [q, setQ] = useState("");
   const [phoneSearch, setPhoneSearch] = useState(false);
   const [pending, start] = useTransition();
+  /** The owner's "কম স্টকের সীমা", saved on blur / Enter (shop_settings.low_stock_limit). */
+  const [limitDraft, setLimitDraft] = useState(String(limit));
+  const saveLimit = () => {
+    const n = Number(limitDraft);
+    if (staff || n === limit) return;
+    if (!Number.isInteger(n) || n < 1 || n > 10000) {
+      setLimitDraft(String(limit));
+      return;
+    }
+    start(async () => {
+      try {
+        await saveLowStockLimit({ limit: n });
+        toast({ tone: "ok", title: fill(t.limitSaved, { n: digits(n, lang) }) });
+      } catch {
+        setLimitDraft(String(limit));
+        toast({ tone: "err", title: t.saveFailed });
+      }
+    });
+  };
 
   const isLow = (n: number) => n > 0 && n < limit;
   const counts = {
@@ -267,13 +286,18 @@ export function StockView({
       >
         <input
           id={large ? "thr-t" : "thr"}
-          value={limit}
-          readOnly
+          value={limitDraft}
+          readOnly={staff}
+          inputMode="numeric"
+          onChange={(e) => setLimitDraft(e.target.value.replace(/[^0-9]/g, ""))}
+          onBlur={saveLimit}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") e.currentTarget.blur();
+          }}
           className="w-full min-w-0 bg-transparent tabular-nums outline-none"
         />
         <span className="text-muted-foreground text-[11px] whitespace-nowrap">{t.limitUnit}</span>
       </div>
-      <NeedsStorage />
     </div>
   );
 
@@ -298,7 +322,7 @@ export function StockView({
       <div className="tab:hidden flex h-full flex-col">
         <PhoneHeader
           title={t.title}
-          sub={`${t.phoneSub} · needs storage`}
+          sub={t.phoneSub}
           end={
             <button
               type="button"

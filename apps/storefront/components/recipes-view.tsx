@@ -4,12 +4,13 @@ import Link, { useLinkStatus } from "next/link";
 import { useCallback, useMemo, useState } from "react";
 import type { RecipesQuery } from "@repo/validators";
 import { Icon } from "@/components/icon";
+import { useLang } from "@/lib/i18n/lang-context";
 import {
-  RECIPE_CATEGORY_LABEL,
   RECIPE_CHIPS,
   applyRecipesQuery,
-  levelLabel,
+  levelWord,
   nextLimit,
+  recipeText,
   type RecipeCard,
 } from "@/lib/recipe-view";
 import { recipeHref } from "@/lib/routes";
@@ -47,7 +48,16 @@ const chevron = (d: string) => (
 );
 
 /** The design's photo slot: a real image when there is one, otherwise the crossed placeholder. */
-export function Photo({ r, ratio, className }: { r: RecipeCard; ratio?: string; className?: string }) {
+export function Photo({
+  r,
+  ratio,
+  className,
+}: {
+  r: RecipeCard;
+  ratio?: string;
+  className?: string;
+}) {
+  const alt = recipeText(r, useLang().lang).alt;
   const style = ratio ? { aspectRatio: ratio } : undefined;
   if (r.imageUrl) {
     return (
@@ -56,15 +66,21 @@ export function Photo({ r, ratio, className }: { r: RecipeCard; ratio?: string; 
         <img
           className="ph-img"
           src={r.imageUrl}
-          alt={r.imageAlt}
+          alt={alt}
           loading="lazy"
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover" }}
+          style={{
+            position: "absolute",
+            inset: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+          }}
         />
       </div>
     );
   }
   return (
-    <div className={`ph ${className ?? ""}`} role="img" aria-label={r.imageAlt} style={style}>
+    <div className={`ph ${className ?? ""}`} role="img" aria-label={alt} style={style}>
       <div className="ph-in">
         <svg className="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
           <path
@@ -78,18 +94,20 @@ export function Photo({ r, ratio, className }: { r: RecipeCard; ratio?: string; 
       </div>
       <span className="dir">
         <b>{r.imageFile}</b>
-        {r.imageAlt}
+        {alt}
       </span>
     </div>
   );
 }
 
 export function Meta({ r }: { r: RecipeCard }) {
+  const { lang, t: all } = useLang();
+  const t = all.recipes;
   return (
-    <div className="meta">
+    <div className="meta" lang={lang}>
       <span>
         {clock}
-        {r.totalMinutes} মিনিট
+        {t.mins(r.totalMinutes)}
       </span>
       <span>
         <span className="lv" aria-hidden="true">
@@ -97,7 +115,7 @@ export function Meta({ r }: { r: RecipeCard }) {
             <i key={n} className={r.difficulty >= n ? "on" : undefined} />
           ))}
         </span>
-        {levelLabel(r.difficulty)}
+        {levelWord(t.levels, r.difficulty)}
       </span>
     </div>
   );
@@ -106,25 +124,32 @@ export function Meta({ r }: { r: RecipeCard }) {
 /** Shows "খুলছে…" while the recipe page loads (the board's opening state). */
 function GoLabel() {
   const { pending } = useLinkStatus();
+  const { lang, t } = useLang();
   return (
     <span className="go" data-pending={pending ? "" : undefined}>
-      <span>{pending ? "খুলছে…" : "রেসিপি দেখুন"}</span>
+      <span lang={lang}>{pending ? t.recipes.opening : t.recipes.view}</span>
       <Icon name="arrow" />
     </span>
   );
 }
 
 export function RecipeCardLink({ r, wide }: { r: RecipeCard; wide: boolean }) {
+  const { lang, t: all, href } = useLang();
+  const t = all.recipes;
+  const rt = recipeText(r, lang);
   return (
     <Link
       className={`rc${wide ? " wide" : ""}`}
-      href={recipeHref(r.slug)}
-      aria-label={`${r.title}, ${r.totalMinutes} মিনিট, ${levelLabel(r.difficulty)}`}
+      href={href(recipeHref(r.slug))}
+      // No aria-label: the name comes from the card's visible text (title, time, level), so
+      // what a voice-control user reads out matches (WCAG 2.5.3).
     >
       <Photo r={r} />
-      <span className="tg">রেসিপি · {RECIPE_CATEGORY_LABEL[r.category]}</span>
-      <h3 lang="bn">{r.title}</h3>
-      <p>{r.subtitle}</p>
+      <span className="tg" lang={lang}>
+        {t.tag} · {t.chips[r.category]}
+      </span>
+      <h3 lang={rt.title.lang}>{rt.title.text}</h3>
+      {rt.accent ? <p lang={rt.accent.lang}>{rt.accent.text}</p> : null}
       <Meta r={r} />
       <GoLabel />
     </Link>
@@ -142,6 +167,9 @@ export function RecipesView({
   const [quick, setQuick] = useState(initialQuery.quick);
   const [limit, setLimit] = useState(initialQuery.show ?? PAGE);
   const [fe, setFe] = useState(0);
+  const { lang, t: all, href } = useLang();
+  const t = all.recipes;
+  const other = lang === "en" ? "bn" : "en";
 
   const featured = useMemo(
     () =>
@@ -176,44 +204,55 @@ export function RecipesView({
   };
 
   const f = featured.length > 0 ? featured[fe % featured.length] : undefined;
+  const ft = f ? recipeText(f, lang) : undefined;
   const step = (d: number) => setFe((i) => (i + d + featured.length) % featured.length);
 
   return (
     <>
       {f ? (
-        <section className="feat" aria-label="Featured recipe">
+        <section className="feat" aria-label={t.featAria}>
           <div className="wrap feat-in">
             <Photo r={f} ratio="4 / 3" />
-            <article className="feat-card" style={{ transform: "rotate(-1.5deg)", transformOrigin: "center" }}>
-              <span className="tg">আজকের রেসিপি · Featured</span>
-              <h2 lang="bn">{f.title}</h2>
-              <p className="en">{f.subtitle}</p>
-              {f.summary ? (
-                <p className="d" lang="bn">
-                  {f.summary}
+            <article
+              className="feat-card"
+              style={{ transform: "rotate(-1.5deg)", transformOrigin: "center" }}
+            >
+              <span className="tg" lang={lang}>
+                {t.featTag}
+              </span>
+              <h2 lang={ft?.title.lang}>{ft?.title.text}</h2>
+              {ft?.accent ? (
+                <p className="en" lang={ft.accent.lang}>
+                  {ft.accent.text}
+                </p>
+              ) : null}
+              {ft?.summary ? (
+                <p className="d" lang={ft.summary.lang}>
+                  {ft.summary.text}
                 </p>
               ) : null}
               <Meta r={f} />
               <div className="feat-act">
                 <Link
                   className="ak-btn ak-btn--brand"
-                  href={recipeHref(f.slug)}
+                  href={href(recipeHref(f.slug))}
                   style={{ minHeight: 48 }}
+                  lang={lang}
                 >
-                  রেসিপি দেখুন{" "}
+                  {t.view}{" "}
                   <span className="ak-ico">
                     <Icon name="arrow" />
                   </span>
                 </Link>
                 {featured.length > 1 ? (
-                  <div className="fnav" role="group" aria-label="Featured recipes">
-                    <button type="button" aria-label="Previous featured recipe" onClick={() => step(-1)}>
+                  <div className="fnav" role="group" aria-label={t.featNav}>
+                    <button type="button" aria-label={t.prev} onClick={() => step(-1)}>
                       {chevron("M15 6l-6 6 6 6")}
                     </button>
                     <span aria-live="polite">
                       {(fe % featured.length) + 1} / {featured.length}
                     </span>
-                    <button type="button" aria-label="Next featured recipe" onClick={() => step(1)}>
+                    <button type="button" aria-label={t.next} onClick={() => step(1)}>
                       {chevron("M9 6l6 6-6 6")}
                     </button>
                   </div>
@@ -228,29 +267,33 @@ export function RecipesView({
         <div className="wrap">
           <div className="disc-head">
             <div>
-              <span className="ak-eyebrow">সব রেসিপি · Browse</span>
-              <h2 className="h2-bn" id="rd-h" lang="bn">
-                কী রান্না হচ্ছে আজ?
+              <span className="ak-eyebrow" lang={lang}>
+                {t.browseEyebrow}
+              </span>
+              <h2 className="h2-bn" id="rd-h" lang={lang}>
+                {t.browseH}
               </h2>
-              <p className="h2-en">What shall we cook today?</p>
+              <p className="h2-en" lang={other}>
+                {t.browseSub}
+              </p>
             </div>
             {recipes.some((r) => r.isSample) ? (
-              <p className="sample">
-                Sample content: titles, times and photographs are placeholders until approved.
+              <p className="sample" lang={lang}>
+                {t.sample}
               </p>
             ) : null}
           </div>
-          <div className="cats" role="group" aria-label="Recipe category">
-            {RECIPE_CHIPS.map(([key, label]) => (
+          <div className="cats" role="group" aria-label={t.catAria}>
+            {RECIPE_CHIPS.map((key) => (
               <button
                 key={key}
                 type="button"
                 className={`ak-chip${cat === key ? " is-on" : ""}`}
                 aria-pressed={cat === key}
-                lang="bn"
+                lang={lang}
                 onClick={() => update(key, quick)}
               >
-                {label}
+                {t.chips[key]}
               </button>
             ))}
             <span className="sep" aria-hidden="true" />
@@ -258,14 +301,16 @@ export function RecipesView({
               type="button"
               className={`ak-chip${quick ? " is-on" : ""}`}
               aria-pressed={quick}
-              lang="bn"
+              lang={lang}
               onClick={() => update(cat, !quick)}
             >
-              ১৫ মিনিটের মধ্যে
+              {t.quick}
             </button>
           </div>
           <div className="cnt" aria-live="polite">
-            <b>{total}</b> টি রেসিপি · {total} recipes
+            <b>{total}</b>
+            <span lang={lang}>{t.countUnit}</span> ·{" "}
+            <span lang={other}>{t.countAccent(total)}</span>
           </div>
           <div className="rgw">
             <div className="rgrid">
@@ -274,15 +319,16 @@ export function RecipesView({
                   <div className="eb ak-blot v2" aria-hidden="true">
                     <Icon name="jar" />
                   </div>
-                  <h3 lang="bn">এই বিভাগে এখনো কোনো রেসিপি নেই</h3>
-                  <p>Nothing matches yet. Try another category, or drop the time filter.</p>
+                  <h3 lang={lang}>{t.emptyH}</h3>
+                  <p lang={lang}>{t.emptyP}</p>
                   <button
                     type="button"
                     className="ak-btn ak-btn--brand"
                     style={{ minHeight: 48 }}
                     onClick={() => update("all", false)}
+                    lang={lang}
                   >
-                    সব রেসিপি দেখুন
+                    {t.allBtn}
                   </button>
                 </div>
               ) : (
@@ -292,8 +338,8 @@ export function RecipesView({
           </div>
           {total > 0 ? (
             <div className="more">
-              <div className="cnt" style={{ margin: 0 }}>
-                আপনি দেখেছেন <b>{shown.length}</b> / <b>{total}</b>
+              <div className="cnt" style={{ margin: 0 }} lang={lang}>
+                {t.seen} <b>{shown.length}</b> / <b>{total}</b>
               </div>
               <div className="pg" aria-hidden="true">
                 <span style={{ width: `${Math.round((shown.length / total) * 100)}%` }} />
@@ -304,8 +350,9 @@ export function RecipesView({
                   className="ak-btn ak-btn--line"
                   style={{ minHeight: 50, padding: "0 30px" }}
                   onClick={more}
+                  lang={lang}
                 >
-                  আরও রেসিপি
+                  {t.more}
                 </button>
               ) : null}
             </div>

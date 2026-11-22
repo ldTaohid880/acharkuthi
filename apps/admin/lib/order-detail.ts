@@ -56,6 +56,17 @@ export interface OrderDetail {
   } | null;
   tracking: { courier: string; ref: string; eta: string };
   courierNote: string;
+  /** Steadfast booking (owner decision, 2026-11-15). */
+  booked: boolean;
+  courier: {
+    consignmentId: string | null;
+    status: string | null;
+    bookedAt: Date | null;
+    syncedAt: Date | null;
+  };
+  /** "টাকা পাওয়া গেছে" (admin-only step). */
+  settledAt: Date | null;
+  payoutRef: string | null;
   /** Latest time each status was reached, with who did it. */
   events: { status: DbStatus; at: Date; by: string | null }[];
   notes: { id: number; body: string; at: Date; by: string | null }[];
@@ -163,6 +174,15 @@ export async function getOrderDetail(id: number): Promise<OrderDetail | null> {
       eta: order.etaDate ?? "",
     },
     courierNote: order.courierNote ?? "",
+    booked: order.consignmentId !== null,
+    courier: {
+      consignmentId: order.consignmentId,
+      status: order.courierStatus,
+      bookedAt: order.courierBookedAt,
+      syncedAt: order.courierSyncedAt,
+    },
+    settledAt: order.settledAt,
+    payoutRef: order.payoutRef,
     events,
     notes,
   };

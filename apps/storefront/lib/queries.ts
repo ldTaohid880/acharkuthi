@@ -1,5 +1,5 @@
 import { cache } from "react";
-import { and, asc, db, desc, eq, inArray, ne, schema } from "@repo/db";
+import { and, asc, db, desc, eq, inArray, ne, notInArray, schema, sql } from "@repo/db";
 import { slug as slugSchema } from "@repo/validators";
 
 /** Read-only catalog queries for the storefront. Server Components only. */
@@ -21,6 +21,24 @@ export const getFeaturedProducts = cache(async (limit = 5) =>
     limit,
   }),
 );
+
+/**
+ * The product with the most units sold in orders that were not cancelled or returned, for the
+ * Home featured card's "বেস্টসেলার" badge (owner, 2026-11-21). Undefined before the first sale.
+ */
+export const getBestsellerProductId = cache(async (): Promise<number | undefined> => {
+  const units = sql<number>`sum(${schema.orderItems.quantity})`;
+  const [top] = await db
+    .select({ productId: schema.productVariants.productId, units })
+    .from(schema.orderItems)
+    .innerJoin(schema.orders, eq(schema.orders.id, schema.orderItems.orderId))
+    .innerJoin(schema.productVariants, eq(schema.productVariants.id, schema.orderItems.variantId))
+    .where(notInArray(schema.orders.status, ["cancelled", "returned"]))
+    .groupBy(schema.productVariants.productId)
+    .orderBy(desc(units))
+    .limit(1);
+  return top && Number(top.units) > 0 ? top.productId : undefined;
+});
 
 /** Every active product with its variants, images and shelf. The shop filters these in the browser. */
 export const getShopProducts = cache(async () =>
@@ -83,6 +101,7 @@ export async function getProductReviews(productId: number) {
     comment: r.comment,
     spice: r.spice,
     photoUrl: r.photoUrl,
+    reply: r.reply,
     createdAt: r.createdAt,
     verified: r.userId !== null && buyers.has(r.userId),
   }));
@@ -107,6 +126,8 @@ export interface SiteReview {
   text: string;
   date: string;
   ver: boolean;
+  /** "আচারকুঠির উত্তর", when the shop has replied (admin Reviews page). */
+  reply?: string | null;
 }
 
 const reviewDate = new Intl.DateTimeFormat("en-GB", {
@@ -116,6 +137,26 @@ const reviewDate = new Intl.DateTimeFormat("en-GB", {
 });
 
 /** Approved "overall experience" reviews, newest first. */
+/** Approved site reviews in all: their count and average stars (Home review summary). */
+export interface SiteReviewStats {
+  count: number;
+  /** Average stars, one decimal; 0 when there are none. */
+  average: number;
+}
+
+export const getSiteReviewStats = cache(async (): Promise<SiteReviewStats> => {
+  const [row] = await db
+    .select({
+      count: sql<number>`count(*)`,
+      average: sql<string | null>`avg(${schema.siteReviews.rating})`,
+    })
+    .from(schema.siteReviews)
+    .where(eq(schema.siteReviews.isApproved, true));
+  const count = Number(row?.count ?? 0);
+  const average = row?.average ? Math.round(Number(row.average) * 10) / 10 : 0;
+  return { count, average };
+});
+
 export const getSiteReviews = cache(async (): Promise<SiteReview[]> => {
   const rows = await db.query.siteReviews.findMany({
     where: eq(schema.siteReviews.isApproved, true),
@@ -128,5 +169,6 @@ export const getSiteReviews = cache(async (): Promise<SiteReview[]> => {
     text: r.body,
     date: reviewDate.format(r.createdAt),
     ver: false,
+    reply: r.reply,
   }));
 });

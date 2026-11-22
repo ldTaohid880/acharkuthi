@@ -1,21 +1,25 @@
 import "server-only";
 
 import type { AdminRole } from "@repo/auth";
-import { and, count, db, eq, isNull, lt, schema } from "@repo/db";
+import { and, count, db, eq, getShopRules, isNull, lt, schema } from "@repo/db";
 import type { NavCounts } from "@/components/shell/nav-model";
+import { unreadCount } from "@/lib/messages";
 
-/** Stock below this is "low" (Dashboard-Desktop.dc.html: "সীমা: ১০টির কম"). */
-export const LOW_STOCK_LIMIT = 10;
+/** Stock below the Stock page's "সীমা" is low (default 10, saved in Settings storage). */
+export async function lowStockLimit(): Promise<number> {
+  return (await getShopRules()).lowStockLimit;
+}
 
 /**
- * Live counts beside menu entries: new orders, low-stock sizes, reviews waiting for approval and
- * open restock requests. Unread messages need storage that doesn't exist yet, so no count.
+ * Live counts beside menu entries: new orders, low-stock sizes, unread messages, reviews waiting
+ * for approval and open restock requests.
  */
 export async function getNavCounts(role: AdminRole): Promise<NavCounts> {
   const { orders, productVariants, products, reviews, siteReviews, restockRequests } = schema;
   const one = async (q: Promise<{ n: number }[]>) => (await q)[0]?.n ?? 0;
+  const limit = await lowStockLimit();
 
-  const [newOrders, lowStock] = await Promise.all([
+  const [newOrders, lowStock, messages] = await Promise.all([
     one(db.select({ n: count() }).from(orders).where(eq(orders.status, "pending"))),
     one(
       db
@@ -26,17 +30,24 @@ export async function getNavCounts(role: AdminRole): Promise<NavCounts> {
           and(
             eq(productVariants.isActive, true),
             eq(products.isActive, true),
-            lt(productVariants.stock, LOW_STOCK_LIMIT),
+            lt(productVariants.stock, limit),
           ),
         ),
     ),
+    unreadCount(),
   ]);
-  if (role !== "owner") return { orders: newOrders, stock: lowStock };
+  if (role !== "owner") return { orders: newOrders, stock: lowStock, messages };
 
   const [productReviews, shopReviews, restock] = await Promise.all([
     one(db.select({ n: count() }).from(reviews).where(eq(reviews.isApproved, false))),
     one(db.select({ n: count() }).from(siteReviews).where(eq(siteReviews.isApproved, false))),
     one(db.select({ n: count() }).from(restockRequests).where(isNull(restockRequests.notifiedAt))),
   ]);
-  return { orders: newOrders, stock: lowStock, reviews: productReviews + shopReviews, restock };
+  return {
+    orders: newOrders,
+    stock: lowStock,
+    messages,
+    reviews: productReviews + shopReviews,
+    restock,
+  };
 }

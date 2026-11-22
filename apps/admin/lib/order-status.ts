@@ -29,7 +29,7 @@ const LABELS: Record<StatusTone, { bn: string; en: string }> = {
   partial: { bn: "আংশিক ডেলিভারি", en: "Partly delivered" },
 };
 
-/** The 7 database statuses on the admin scale ("booked" and "cash received" need storage). */
+/** The 7 database statuses on the admin scale. Booked and cash received come from order fields. */
 const FROM_DB: Record<DbStatus, StatusTone> = {
   pending: "new",
   confirmed: "conf",
@@ -40,7 +40,17 @@ const FROM_DB: Record<DbStatus, StatusTone> = {
   returned: "return",
 };
 
-export function statusTone(status: DbStatus): StatusTone {
+/** Admin-only steps stored as order fields (owner decision, 2026-11-15). */
+export interface ToneFlags {
+  /** Has a Steadfast consignment (handed to the courier). */
+  booked?: boolean | null | undefined;
+  /** "টাকা পাওয়া গেছে" marked. */
+  settled?: boolean | null | undefined;
+}
+
+export function statusTone(status: DbStatus, f?: ToneFlags): StatusTone {
+  if (status === "shipped" && f?.booked) return "book";
+  if (status === "delivered" && f?.settled) return "settled";
   return FROM_DB[status];
 }
 

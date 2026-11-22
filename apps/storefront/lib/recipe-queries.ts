@@ -12,14 +12,18 @@ export const getRecipeCards = cache(async (): Promise<RecipeCard[]> => {
       id: schema.recipes.id,
       slug: schema.recipes.slug,
       title: schema.recipes.title,
+      titleEn: schema.recipes.titleEn,
       subtitle: schema.recipes.subtitle,
+      subtitleBn: schema.recipes.subtitleBn,
       summary: schema.recipes.summary,
+      summaryEn: schema.recipes.summaryEn,
       category: schema.recipes.category,
       totalMinutes: schema.recipes.totalMinutes,
       difficulty: schema.recipes.difficulty,
       imageUrl: schema.recipes.imageUrl,
       imageFile: schema.recipes.imageFile,
       imageAlt: schema.recipes.imageAlt,
+      imageAltBn: schema.recipes.imageAltBn,
       featuredOrder: schema.recipes.featuredOrder,
       isSample: schema.recipes.isSample,
     })
@@ -31,9 +35,14 @@ export const getRecipeCards = cache(async (): Promise<RecipeCard[]> => {
 
 /** Active pickles by slug, for links that must point at a real product. Name comes from the database. */
 export const getPickleLinks = cache(async (slugs: string[]) => {
-  if (slugs.length === 0) return new Map<string, { slug: string; name: string }>();
+  if (slugs.length === 0)
+    return new Map<string, { slug: string; name: string; nameBn: string | null }>();
   const rows = await db
-    .select({ slug: schema.products.slug, name: schema.products.name })
+    .select({
+      slug: schema.products.slug,
+      name: schema.products.name,
+      nameBn: schema.products.nameBn,
+    })
     .from(schema.products)
     .where(inArray(schema.products.slug, slugs));
   return new Map(rows.map((r) => [r.slug, r]));
@@ -53,7 +62,13 @@ export const getRecipeBySlug = cache(async (raw: string) => {
 });
 
 /** Up to `limit` other recipes: same category first, then the rest, each in list order. */
-export async function getRelatedRecipes(current: { id: number; category: RecipeCard["category"] }, limit = 3) {
+export async function getRelatedRecipes(
+  current: { id: number; category: RecipeCard["category"] },
+  limit = 3,
+) {
   const all = (await getRecipeCards()).filter((r) => r.id !== current.id);
-  return [...all.filter((r) => r.category === current.category), ...all.filter((r) => r.category !== current.category)].slice(0, limit);
+  return [
+    ...all.filter((r) => r.category === current.category),
+    ...all.filter((r) => r.category !== current.category),
+  ].slice(0, limit);
 }

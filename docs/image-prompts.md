@@ -5,7 +5,9 @@ Paste each prompt into ChatGPT as a new image request. Save to `apps/storefront/
 
 ## Style block (end of every prompt)
 
-> Photorealistic food photograph in a Bangladeshi home kitchen, warm natural daylight like rooftop afternoon sun. Muted earthy palette: linen cream #e8e5d5, pale olive #c4c3a5, moss #5e6848, raw-mango green #2b4103, with mustard-yellow #f5d84c accents. Natural props: glass jars, clay bowls, banana leaf, mustard oil, steel utensils. Realistic texture, not over-styled. No text, labels, logos, watermarks or brand names. No faces; hands only if needed. Aspect ratio exactly {RATIO}.
+> **Brand rule (owner, 2026-11-22): heritage luxury, never homely.** Every image is a premium heritage still life, like the Our Story close band: one hero jar or dish on a solid base (stone, marble or travertine plinth or slab) in a clean premium studio with ONE solid deep backdrop colour (forest green by default; never a multi-colour gradient), dramatic warm side light, generous negative space, at most 1–2 crisp props (fresh produce, a brass or terracotta dish). Never fabric of any kind and never antique or carved furniture. No everyday domestic scenes: no window sills, doorways, slippers, tiffin carriers, gamcha, steel utensils or cluttered kitchens. The prompts below that still say "home kitchen", "family table" or "steel plate" predate this rule: restyle them before generating.
+
+> Photorealistic editorial food photograph, heritage-luxury still life. Deep, rich palette from the brand (raw-mango green #2b4103, moss #5e6848, linen cream #e8e5d5 highlights, a mustard-yellow #f5d84c accent). Realistic texture, crisp and appetising food. No text, labels, logos, watermarks or brand names. No people or hands. Aspect ratio exactly {RATIO}.
 
 Replace `{RATIO}` with the ratio in each row. Desktop and mobile ratios differ on some slots: generate at the desktop ratio, then crop a `-mob` version.
 

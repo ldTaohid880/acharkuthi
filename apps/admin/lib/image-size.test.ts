@@ -1,0 +1,60 @@
+import { describe, expect, it } from "vitest";
+import { readImageSize } from "./image-size";
+
+// Tiny real images made with ImageMagick (name: expected width x height).
+const FIXTURES: [string, number, number, string][] = [
+  [
+    "a.png",
+    3,
+    2,
+    "iVBORw0KGgoAAAANSUhEUgAAAAMAAAACAQMAAACnuvRZAAAAIGNIUk0AAHomAACAhAAA+gAAAIDoAAB1MAAA6mAAADqYAAAXcJy6UTwAAAADUExURf8AABniCTcAAAAHdElNRQfqCw8LJzJK/78HAAAAJXRFWHRkYXRlOmNyZWF0ZQAyMDI2LTExLTE1VDExOjM5OjUwKzAwOjAwXJnqZQAAACV0RVh0ZGF0ZTptb2RpZnkAMjAyNi0xMS0xNVQxMTozOTo1MCswMDowMC3EUtkAAAAodEVYdGRhdGU6dGltZXN0YW1wADIwMjYtMTEtMTVUMTE6Mzk6NTArMDA6MDB60XMGAAAADElEQVQI12NgYGAAAAAEAAEnNCcKAAAAAElFTkSuQmCC",
+  ],
+  [
+    "b.jpg",
+    5,
+    4,
+    "/9j/4AAQSkZJRgABAQAAAQABAAD//gAHaGVsbG//2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wAARCAAEAAUDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAACf/EABQQAQAAAAAAAAAAAAAAAAAAAAD/xAAVAQEBAAAAAAAAAAAAAAAAAAAGCf/EABQRAQAAAAAAAAAAAAAAAAAAAAD/2gAMAwEAAhEDEQA/AD3VTB3/2Q==",
+  ],
+  [
+    "c-progressive.jpg",
+    6,
+    7,
+    "/9j/4AAQSkZJRgABAQAAAQABAAD/2wBDAAMCAgICAgMCAgIDAwMDBAYEBAQEBAgGBgUGCQgKCgkICQkKDA8MCgsOCwkJDRENDg8QEBEQCgwSExIQEw8QEBD/2wBDAQMDAwQDBAgEBAgQCwkLEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBAQEBD/wgARCAAHAAYDAREAAhEBAxEB/8QAFAABAAAAAAAAAAAAAAAAAAAAB//EABUBAQEAAAAAAAAAAAAAAAAAAAYH/9oADAMBAAIQAxAAAAE4Dzf/xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAEFAn//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/AX//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/AX//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAY/An//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/IX//2gAMAwEAAgADAAAAEJ//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAEDAQE/EH//xAAUEQEAAAAAAAAAAAAAAAAAAAAA/9oACAECAQE/EH//xAAUEAEAAAAAAAAAAAAAAAAAAAAA/9oACAEBAAE/EH//2Q==",
+  ],
+  [
+    "d-lossy.webp",
+    7,
+    3,
+    "UklGRjwAAABXRUJQVlA4IDAAAADQAQCdASoHAAMAAgA0JaACdLoB+AADsAD+8MQL/yC5YXXI1/8gP+QH/ID/+PIAAAA=",
+  ],
+  ["e-lossless.webp", 9, 5, "UklGRhwAAABXRUJQVlA4TA8AAAAvCAABAAcQ/Y/+ByKi/wEA"],
+  [
+    "f-alpha.webp",
+    11,
+    6,
+    "UklGRmAAAABXRUJQVlA4WAoAAAAQAAAACgAABQAAQUxQSAoAAAABB1DAiAhERP8DVlA4IDAAAADQAQCdASoLAAYAAgA0JaACdLoB+AADsAD+8MQL/yC5YXXI1/8gP+QH/ID/+PIAAAA=",
+  ],
+];
+
+const bytes = (b64: string) => Uint8Array.from(Buffer.from(b64, "base64"));
+
+describe("readImageSize", () => {
+  it.each(FIXTURES)("reads %s", (_name, width, height, b64) => {
+    expect(readImageSize(bytes(b64))).toEqual({ width, height });
+  });
+
+  it("accepts an ArrayBuffer", () => {
+    const b = bytes(FIXTURES[0]?.[3] ?? "");
+    expect(readImageSize(b.buffer.slice(b.byteOffset, b.byteOffset + b.byteLength))).toEqual({
+      width: 3,
+      height: 2,
+    });
+  });
+
+  it("returns null for other files and truncated headers", () => {
+    expect(readImageSize(new TextEncoder().encode("<svg></svg>"))).toBeNull();
+    expect(readImageSize(new Uint8Array(0))).toBeNull();
+    for (const [, , , b64] of FIXTURES)
+      expect(readImageSize(bytes(b64).subarray(0, 12))).toBeNull();
+  });
+});

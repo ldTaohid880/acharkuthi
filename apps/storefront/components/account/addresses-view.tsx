@@ -7,6 +7,8 @@ import { deleteAddress, saveAddress, setDefaultAddress } from "@/app/actions/acc
 import { Icon } from "@/components/icon";
 import { DIVISIONS, districtsOf, upazilasOf } from "@/lib/bd-locations";
 import type { AccountAddress } from "@/lib/account";
+import { useLang } from "@/lib/i18n/lang-context";
+import { placeName } from "@repo/validators";
 
 interface Form {
   id: number | null;
@@ -47,6 +49,8 @@ function clientErrors(f: Form): Partial<Record<AddressField, string>> {
 /** Saved addresses (Account.dc.html, view "addresses"; AccountStates.dc.html D, E). */
 export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
   const router = useRouter();
+  const { lang, t: all } = useLang();
+  const t = all.account;
   const [form, setForm] = useState<Form | null>(null);
   const [touched, setTouched] = useState<Partial<Record<AddressField, boolean>>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -58,7 +62,9 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
 
   const errs = form ? { ...clientErrors(form), ...serverErr } : {};
   const field = (k: AddressField) => {
-    const err = (touched[k] || submitted) && errs[k] ? errs[k] : "";
+    const m = (touched[k] || submitted) && errs[k];
+    // Schema messages are Bangla; the English site maps them (dict `account.err`).
+    const err = m ? (t.err[m] ?? m) : "";
     return {
       err,
       props: {
@@ -132,11 +138,11 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
     <div>
       <div className="sech first">
         <div>
-          <h1 className="h1a" lang="bn">
-            ঠিকানা
+          <h1 className="h1a" lang={lang}>
+            {t.addresses}
           </h1>
-          <p className="sub" lang="bn">
-            অর্ডারের সময় এখান থেকে দ্রুত বেছে নিতে পারবেন।
+          <p className="sub" lang={lang}>
+            {t.addrSub}
           </p>
         </div>
         {addresses.length > 0 && !form && (
@@ -144,49 +150,54 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
             type="button"
             className="ak-btn ak-btn--line sm2"
             onClick={() => open(blank)}
-            lang="bn"
+            lang={lang}
           >
-            নতুন ঠিকানা
+            {t.newAddr}
           </button>
         )}
       </div>
 
       {f && (
         <section className="panel" aria-labelledby="afh">
-          <h2 className="ph" id="afh" lang="bn">
-            {f.id ? "ঠিকানা সম্পাদনা" : "নতুন ঠিকানা"}
+          <h2 className="ph" id="afh" lang={lang}>
+            {f.id ? t.editAddr : t.newAddr}
           </h2>
           <div className="afg">
             <div className="fld">
-              <label htmlFor="ad-label" lang="bn">
-                ঠিকানার নাম<em aria-hidden="true">*</em>
+              <label htmlFor="ad-label" lang={lang}>
+                {t.addrName}
+                <em aria-hidden="true">*</em>
               </label>
               <input
                 {...lb.props}
                 type="text"
-                placeholder="যেমন: বাসা, অফিস"
+                placeholder={t.addrNamePh}
+                maxLength={60}
                 value={f.label}
                 onChange={(e) => set({ label: e.target.value })}
               />
               <Err k="label" err={lb.err} />
             </div>
             <div className="fld">
-              <label htmlFor="ad-name" lang="bn">
-                যাঁর নামে ডেলিভারি<em aria-hidden="true">*</em>
+              <label htmlFor="ad-name" lang={lang}>
+                {t.deliverTo}
+                <em aria-hidden="true">*</em>
               </label>
               <input
                 {...nm.props}
                 type="text"
                 autoComplete="name"
-                placeholder="পুরো নাম"
+                placeholder={t.fullName}
+                maxLength={120}
                 value={f.name}
                 onChange={(e) => set({ name: e.target.value })}
               />
               <Err k="name" err={nm.err} />
             </div>
             <div className="fld">
-              <label htmlFor="ad-phone" lang="bn">
-                মোবাইল নম্বর<em aria-hidden="true">*</em>
+              <label htmlFor="ad-phone" lang={lang}>
+                {t.phone}
+                <em aria-hidden="true">*</em>
               </label>
               <input
                 {...ph.props}
@@ -200,8 +211,9 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
               <Err k="phone" err={ph.err} />
             </div>
             <div className="fld">
-              <label htmlFor="ad-division" lang="bn">
-                বিভাগ<em aria-hidden="true">*</em>
+              <label htmlFor="ad-division" lang={lang}>
+                {t.division}
+                <em aria-hidden="true">*</em>
               </label>
               <select
                 {...dv.props}
@@ -209,18 +221,19 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                 value={f.division}
                 onChange={(e) => set({ division: e.target.value })}
               >
-                <option value="">বিভাগ বেছে নিন</option>
+                <option value="">{t.divisionPick}</option>
                 {DIVISIONS.map((d) => (
                   <option key={d} value={d}>
-                    {d}
+                    {placeName(d, lang)}
                   </option>
                 ))}
               </select>
               <Err k="division" err={dv.err} />
             </div>
             <div className="fld">
-              <label htmlFor="ad-district" lang="bn">
-                জেলা<em aria-hidden="true">*</em>
+              <label htmlFor="ad-district" lang={lang}>
+                {t.district}
+                <em aria-hidden="true">*</em>
               </label>
               <select
                 {...ds.props}
@@ -228,18 +241,19 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                 value={f.district}
                 onChange={(e) => set({ district: e.target.value })}
               >
-                <option value="">{f.division ? "জেলা বেছে নিন" : "আগে বিভাগ বেছে নিন"}</option>
+                <option value="">{f.division ? t.districtPick : t.districtFirst}</option>
                 {dists.map((d) => (
                   <option key={d} value={d}>
-                    {d}
+                    {placeName(d, lang)}
                   </option>
                 ))}
               </select>
               <Err k="district" err={ds.err} />
             </div>
             <div className="fld">
-              <label htmlFor="ad-upazila" lang="bn">
-                উপজেলা / থানা<em aria-hidden="true">*</em>
+              <label htmlFor="ad-upazila" lang={lang}>
+                {t.upazila}
+                <em aria-hidden="true">*</em>
               </label>
               <select
                 {...up.props}
@@ -247,24 +261,24 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                 value={f.upazila}
                 onChange={(e) => set({ upazila: e.target.value })}
               >
-                <option value="">
-                  {f.district ? "উপজেলা / থানা বেছে নিন" : "আগে জেলা বেছে নিন"}
-                </option>
+                <option value="">{f.district ? t.upazilaPick : t.upazilaFirst}</option>
                 {upas.map((d) => (
                   <option key={d} value={d}>
-                    {d}
+                    {placeName(d, lang)}
                   </option>
                 ))}
               </select>
               <Err k="upazila" err={up.err} />
             </div>
             <div className="fld full">
-              <label htmlFor="ad-line" lang="bn">
-                বিস্তারিত ঠিকানা<em aria-hidden="true">*</em>
+              <label htmlFor="ad-line" lang={lang}>
+                {t.line}
+                <em aria-hidden="true">*</em>
               </label>
               <textarea
                 {...ln.props}
-                placeholder="বাড়ি, রাস্তা, ল্যান্ডমার্ক"
+                placeholder={t.linePh}
+                maxLength={255}
                 aria-required="true"
                 value={f.line}
                 onChange={(e) => set({ line: e.target.value })}
@@ -277,7 +291,7 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                 checked={f.isDefault}
                 onChange={() => set({ isDefault: !f.isDefault })}
               />
-              <span lang="bn">এটি আমার ডিফল্ট ঠিকানা হবে</span>
+              <span lang={lang}>{t.makeDefault}</span>
             </label>
           </div>
           <div className="row2">
@@ -287,17 +301,17 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
               onClick={save}
               disabled={pending}
               aria-busy={pending || undefined}
-              lang="bn"
+              lang={lang}
             >
-              ঠিকানা সংরক্ষণ করুন
+              {t.saveAddr}
             </button>
             <button
               type="button"
               className="ak-btn ak-btn--line sm2"
               onClick={() => setForm(null)}
-              lang="bn"
+              lang={lang}
             >
-              বাতিল
+              {t.cancel}
             </button>
           </div>
         </section>
@@ -305,8 +319,8 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
 
       {failed && <FailAlert />}
       {saved && (
-        <div className="alert info" role="status" lang="bn">
-          ঠিকানা সংরক্ষণ করা হয়েছে।
+        <div className="alert info" role="status" lang={lang}>
+          {t.addrSaved}
         </div>
       )}
 
@@ -317,8 +331,8 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
               <div className="ac-h">
                 <b lang="bn">{a.label || a.name}</b>
                 {a.isDefault && (
-                  <span className="chip2 ok" lang="bn">
-                    ডিফল্ট
+                  <span className="chip2 ok" lang={lang}>
+                    {t.default}
                   </span>
                 )}
               </div>
@@ -331,8 +345,8 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
               </p>
               {delId === a.id ? (
                 <div className="alert" role="alert">
-                  <b lang="bn">এই ঠিকানাটি মুছে ফেলবেন?</b>
-                  <span lang="bn">এটি আর ফেরানো যাবে না।</span>
+                  <b lang={lang}>{t.delQ}</b>
+                  <span lang={lang}>{t.delNote}</span>
                   <div className="row2">
                     <button
                       type="button"
@@ -344,17 +358,17 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                           () => setDelId(null),
                         )
                       }
-                      lang="bn"
+                      lang={lang}
                     >
-                      হ্যাঁ, মুছে ফেলুন
+                      {t.delYes}
                     </button>
                     <button
                       type="button"
                       className="ak-btn ak-btn--line sm2"
                       onClick={() => setDelId(null)}
-                      lang="bn"
+                      lang={lang}
                     >
-                      না, রেখে দিন
+                      {t.delNo}
                     </button>
                   </div>
                 </div>
@@ -376,17 +390,17 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                         isDefault: a.isDefault,
                       })
                     }
-                    lang="bn"
+                    lang={lang}
                   >
-                    সম্পাদনা
+                    {t.edit}
                   </button>
                   <button
                     type="button"
                     className="lk plain"
                     onClick={() => setDelId(a.id)}
-                    lang="bn"
+                    lang={lang}
                   >
-                    মুছুন
+                    {t.del}
                   </button>
                   {!a.isDefault && (
                     <button
@@ -399,9 +413,9 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
                           () => setSaved(false),
                         )
                       }
-                      lang="bn"
+                      lang={lang}
                     >
-                      ডিফল্ট করুন
+                      {t.setDefault}
                     </button>
                   )}
                 </div>
@@ -414,15 +428,15 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
           <span className="eic ak-blot v2" aria-hidden="true">
             <Icon name="truck" />
           </span>
-          <b lang="bn">কোনো ঠিকানা সংরক্ষণ করা নেই</b>
-          <p lang="bn">একটি ঠিকানা যোগ করলে পরের অর্ডারে লিখতে হবে না।</p>
+          <b lang={lang}>{t.noAddr}</b>
+          <p lang={lang}>{t.noAddrText}</p>
           <button
             type="button"
             className="ak-btn ak-btn--brand sm2"
             onClick={() => open(blank)}
-            lang="bn"
+            lang={lang}
           >
-            ঠিকানা যোগ করুন
+            {t.addAddr}
           </button>
         </div>
       )}
@@ -431,8 +445,9 @@ export function AddressesView({ addresses }: { addresses: AccountAddress[] }) {
 }
 
 function Err({ k, err }: { k: AddressField; err: string }) {
+  const { lang } = useLang();
   return err ? (
-    <span className="ak-help is-error" role="alert" id={`ad-${k}-e`} lang="bn">
+    <span className="ak-help is-error" role="alert" id={`ad-${k}-e`} lang={lang}>
       {err}
     </span>
   ) : null;
@@ -440,10 +455,12 @@ function Err({ k, err }: { k: AddressField; err: string }) {
 
 /** ErrorPatterns.dc.html §2, form-level failure. */
 export function FailAlert() {
+  const { lang, t: all } = useLang();
+  const t = all.account;
   return (
     <div className="alert" role="alert">
-      <b lang="bn">ফর্মটি জমা দেওয়া যায়নি</b>
-      <span lang="bn">সংযোগে সমস্যা হয়েছে। আপনার লেখা সব ঠিকই আছে, আবার চেষ্টা করুন।</span>
+      <b lang={lang}>{t.formFail}</b>
+      <span lang={lang}>{t.formFailText}</span>
     </div>
   );
 }

@@ -4,17 +4,15 @@ import { ScrollArea } from "@repo/ui/components/scroll-area";
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { formatTaka } from "@repo/ui/lib/utils";
+import { quoteBasket } from "@/app/actions/basket";
 import { useBasketUi } from "@/lib/basket-ui";
-import { cartTotal, useCart, type CartLine } from "@/lib/cart-store";
-import { soon } from "@/lib/routes";
+import { cartTotal, lineName, useCart, type CartLine } from "@/lib/cart-store";
+import { useLang } from "@/lib/i18n/lang-context";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
+import { EmptyBasketArt } from "./empty-basket-art";
 import { Icon } from "./icon";
 
-/** Heat words as the mini-basket boards write them. */
-const HEAT_BN = { Mild: "কম ঝাল", Medium: "মাঝারি ঝাল", Hot: "বেশি ঝাল" } as const;
 const TOAST_MS = 5000;
-
-const countText = (n: number) => `${n}টি পণ্য`;
 
 /**
  * Mini-basket (MiniBasket.dc.html desktop drawer, MiniBasketMobile.dc.html phone bottom sheet)
@@ -26,6 +24,9 @@ export function MiniBasket() {
   const setQuantity = useCart((s) => s.setQuantity);
   const remove = useCart((s) => s.remove);
   const restore = useCart((s) => s.restore);
+  // Heat words, counts and labels in the page language (memory: storefront-bilingual).
+  const { lang, t: all, href } = useLang();
+  const t = all.mini;
   const [undo, setUndo] = useState<{ line: CartLine; index: number } | null>(null);
   const panel = useRef<HTMLElement>(null);
   const closeBtn = useRef<HTMLButtonElement>(null);
@@ -102,6 +103,32 @@ export function MiniBasket() {
     };
   }, [open, dismiss]);
 
+  // Line photos: the same first product photo the basket page shows (quoteBasket). Read once per
+  // variant while the drawer is open; null means the product has no photo, so the jar stands in.
+  const [images, setImages] = useState<Record<number, string | null>>({});
+  const missing = lines
+    .map((l) => l.variantId)
+    .filter((id) => !(id in images))
+    .join(",");
+  useEffect(() => {
+    if (!open || !missing) return;
+    const ids = missing.split(",").map(Number);
+    let live = true;
+    quoteBasket({ variantIds: ids })
+      .then((res) => {
+        if (!live) return;
+        const next: Record<number, string | null> = {};
+        for (const id of ids) next[id] = null;
+        if (res.ok) for (const q of res.quotes) next[q.variantId] = q.imageUrl;
+        setImages((prev) => ({ ...prev, ...next }));
+      })
+      .catch(() => {
+        if (live) setImages((prev) => ({ ...prev, ...Object.fromEntries(ids.map((id) => [id, null])) }));
+      });
+    return () => {
+      live = false;
+    };
+  }, [open, missing]);
 
   const removeLine = (line: CartLine) => {
     setUndo({ line, index: lines.findIndex((l) => l.variantId === line.variantId) });
@@ -111,7 +138,7 @@ export function MiniBasket() {
   return (
     <>
       {toast && !open ? (
-        <div className="mb-toast" role="status">
+        <div className="mb-toast" role="status" lang={lang}>
           <span className="ok" aria-hidden="true">
             <svg
               viewBox="0 0 24 24"
@@ -124,18 +151,18 @@ export function MiniBasket() {
               <path d="M5 12.5l4.5 4.5L19 7.5" />
             </svg>
           </span>
-          <b lang="bn">{toast.name} ঝুড়িতে যোগ হয়েছে</b>
-          <button type="button" className="ib" aria-label="বন্ধ করুন" onClick={hideToast}>
+          <b>{t.added(toast.name)}</b>
+          <button type="button" className="ib" aria-label={t.close} onClick={hideToast}>
             <Icon name="close" />
           </button>
-          <button type="button" className="a" onClick={openBasket} lang="bn">
-            ঝুড়ি দেখুন · {countText(count)}
+          <button type="button" className="a" onClick={openBasket}>
+            {t.viewWithCount(count)}
           </button>
         </div>
       ) : null}
 
       {open ? (
-        <div className="mb">
+        <div className="mb" lang={lang}>
           <div className="scrim" onClick={dismiss} aria-hidden="true" />
           <aside
             ref={panel}
@@ -147,18 +174,16 @@ export function MiniBasket() {
             <div className="grab only-mob" aria-hidden="true" />
             <div className="dh">
               <div>
-                <h2 id="mb-h" lang="bn">
-                  আপনার ঝুড়ি
-                </h2>
-                <div className="c" lang="bn" aria-live="polite">
-                  {hydrated && count > 0 ? countText(count) : null}
+                <h2 id="mb-h">{t.title}</h2>
+                <div className="c" aria-live="polite">
+                  {hydrated && count > 0 ? t.items(count) : null}
                 </div>
               </div>
               <button
                 ref={closeBtn}
                 type="button"
                 className="ib"
-                aria-label="ঝুড়ি বন্ধ করুন"
+                aria-label={t.closeBasket}
                 onClick={dismiss}
               >
                 <Icon name="close" />
@@ -167,7 +192,7 @@ export function MiniBasket() {
 
             <ScrollArea className="db">
               {!hydrated ? (
-                <div role="status" aria-label="লোড হচ্ছে">
+                <div role="status" aria-label={t.loading}>
                   {[0, 1].map((i) => (
                     <div className="sk-row" key={i}>
                       <div className="skl a" />
@@ -183,8 +208,8 @@ export function MiniBasket() {
               ) : null}
 
               {undo ? (
-                <div className="nt" role="status" lang="bn">
-                  <span>{undo.line.productName} সরানো হয়েছে।</span>
+                <div className="nt" role="status">
+                  <span>{t.removed(lineName(undo.line, lang))}</span>
                   <button
                     type="button"
                     onClick={() => {
@@ -192,44 +217,46 @@ export function MiniBasket() {
                       setUndo(null);
                     }}
                   >
-                    পূর্বাবস্থায় ফেরান
+                    {t.undo}
                   </button>
                 </div>
               ) : null}
 
               {hydrated && lines.length > 0 ? (
-                <ul className="lines" aria-label="ঝুড়ির পণ্য">
+                <ul className="lines" aria-label={t.lines}>
                   {lines.map((l, i) => {
                     const max = l.maxQty;
                     const atMax = max !== undefined && l.quantity >= max;
-                    const meta = [l.variantLabel, l.heat ? HEAT_BN[l.heat] : null]
+                    const meta = [l.variantLabel, l.heat ? all.heat[l.heat] : null]
                       .filter(Boolean)
                       .join(" · ");
                     return (
                       <li className="mrow" key={l.variantId}>
-                        <div className={`bk-th ${i % 2 ? "t2" : ""}`}>
-                          {/* eslint-disable-next-line @next/next/no-img-element -- local SVG still-life */}
-                          <img src="/jar.svg" alt="" />
+                        <div className={`bk-th ${i % 2 ? "t2" : ""} ${images[l.variantId] ? "ph" : ""}`}>
+                          {l.variantId in images ? (
+                            // eslint-disable-next-line @next/next/no-img-element -- product photos and the local jar SVG
+                            <img src={images[l.variantId] ?? "/jar.svg"} alt="" />
+                          ) : null}
                         </div>
                         <div>
-                          <p className="bk-nm">
+                          <p className="bk-nm" lang={lang === "bn" && l.productNameBn ? "bn" : "en"}>
                             {l.slug ? (
-                              <Link href={`/pickles/${l.slug}`} onClick={close}>
-                                {l.productName}
+                              <Link href={href(`/pickles/${l.slug}`)} onClick={close}>
+                                {lineName(l, lang)}
                               </Link>
                             ) : (
-                              l.productName
+                              lineName(l, lang)
                             )}
                           </p>
-                          <div className="bk-mt" lang="bn">
+                          <div className="bk-mt">
                             {meta} · {formatTaka(l.unitPrice)}
                           </div>
                         </div>
                         <div className="bk-ctl">
-                          <div className="stp" role="group" aria-label={`${l.productName}, সংখ্যা`}>
+                          <div className="stp" role="group" aria-label={t.qty(lineName(l, lang))}>
                             <button
                               type="button"
-                              aria-label="কমান"
+                              aria-label={t.less}
                               aria-disabled={l.quantity <= 1}
                               onClick={() => {
                                 if (l.quantity > 1) setQuantity(l.variantId, l.quantity - 1);
@@ -240,7 +267,7 @@ export function MiniBasket() {
                             <output aria-live="polite">{l.quantity}</output>
                             <button
                               type="button"
-                              aria-label="বাড়ান"
+                              aria-label={t.more}
                               aria-disabled={atMax}
                               onClick={() => {
                                 if (!atMax) setQuantity(l.variantId, l.quantity + 1);
@@ -249,22 +276,16 @@ export function MiniBasket() {
                               <Icon name="plus" />
                             </button>
                           </div>
-                          <span className="lt" lang="bn">
-                            {formatTaka(l.unitPrice * l.quantity)}
-                          </span>
+                          <span className="lt">{formatTaka(l.unitPrice * l.quantity)}</span>
                         </div>
                         <div>
-                          <button
-                            type="button"
-                            className="bk-rm"
-                            onClick={() => removeLine(l)}
-                            lang="bn"
-                          >
-                            সরিয়ে ফেলুন<span className="sr">: {l.productName}</span>
+                          <button type="button" className="bk-rm" onClick={() => removeLine(l)}>
+                            {t.remove}
+                            <span className="sr">: {lineName(l, lang)}</span>
                           </button>
                           {atMax ? (
-                            <span className="bk-help" role="status" lang="bn">
-                              সর্বোচ্চ {max}টি
+                            <span className="bk-help" role="status">
+                              {t.max(max ?? 0)}
                             </span>
                           ) : null}
                         </div>
@@ -276,15 +297,11 @@ export function MiniBasket() {
 
               {hydrated && lines.length === 0 ? (
                 <div className="empty sm" role="status">
-                  <div className="art" aria-hidden="true">
-                    <div className="ak-blot v2 b" />
-                    {/* eslint-disable-next-line @next/next/no-img-element -- local SVG still-life */}
-                    <img src="/jar.svg" alt="" />
-                  </div>
-                  <h2 lang="bn">ঝুড়িটা এখনো খালি!</h2>
-                  <p lang="bn">চলুন, পছন্দের কিছু আচার খুঁজে নেওয়া যাক।</p>
-                  <Link className="ak-btn ak-btn--sun" href="/shop" lang="bn" onClick={close}>
-                    আচার দেখুন
+                  <EmptyBasketArt />
+                  <h2>{t.emptyTitle}</h2>
+                  <p>{t.emptyText}</p>
+                  <Link className="ak-btn ak-btn--sun" href={href("/shop")} onClick={close}>
+                    {t.browse}
                   </Link>
                 </div>
               ) : null}
@@ -292,22 +309,16 @@ export function MiniBasket() {
 
             {hydrated && lines.length > 0 ? (
               <div className="df">
-                <div className="st" lang="bn">
-                  পণ্যের মোট<span>{formatTaka(cartTotal(lines))}</span>
+                <div className="st">
+                  {t.subtotal}
+                  <span>{formatTaka(cartTotal(lines))}</span>
                 </div>
-                <p className="nf" lang="bn">
-                  ডেলিভারি চার্জ চেকআউটে হিসাব হবে।
-                </p>
-                <Link className="ak-btn ak-btn--sun" href={"/checkout"} lang="bn" onClick={close}>
-                  চেকআউটে এগিয়ে যান
+                <p className="nf">{t.deliveryNote}</p>
+                <Link className="ak-btn ak-btn--sun" href={href("/checkout")} onClick={close}>
+                  {t.checkout}
                 </Link>
-                <Link
-                  className="ak-btn ak-btn--line"
-                  href={soon("/basket")}
-                  lang="bn"
-                  onClick={close}
-                >
-                  ঝুড়ি দেখুন
+                <Link className="ak-btn ak-btn--line" href={href("/basket")} onClick={close}>
+                  {t.view}
                 </Link>
               </div>
             ) : null}

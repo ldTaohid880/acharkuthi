@@ -1,11 +1,15 @@
+"use client";
+
 import { Container } from "@/components/container";
+import { useLang } from "@/lib/i18n/lang-context";
 
 /** Loading state from RecipeDetail.dc.html: blocks that keep the page's footprint. */
 export function RecipeSkeleton() {
+  const { t } = useLang();
   return (
     <div className="page-recipes page-rd" aria-busy="true">
       <main>
-        <Container className="rd-sk" role="status" aria-label="রেসিপি লোড হচ্ছে">
+        <Container className="rd-sk" role="status" aria-label={t.recipes.loading}>
           <div className="sk-top">
             <div className="sk-l">
               <i style={{ height: 16, width: "40%" }} />

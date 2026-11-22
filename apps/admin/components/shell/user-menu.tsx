@@ -29,7 +29,7 @@ export function UserMenu({ role, user, t }: { role: AdminRole; user: ShellUser; 
         aria-label={t.topbar.userMenu}
         className="focus-visible:ring-ring wide:h-10 flex h-11 flex-none items-center gap-2 rounded-md border-0 bg-transparent pr-2 pl-1 outline-none focus-visible:ring-[3px]"
       >
-        <Avatar initials={user.initials} owner={owner} />
+        <Avatar initials={user.initials} image={user.image} owner={owner} />
         <span className="flex flex-col text-left leading-[1.15]">
           <span className="text-[13px] font-medium">{user.name}</span>
           <span className="text-muted-foreground text-[11px]">
@@ -70,19 +70,33 @@ export function UserMenu({ role, user, t }: { role: AdminRole; user: ShellUser; 
 
 export function Avatar({
   initials,
+  image,
   owner,
   size = "sm",
 }: {
   initials: string;
+  image?: string | null;
   owner: boolean;
-  size?: "sm" | "lg";
+  size?: "sm" | "lg" | "xl";
 }) {
+  const box =
+    size === "sm" ? "size-6 text-[10px]" : size === "lg" ? "size-10 text-sm" : "size-14 text-xl";
+  if (image)
+    return (
+      // eslint-disable-next-line @next/next/no-img-element -- R2 photo, no Next image config
+      <img
+        src={image}
+        alt=""
+        aria-hidden
+        className={cn("flex-none rounded-full object-cover", box)}
+      />
+    );
   return (
     <span
       aria-hidden
       className={cn(
         "inline-flex flex-none items-center justify-center rounded-full font-semibold",
-        size === "sm" ? "size-6 text-[10px]" : "size-10 text-sm",
+        box,
         owner ? "bg-primary text-white" : "bg-[#e5e5e5] text-[#404040]",
       )}
     >

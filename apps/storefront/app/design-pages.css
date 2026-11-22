@@ -6695,6 +6695,21 @@
 .bk-main .bk-th.t2 {
   background: var(--bg-band);
 }
+/* Basket and drawer line photos (owner, 2026-11-22: real product photos, not the jar drawing).
+   A photo fills its rounded square; the jar SVG fallback keeps its own height. */
+.mb .bk-th.ph,
+.bk-main .bk-th.ph {
+  position: relative;
+}
+.mb .bk-th.ph img,
+.bk-main .bk-th.ph img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 45%;
+}
 .bk-main .bk-nm {
   font: 600 18px/1.5 var(--font-ui-bn);
   color: var(--ink);
@@ -7021,6 +7036,26 @@
   transform: translate(-50%, -50%);
   filter: drop-shadow(8px 10px 10px rgba(52, 57, 43, 0.16));
 }
+/* Empty basket watercolour, clipped to a lumpy blob (owner, 2026-11-22).
+   Drawer and basket page. */
+.mb .empty .art.art-blob,
+.bk-main .empty .art.art-blob {
+  width: 220px;
+  height: 210px;
+}
+.mb .empty .art .blob-art,
+.bk-main .empty .art .blob-art {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: 196px;
+  height: 196px;
+  transform: translate(-50%, -50%);
+  overflow: visible;
+}
+.empty .blob-art .blob-front {
+  filter: drop-shadow(0 2px 4px rgba(52, 57, 43, 0.16));
+}
 .bk-main .empty h2 {
   font: 400 32px/1.4 var(--font-display-bn);
   margin: 0;
@@ -7122,7 +7157,7 @@
   -webkit-font-smoothing: antialiased;
   min-height: 100vh;
 }
-.ck :lang(bn) {
+.ck :lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
   font-family: var(--font-ui-bn);
 }
 .ck .wrap {
@@ -7430,12 +7465,12 @@
   place-items: center;
   overflow: hidden;
 }
+/* Owner, 2026-11-22: the photo fills the thumb (no inset frame showing the field colour). */
 .ck .th img {
   width: 100%;
   height: 100%;
-  object-fit: contain;
-  padding: 4px;
-  box-sizing: border-box;
+  object-fit: cover;
+  display: block;
 }
 .ck .th .ak-i {
   width: 30px;
@@ -7617,7 +7652,7 @@
   padding: 0 20px;
 }
 .ck .place[disabled] {
-  opacity: 0.85;
+  opacity: 0.55;
   cursor: progress;
 }
 .ck .spin {
@@ -7835,7 +7870,7 @@
   padding-bottom: 96px;
   color: var(--ink);
 }
-.tk-main :lang(bn) {
+.tk-main :lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
   font-family: var(--font-ui-bn);
 }
 .tk-main .crumbs {
@@ -7968,7 +8003,7 @@
   align-items: center;
 }
 .tk-main .tk-go[disabled] {
-  opacity: 0.85;
+  opacity: 0.55;
   cursor: progress;
 }
 .tk-main .spin {
@@ -8031,7 +8066,7 @@
   height: 8px;
   border-radius: 50%;
   background: currentColor;
-  opacity: 0.85;
+  opacity: 0.55;
 }
 .tk-main .badge.warn {
   background: var(--surface);
@@ -9140,6 +9175,20 @@
   transform: translate(-50%, -50%);
   filter: drop-shadow(14px 18px 14px rgba(52, 57, 43, 0.18));
 }
+/* Owner, 2026-11-22: the panel is shaped to the illustration (centred beside the form, no stretching to its
+   height, no cropping, no fill around it). */
+.au .brandp.photo {
+  padding: 0;
+  align-self: center;
+  aspect-ratio: 1200 / 1490;
+  background: none;
+}
+.au .brandp.photo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .au .formp {
   display: flex;
   align-items: center;
@@ -9355,7 +9404,7 @@
   padding: 0 20px;
 }
 .au .sbtn[disabled] {
-  opacity: 0.85;
+  opacity: 0.55;
   cursor: progress;
 }
 .au .spin {
@@ -9526,7 +9575,7 @@
   display: block;
   font: 600 16px/1.3 var(--font-ui);
 }
-.page-contact .ct-ways b:lang(bn) {
+.page-contact .ct-ways b:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
   font-family: var(--font-ui-bn);
 }
 .page-contact .ct-ways small {
@@ -9536,7 +9585,7 @@
   margin-top: 2px;
   overflow-wrap: anywhere;
 }
-.page-contact .ct-ways small:lang(bn) {
+.page-contact .ct-ways small:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
   font-family: var(--font-ui-bn);
 }
 .page-contact .ct-ways a > .ak-i {
@@ -10924,7 +10973,7 @@
   visibility: hidden;
 }
 .nf .nf-btn[disabled] {
-  opacity: 0.85;
+  opacity: 0.55;
   cursor: progress;
 }
 .nf .spin {
@@ -11666,5 +11715,2067 @@
   .page-home .vc .vc-grid {
     grid-template-columns: minmax(0, 1fr);
     gap: 48px;
+  }
+}
+
+/* Shop reply under a review ("আচারকুঠির উত্তর"). Owner request 2026-11-14 (admin Reviews A13):
+   no artboard; a quiet note in the page's own tokens under product and shop reviews. */
+.rv-rep,
+.vc-rep {
+  margin-top: var(--space-3);
+  padding: var(--space-3) var(--space-4);
+  border-left: 2px solid var(--brand);
+  border-radius: 0 var(--radius-s) var(--radius-s) 0;
+  background: var(--bg-band);
+  max-width: 46em;
+}
+.rv-rep b,
+.vc-rep b {
+  display: block;
+  font: 600 13px/1.4 var(--font-ui-bn);
+  color: var(--brand);
+}
+.rv .rv-rep p,
+.vc-rep p {
+  margin: 4px 0 0;
+  font: 400 15px/1.7 var(--font-ui-bn);
+  color: var(--ink-muted);
+}
+
+/* Checkout live coupon check ("কোডটি ঠিক আছে …"). Owner request 2026-11-15; no artboard, the
+   board's .cp-err line in the success colour. */
+.ck .cp-live {
+  margin-top: 8px;
+  color: var(--success);
+}
+
+/* Product card names, English version (owner 2026-11-16, memory: storefront-bilingual): the large
+   line carries the English name in the English display face, the small line the Bangla name. */
+.pc-bn:not(:lang(bn):where(body [lang="bn"], body [lang="bn"] *)) {
+  font-family: var(--font-display);
+}
+/* Beats ".ak h3 span:lang(bn) { font: inherit }" (design.css): the names sit inside an h3. */
+.ak .pc-names .pc-en:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  font-family: var(--font-ui-bn);
+}
+
+/* Product page, bilingual (memory: storefront-bilingual): Bangla has no italics, so the Bangla
+   name under the English heading is upright in the Bangla UI face; and the story labels drop the
+   eyebrow letter-spacing in Bangla, as .ak-eyebrow:lang(bn) does. */
+.page-product .enn:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  font-family: var(--font-ui-bn);
+  font-style: normal;
+}
+.page-product .dl dt:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  letter-spacing: 0;
+  text-transform: none;
+}
+
+/* Home bestseller card, English version (memory: storefront-bilingual): the small line holds the
+   Bangla name, in the Bangla UI face (beats ".ak h3 span:lang(bn) { font: inherit }"). */
+.ak .fc-names .fc-en:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  font-family: var(--font-ui-bn);
+}
+
+/* Accessibility (axe color-contrast, 2026-11-16). tokens.json: muted text on bg-band (linen-deep)
+   is ink-muted-on-field (moss-deep 4.6:1), never moss (4.1:1). These artboard rules used
+   ink-muted on a band; same token family, the band's pairing. Phone-only bands keep theirs. */
+.page-contact .intro .crumbs a:not(:hover),
+.page-doc .help > div > p,
+.page-story .craft .h2-en,
+.page-recipes .pair .pr .tg.idea {
+  color: var(--ink-muted-on-field);
+}
+@media (min-width: 721px) {
+  .page-home .vc-rest .vc-by .vc-d,
+  .page-rd .rd-ingp .rd-sub,
+  .page-rd .rd-ingp .rd-sv > span,
+  .page-rd .rd-ingp .rd-prog,
+  .page-rd .rd-ingp .rd-chk .nm small {
+    color: var(--ink-muted-on-field);
+  }
+}
+
+/* Doc pages (policies, FAQ) on the English site: the drawn boards use Bangla counters; English
+   copy gets Western digits (owner, 2026-11-19). */
+html[lang="en"] .toc a::before,
+html[lang="en"] .mtoc a::before {
+  content: counter(t) ".";
+}
+html[lang="en"] .doc h2::before {
+  content: counter(s) ".";
+}
+html[lang="en"] .steps li::before {
+  content: counter(st);
+}
+
+/* Home hero: full-bleed still-life photo with the copy on the empty wall (owner, 2026-11-20;
+   replaces the Main.dc.html hero). Desktop photo from 721px (tablet too), phone photo below. */
+.page-home .hero.hero-photo {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  /* Never taller than the photo at this width (16:9), so it crops as little as possible. */
+  min-height: clamp(560px, min(calc(100svh - 114px), 56.25vw), 820px);
+  padding: 0;
+  background: var(--bg-band);
+}
+.page-home .hero-bg,
+.page-home .hero-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.page-home .hero-bg img {
+  object-fit: cover;
+  /* Crop from the left (empty wall) first, so narrower screens keep the jars clear of the copy. */
+  object-position: 22% 50%;
+}
+/* Soft wall-coloured wash behind the copy so it stays readable when the photo crops. */
+.page-home .hero-photo::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 25%, transparent) 38%,
+    transparent 58%
+  );
+  pointer-events: none;
+}
+.page-home .hero-copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: 72px;
+  padding-bottom: 104px;
+}
+.page-home .hero-copy > * {
+  max-width: 600px;
+}
+.page-home .hero-eyebrow {
+  display: block;
+  width: fit-content;
+  font: 500 20px/1.5 var(--font-ui-bn);
+  color: var(--ink);
+}
+.page-home .hero-eyebrow:lang(en) {
+  font: 500 13px/1.5 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.page-home .hero-eyebrow::after {
+  content: "";
+  display: block;
+  width: 72px;
+  height: 2px;
+  margin-top: 12px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+.page-home .hero-photo .h-xl {
+  margin: 24px 0 22px;
+  max-width: clamp(440px, 39vw, 560px);
+}
+.page-home .hero-photo .h-xl:lang(bn) {
+  font: 600 clamp(48px, 4.7vw, 68px)/1.22 var(--font-display-bn);
+  font-variation-settings: normal;
+  letter-spacing: 0;
+}
+.page-home .hero-photo .lede {
+  color: var(--ink);
+  max-width: 520px;
+}
+.page-home .hero-photo .lede:lang(bn) {
+  font: 400 19px/1.65 var(--font-ui-bn);
+}
+.page-home .hero-note {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  margin: 56px 0 0;
+  font: 500 14px/1.4 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-home .hero-note:lang(bn) {
+  font: 500 15px/1.5 var(--font-ui-bn);
+}
+.page-home .hero-note-rule {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  color: var(--brand);
+}
+.page-home .hero-note-rule::before,
+.page-home .hero-note-rule::after {
+  content: "";
+  width: 96px;
+  height: 1px;
+  background: color-mix(in srgb, var(--ink) 35%, transparent);
+}
+.page-home .hero-note-rule .ak-i {
+  width: 20px;
+  height: 20px;
+}
+@media (max-width: 980px) {
+  .page-home .hero.hero-photo {
+    min-height: 600px;
+  }
+  .page-home .hero-photo::before {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bg) 75%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 45%, transparent) 45%,
+      transparent 70%
+    );
+  }
+  .page-home .hero-copy > *,
+  .page-home .hero-photo .h-xl,
+  .page-home .hero-photo .lede {
+    max-width: 440px;
+  }
+}
+
+/* ===== Our story, owner restyle (2026-11-20): photo bands + split bands, one responsive markup.
+   Replaces the Our story board layouts; a mix of the board and the owner reference. */
+.page-story .st {
+  --st-light: var(--linen);
+  background: var(--bg);
+}
+.page-story .st-eyebrow {
+  display: block;
+  width: fit-content;
+  font: 500 15px/1.5 var(--font-ui-bn);
+  color: var(--ink-muted);
+}
+.page-story .st-eyebrow:lang(en) {
+  font: 500 12px/1.5 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.page-story .st-eyebrow::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: currentColor;
+  opacity: 0.6;
+}
+.page-story .st-h1,
+.page-story .st-h2 {
+  margin: 18px 0 16px;
+  color: var(--ink);
+  text-wrap: balance;
+}
+.page-story .st-h1:lang(bn) {
+  font: 600 clamp(44px, 5vw, 72px) / 1.18 var(--font-display-bn);
+}
+.page-story .st-h1:lang(en) {
+  font: 300 clamp(44px, 5vw, 76px) / 1.04 var(--font-display);
+  letter-spacing: -0.015em;
+}
+.page-story .st-h2:lang(bn) {
+  font: 600 clamp(30px, 3vw, 44px) / 1.25 var(--font-display-bn);
+}
+.page-story .st-h2:lang(en) {
+  font: 300 clamp(30px, 3vw, 46px) / 1.1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+.page-story .st-lede,
+.page-story .st-body {
+  margin: 0;
+  color: var(--ink-muted);
+  font: 400 17px/1.75 var(--font-ui);
+}
+.page-story .st-lede:lang(bn),
+.page-story .st-body:lang(bn) {
+  font: 400 18px/1.75 var(--font-ui-bn);
+}
+.page-story .st-lede {
+  font-size: 19px;
+}
+
+/* Header and dark bands: photo behind, light copy on the shaded side. */
+.page-story .st-hero,
+.page-story .st-band {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: var(--forest-shadow);
+}
+.page-story .st-hero {
+  min-height: clamp(560px, min(calc(100svh - 114px), 56.25vw), 820px);
+}
+.page-story .st-band {
+  min-height: clamp(480px, 50vw, 720px);
+}
+.page-story .st-bg,
+.page-story .st-bg img,
+.page-story .st-band-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.page-story .st-bg img,
+.page-story .st-band-img {
+  object-fit: cover;
+  object-position: 70% 50%;
+}
+.page-story .st-hero::before,
+.page-story .st-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 22, 15, 0.62) 0%,
+    rgba(20, 22, 15, 0.38) 40%,
+    transparent 64%
+  );
+  pointer-events: none;
+}
+.page-story .st-close::before {
+  background: linear-gradient(
+    90deg,
+    rgba(16, 26, 4, 0.55) 0%,
+    rgba(16, 26, 4, 0.25) 45%,
+    transparent 66%
+  );
+}
+.page-story .st-hero-in,
+.page-story .st-band-in {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: 88px;
+  padding-bottom: 88px;
+}
+.page-story .st-hero-in > *,
+.page-story .st-band-in > * {
+  max-width: clamp(420px, 42vw, 580px);
+}
+/* The header photo keeps only the left third as plain wall. */
+.page-story .st-hero-in > * {
+  max-width: clamp(320px, 30vw, 460px);
+}
+.page-story .st-hero :is(.st-eyebrow, .st-h1, .st-lede),
+.page-story .st-band :is(.st-eyebrow, .st-h2, .st-body, h3, p) {
+  color: var(--st-light);
+}
+.page-story .st-hero .st-lede,
+.page-story .st-band .st-body {
+  opacity: 0.9;
+}
+/* Chapter index (owner, 2026-11-22: "premium, not AI pills"): an editorial contents line, not
+   buttons. A hairline across the top, three equal columns split by fine rules, a small faded
+   number over each chapter name, and a line that draws under the name on hover / focus. */
+.page-story .st-chapters {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-top: 40px;
+  border-top: 1px solid color-mix(in srgb, var(--st-light) 38%, transparent);
+}
+.page-story .st-chapters a {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: 16px 16px 4px;
+  color: var(--st-light);
+  font: 600 18px/1.25 var(--font-ui);
+  text-decoration: none;
+  /* Keeps the names readable where they cross the bright window in the photo. */
+  text-shadow: 0 1px 14px rgba(20, 22, 15, 0.55);
+}
+.page-story .st-chapters a:first-child {
+  padding-left: 0;
+}
+.page-story .st-chapters a + a {
+  border-left: 1px solid color-mix(in srgb, var(--st-light) 22%, transparent);
+}
+.page-story .st-chapters a:lang(bn) {
+  font-family: var(--font-display-bn);
+  font-weight: 600;
+}
+.page-story .st-chapters .n {
+  font: 500 12px/1 var(--font-ui);
+  letter-spacing: 0.16em;
+  opacity: 0.62;
+}
+.page-story .st-chapters a::after {
+  content: "";
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: -2px;
+  height: 1px;
+  background: currentColor;
+  transform: scaleX(0);
+  transform-origin: left;
+  transition: transform var(--dur-base) var(--ease-settle);
+}
+.page-story .st-chapters a:first-child::after {
+  left: 0;
+}
+.page-story .st-chapters a:hover::after,
+.page-story .st-chapters a:focus-visible::after {
+  transform: scaleX(1);
+}
+.page-story .st-chapters a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 4px;
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-story .st-chapters a::after {
+    transition: none;
+  }
+}
+
+/* Split bands: half photo, half words, edge to edge. */
+.page-story .st-split {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  align-items: stretch;
+  background: var(--bg-band);
+}
+.page-story .st-split-img {
+  margin: 0;
+  min-height: 440px;
+}
+.page-story .st-split-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.page-story .st-split-copy {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  padding: 72px clamp(32px, 6vw, 104px);
+  max-width: 680px;
+}
+.page-story .st-split--rev .st-split-img {
+  order: 2;
+}
+.page-story .st-split--rev {
+  background: var(--bg);
+}
+.page-story .st-quote {
+  margin: 28px 0 0;
+  padding-left: 18px;
+  border-left: 3px solid var(--sun);
+  font: 500 18px/1.6 var(--font-ui);
+  color: var(--ink);
+}
+.page-story .st-quote:lang(bn) {
+  font: 500 19px/1.6 var(--font-ui-bn);
+}
+
+/* Craft row. */
+.page-story .st-craft {
+  padding: 96px 0 104px;
+}
+.page-story .st-craft-head {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 32px 64px;
+  align-items: end;
+  margin-bottom: 48px;
+}
+.page-story .st-craft-head .st-h2 {
+  margin-bottom: 0;
+}
+/* The four promises (owner, 2026-11-22: "premium, not AI pills"): a 2 x 2 spec list in the
+   same editorial language as the hero's chapter index. A hairline above, a fine rule under each
+   item, a small leaf mark, no boxes or fills. */
+.page-story .st-pills {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  column-gap: 32px;
+  border-top: 1px solid var(--line);
+}
+.page-story .st-pills li {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 15px 0;
+  border-bottom: 1px solid var(--line);
+  font: 500 16px/1.4 var(--font-ui);
+  color: var(--ink);
+}
+.page-story .st-pills li:lang(bn) {
+  font: 500 17px/1.4 var(--font-ui-bn);
+}
+/* Each promise has its own hand-drawn mark (components/promise-icon.tsx) in a soft round badge.
+   Hovering the row redraws its lines and warms the badge. */
+.page-story .st-pi {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--brand) 9%, transparent);
+  color: var(--brand);
+  transition: background var(--dur-base) var(--ease-settle);
+}
+.page-story .st-pi svg {
+  width: 24px;
+  height: 24px;
+  overflow: visible;
+}
+.page-story .st-pi [pathLength] {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+}
+.page-story .st-pi .dot {
+  fill: currentColor;
+  stroke: none;
+}
+.page-story .st-pills li:hover .st-pi {
+  background: color-mix(in srgb, var(--brand) 16%, transparent);
+}
+.page-story .st-pills li:hover .st-pi [pathLength] {
+  animation: st-pi-draw 0.9s var(--ease-settle) both;
+}
+.page-story .st-pills li:hover .st-pi .dot {
+  animation: st-pi-dot 0.9s var(--ease-settle) both;
+}
+@keyframes st-pi-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+@keyframes st-pi-dot {
+  0%,
+  55% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .page-story .st-pills li:hover .st-pi [pathLength],
+  .page-story .st-pills li:hover .st-pi .dot {
+    animation: none;
+  }
+}
+.page-story .st-cards {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 28px;
+}
+.page-story .st-card {
+  margin: 0;
+  overflow: hidden;
+  border-radius: var(--shoulder-soft);
+  background: var(--surface);
+  box-shadow:
+    inset 0 0 0 1px var(--line),
+    var(--shadow-rest);
+}
+.page-story .st-card-img {
+  aspect-ratio: 4 / 3;
+  overflow: hidden;
+}
+.page-story .st-card-img img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.page-story .st-card figcaption {
+  padding: 22px 24px 26px;
+}
+.page-story .st-card h3 {
+  margin: 0 0 8px;
+  font: 600 21px/1.35 var(--font-display-bn);
+  color: var(--ink);
+}
+.page-story .st-card h3:lang(en) {
+  font: 400 23px/1.2 var(--font-display);
+}
+.page-story .st-card p {
+  margin: 0;
+  font: 400 16px/1.65 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-story .st-card p:lang(bn) {
+  font: 400 17px/1.65 var(--font-ui-bn);
+}
+
+/* Philosophy points. */
+.page-story .st-points {
+  list-style: none;
+  margin: 36px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 20px;
+  counter-reset: pt;
+}
+.page-story .st-points li {
+  counter-increment: pt;
+  padding-top: 14px;
+  border-top: 1px solid color-mix(in srgb, var(--st-light) 35%, transparent);
+}
+.page-story .st-points li::before {
+  content: counter(pt, decimal-leading-zero);
+  display: block;
+  margin-bottom: 6px;
+  font: 500 12px/1 var(--font-ui);
+  letter-spacing: 0.12em;
+  color: var(--sun);
+}
+.page-story .st-points li:lang(bn)::before {
+  content: "০" counter(pt, bengali);
+}
+.page-story .st-points h3 {
+  margin: 0 0 6px;
+  font: 600 18px/1.35 var(--font-ui-bn);
+}
+.page-story .st-points h3:lang(en) {
+  font: 600 16px/1.35 var(--font-ui);
+}
+.page-story .st-points p {
+  margin: 0;
+  font: 400 15px/1.6 var(--font-ui);
+  opacity: 0.55;
+}
+.page-story .st-points p:lang(bn) {
+  font: 400 16px/1.6 var(--font-ui-bn);
+}
+
+/* Close. */
+.page-story .st-cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 16px 24px;
+  margin-top: 32px;
+}
+.page-story .st-close .st-link {
+  color: var(--st-light);
+}
+
+@media (max-width: 980px) {
+  .page-story .st-bg img,
+  .page-story .st-band-img {
+    object-position: 78% 50%;
+  }
+  .page-story .st-hero::before,
+  .page-story .st-band::before {
+    background: linear-gradient(
+      90deg,
+      rgba(20, 22, 15, 0.72) 0%,
+      rgba(20, 22, 15, 0.5) 50%,
+      rgba(20, 22, 15, 0.15) 80%
+    );
+  }
+  .page-story .st-craft-head {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .page-story .st-cards {
+    gap: 16px;
+  }
+  .page-story .st-card figcaption {
+    padding: 16px 16px 20px;
+  }
+  .page-story .st-points {
+    grid-template-columns: minmax(0, 1fr);
+    max-width: 420px;
+  }
+}
+
+/* ===== Contact, owner redesign 2026-11-21 (owner reference): photo header, ways list + form,
+   follow-us photo band. Reuses .ct-main / .ct-h2 / the form card from the 2026-11-08 redesign. */
+.page-contact .cx {
+  background: var(--bg);
+}
+.page-contact .cx-eyebrow {
+  display: block;
+  width: fit-content;
+  font: 500 17px/1.5 var(--font-ui-bn);
+  color: var(--ink);
+}
+.page-contact .cx-eyebrow:lang(en) {
+  font: 500 12px/1.5 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.page-contact .cx-eyebrow::after,
+.page-contact .cx-rule::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+
+/* Header: full-bleed photo, dark copy on the shaded wall. */
+.page-contact .cx-hero {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: clamp(480px, min(calc(100svh - 114px), 46vw), 680px);
+  background: var(--bg-band);
+}
+.page-contact .cx-bg,
+.page-contact .cx-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.page-contact .cx-bg img {
+  object-fit: cover;
+  object-position: 30% 50%;
+}
+.page-contact .cx-hero::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    color-mix(in srgb, var(--bg) 60%, transparent) 0%,
+    color-mix(in srgb, var(--bg) 25%, transparent) 40%,
+    transparent 60%
+  );
+  pointer-events: none;
+}
+.page-contact .cx-hero-in {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+.page-contact .cx-hero-in > * {
+  max-width: clamp(340px, 31vw, 460px);
+}
+.page-contact .cx-h1 {
+  margin: 22px 0 18px;
+  color: var(--ink);
+  text-wrap: balance;
+  font: 600 clamp(38px, 4vw, 58px) / 1.18 var(--font-display-bn);
+}
+.page-contact .cx-h1:lang(en) {
+  font: 300 clamp(38px, 4vw, 58px) / 1.06 var(--font-display);
+  letter-spacing: -0.015em;
+}
+.page-contact .cx-lede {
+  margin: 0;
+  color: var(--ink);
+  font: 400 18px/1.7 var(--font-ui-bn);
+}
+.page-contact .cx-lede:lang(en) {
+  font: 400 18px/1.65 var(--font-ui);
+}
+
+/* Ways to reach us + form. */
+.page-contact .cx-main {
+  position: relative;
+  padding: 80px 0 96px;
+}
+/* The leaf sprig from the owner reference, faint, lower left. */
+.page-contact .cx-main::before {
+  content: "";
+  position: absolute;
+  left: max(0px, calc(50% - 760px));
+  bottom: 24px;
+  width: 240px;
+  height: 320px;
+  background: url("/images/contact/leaf-sprig.webp") no-repeat center / contain;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.page-contact .cx-main .ct-main {
+  position: relative;
+}
+.page-contact .cx-ways .ct-h2 {
+  margin-bottom: 28px;
+}
+.page-contact .cx-ways ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.page-contact .cx-ways a {
+  display: grid;
+  grid-template-columns: 52px minmax(0, 1fr) 20px;
+  gap: 16px;
+  align-items: center;
+  padding: 12px 8px 12px 0;
+  border-radius: 14px;
+  color: var(--ink);
+  text-decoration: none;
+  transition: background var(--dur-quick) ease;
+}
+.page-contact .cx-ways a:hover {
+  background: color-mix(in srgb, var(--pale-olive) 30%, transparent);
+}
+.page-contact .cx-ways a > .ak-i {
+  width: 18px;
+  height: 18px;
+  color: var(--ink-muted);
+}
+.page-contact .cx-ic {
+  display: grid;
+  place-items: center;
+  width: 52px;
+  height: 52px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--pale-olive) 55%, transparent);
+  color: var(--brand);
+}
+.page-contact .cx-ic svg,
+.page-contact .cx-ic .ak-i {
+  width: 22px;
+  height: 22px;
+}
+.page-contact .cx-ways b {
+  display: block;
+  font: 600 18px/1.35 var(--font-ui-bn);
+}
+.page-contact .cx-ways b:lang(en),
+.page-contact .cx:lang(en) .cx-ways b {
+  font: 600 17px/1.35 var(--font-ui);
+}
+.page-contact .cx-ways small {
+  display: block;
+  margin-top: 2px;
+  font: 400 15px/1.4 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-contact .cx-ways small:lang(bn) {
+  font-family: var(--font-ui-bn);
+}
+.page-contact .cx-reply {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  margin: 24px 0 0;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  font: 400 16px/1.6 var(--font-ui-bn);
+  color: var(--ink-muted);
+}
+.page-contact .cx-reply:lang(en),
+.page-contact .cx:lang(en) .cx-reply {
+  font: 400 15px/1.6 var(--font-ui);
+}
+.page-contact .cx-reply .ak-i {
+  flex: none;
+  width: 20px;
+  height: 20px;
+  margin-top: 2px;
+  color: var(--brand);
+}
+
+/* Follow-us band: photo behind, light copy left. */
+.page-contact .cx-follow {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  min-height: clamp(380px, 34vw, 520px);
+  background: var(--forest-shadow);
+}
+.page-contact .cx-follow-img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 70% 50%;
+}
+.page-contact .cx-follow::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(20, 16, 10, 0.6) 0%,
+    rgba(20, 16, 10, 0.3) 42%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+.page-contact .cx-follow-in {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: 64px;
+  padding-bottom: 64px;
+}
+.page-contact .cx-follow-in > * {
+  max-width: clamp(360px, 38vw, 520px);
+}
+.page-contact .cx-h2 {
+  margin: 0 0 14px;
+  color: var(--linen);
+  font: 600 clamp(30px, 3vw, 42px) / 1.25 var(--font-display-bn);
+}
+.page-contact .cx-h2:lang(en),
+.page-contact .cx:lang(en) .cx-h2 {
+  font: 300 clamp(30px, 3vw, 44px) / 1.1 var(--font-display);
+}
+.page-contact .cx-follow-text {
+  margin: 0;
+  color: var(--linen);
+  opacity: 0.9;
+  font: 400 18px/1.65 var(--font-ui-bn);
+}
+.page-contact .cx:lang(en) .cx-follow-text {
+  font: 400 17px/1.65 var(--font-ui);
+}
+.page-contact .cx-follow-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 28px;
+}
+.page-contact .cx-sbtn {
+  gap: 10px;
+  min-height: 48px;
+  padding: 0 22px;
+  color: var(--linen);
+  box-shadow: inset 0 0 0 1.5px color-mix(in srgb, var(--linen) 70%, transparent);
+}
+.page-contact .cx-sbtn:hover {
+  background: color-mix(in srgb, var(--linen) 14%, transparent);
+}
+.page-contact .cx-sbtn svg {
+  width: 20px;
+  height: 20px;
+}
+
+@media (max-width: 980px) {
+  .page-contact .cx-hero::before {
+    background: linear-gradient(
+      90deg,
+      color-mix(in srgb, var(--bg) 78%, transparent) 0%,
+      color-mix(in srgb, var(--bg) 50%, transparent) 50%,
+      transparent 78%
+    );
+  }
+  .page-contact .cx-hero-in > * {
+    max-width: 420px;
+  }
+  .page-contact .cx-follow::before {
+    background: linear-gradient(
+      90deg,
+      rgba(20, 16, 10, 0.72) 0%,
+      rgba(20, 16, 10, 0.45) 55%,
+      rgba(20, 16, 10, 0.1) 85%
+    );
+  }
+}
+
+/* Contact 2026-11-21, form + ways matched to the owner reference: no card, divider between the
+   columns, one field per row with placeholder-only fields (labels kept for screen readers), the
+   subject keeps a small label, full-width send button, green rule under both headings. */
+.page-contact .cx-main .ct-main {
+  grid-template-columns: minmax(0, 5fr) minmax(0, 7fr);
+  gap: 0;
+}
+.page-contact .cx-ways {
+  padding-right: clamp(32px, 4vw, 64px);
+}
+.page-contact .cx-main .ct-card {
+  padding: 0 0 0 clamp(32px, 4vw, 64px);
+  background: none;
+  border: 0;
+  border-left: 1px solid var(--line);
+  border-radius: 0;
+  box-shadow: none;
+}
+.page-contact .cx-main .ct-card > .ct-h2 {
+  margin-bottom: 28px;
+}
+.page-contact .cx-main .ct-card > .ct-h2::after {
+  content: "";
+  display: block;
+  width: 64px;
+  height: 2px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--brand);
+}
+.page-contact .cx-main .ct-card .fgrid {
+  grid-template-columns: minmax(0, 1fr);
+  gap: 12px;
+  margin-top: 0;
+}
+.page-contact .cx-main .ct-card .ak-field {
+  gap: 6px;
+}
+.page-contact .cx-main .ct-card .fgrid > .ak-field:not(:nth-child(4)) > span:first-child {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+.page-contact .cx-main .ct-card .fgrid > .ak-field:nth-child(4) > span:first-child {
+  height: auto;
+  font-size: 14px;
+  color: var(--ink-muted);
+}
+.page-contact .cx-main .ct-card .fgrid > .ak-field:nth-child(4) em {
+  display: none;
+}
+.page-contact .cx-main .ct-card input.ak-input,
+.page-contact .cx-main .ct-card .ak-sel-btn {
+  height: 46px;
+  min-height: 46px;
+  border-radius: 8px;
+}
+.page-contact .cx-main .ct-card textarea {
+  min-height: 120px;
+  border-radius: 8px;
+}
+.page-contact .cx-main .ct-err {
+  min-height: 0;
+  padding-top: 0;
+}
+.page-contact .cx-main .ct-err:not(:empty) {
+  padding-top: 4px;
+}
+.page-contact .cx-main .ct-card .send {
+  display: block;
+  margin-top: 16px;
+}
+.page-contact .cx-main .ct-card .send .req-note {
+  display: none;
+}
+.page-contact .cx-main .ct-card .send .ak-btn {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 8px;
+}
+
+/* Ways list: bigger icon circles, no arrows. The row is padded inside its hover tint and pulled
+   back by the same amount, so icons line up with the heading. */
+.page-contact .cx-ways a {
+  grid-template-columns: 60px minmax(0, 1fr);
+  gap: 18px;
+  padding: 10px 14px;
+  margin-inline: -14px;
+  border-radius: 18px;
+}
+.page-contact .cx-ways a > .ak-i {
+  display: none;
+}
+.page-contact .cx-ic {
+  width: 60px;
+  height: 60px;
+}
+.page-contact .cx-ic svg,
+.page-contact .cx-ic .ak-i {
+  width: 26px;
+  height: 26px;
+}
+
+/* The leaf sits in the left margin, clear of the copy, like the reference. */
+.page-contact .cx-main::before {
+  left: calc(max(0px, 50% - 720px) - 24px);
+  width: 170px;
+  height: 250px;
+  bottom: 8px;
+  opacity: 1;
+}
+@media (max-width: 1200px) {
+  .page-contact .cx-main::before {
+    display: none;
+  }
+}
+
+@media (max-width: 980px) {
+  .page-contact .cx-main .ct-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 40px;
+  }
+  .page-contact .cx-ways {
+    padding-right: 0;
+  }
+  .page-contact .cx-main .ct-card {
+    padding: 40px 0 0;
+    border-left: 0;
+    border-top: 1px solid var(--line);
+  }
+}
+
+/* Product card, premium refresh (owner, 2026-11-21): the card belongs to the page instead of
+   sitting on it. A softly translucent surface that takes the tint of whatever is behind it, a
+   hairline edge, a calm low shadow that lifts on hover, and a warm linen photo well instead of the
+   olive field. Structure, sizes and buy row unchanged (memory: product-card-figma). */
+.pcard::before {
+  background: color-mix(in srgb, var(--linen-raised) 62%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    inset 0 0 0 1px rgba(52, 57, 43, 0.08),
+    0 1px 1px rgba(52, 57, 43, 0.04),
+    0 clamp(6px, var(--pc-w) * 0.03, 10px) clamp(16px, var(--pc-w) * 0.07, 24px)
+      rgba(52, 57, 43, 0.07);
+}
+@media (hover: hover) {
+  .pcard:hover::before {
+    background: color-mix(in srgb, var(--linen-raised) 80%, transparent);
+    box-shadow:
+      inset 0 0 0 1px rgba(52, 57, 43, 0.1),
+      0 2px 3px rgba(52, 57, 43, 0.05),
+      0 clamp(10px, var(--pc-w) * 0.045, 16px) clamp(24px, var(--pc-w) * 0.1, 34px)
+        rgba(52, 57, 43, 0.11);
+  }
+}
+.pc-photo {
+  background:
+    radial-gradient(120% 90% at 50% 35%, #f1ede0 0%, #e6e1cf 70%, #ddd7c2 100%);
+  box-shadow: inset 0 0 0 1px rgba(52, 57, 43, 0.05);
+}
+/* The placeholder jar rests on the well with a soft ground shadow. */
+.pc-photo img[src="/jar.svg"] {
+  filter: drop-shadow(0 8px 10px rgba(52, 57, 43, 0.16));
+}
+.pcard.is-out .pc-photo img[src="/jar.svg"] {
+  filter: grayscale(1) drop-shadow(0 8px 10px rgba(52, 57, 43, 0.16));
+}
+/* Bestseller card, same premium refresh as the product card (owner, 2026-11-21). */
+.fcard {
+  background: color-mix(in srgb, var(--linen-raised) 62%, transparent);
+  backdrop-filter: blur(6px);
+  box-shadow:
+    inset 0 0 0 1px rgba(52, 57, 43, 0.08),
+    0 1px 1px rgba(52, 57, 43, 0.04),
+    0 12px 28px rgba(52, 57, 43, 0.08);
+}
+@media (hover: hover) {
+  .fcard:hover {
+    background: color-mix(in srgb, var(--linen-raised) 80%, transparent);
+    box-shadow:
+      inset 0 0 0 1px rgba(52, 57, 43, 0.1),
+      0 2px 3px rgba(52, 57, 43, 0.05),
+      0 18px 38px rgba(52, 57, 43, 0.12);
+  }
+}
+.fc-photo {
+  background: radial-gradient(120% 90% at 50% 35%, #f1ede0 0%, #e6e1cf 70%, #ddd7c2 100%);
+  box-shadow: inset 0 0 0 1px rgba(52, 57, 43, 0.05);
+}
+
+/* ---------- Home featured picks ("বিশেষ বাছাই"). Owner mockup 2026-11-21
+   (docs/featured-section-mockup.jpg), replacing the "From our shelf" band: header with an "all
+   pickles" link, then three identical cards (3:4 photo with one badge, name, one tagline line,
+   price / weight with the chillies on the same row, one full-width add button). Every row lines up
+   across the cards (grid subgrid). Phones: design-mobile.css "Home featured picks on phones". ---------- */
+.fpk {
+  position: relative;
+  overflow: hidden;
+}
+.fpk-sprig {
+  /* Mockup: faint mango-leaf branch in the top-right corner behind the header, whole (owner,
+     2026-11-21: full leaves, no cut-outs). It sits above the cards, never under them. */
+  position: absolute;
+  right: -72px;
+  bottom: calc(100% + 6px);
+  z-index: 0;
+  /* Small enough that the whole branch fits between the section top and the cards. */
+  width: 336px;
+  height: auto;
+  opacity: 0.55;
+  pointer-events: none;
+}
+.fpk-grid > .fpk-card {
+  z-index: 1;
+}
+.fpk-head {
+  position: relative;
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  z-index: 1;
+  gap: var(--space-6);
+  margin-bottom: var(--space-8);
+}
+.fpk .fpk-eyebrow {
+  display: block;
+  margin-bottom: var(--space-2);
+  font: 600 17px/1.3 var(--font-ui-bn);
+  color: var(--kacha);
+}
+.fpk .fpk-eyebrow:lang(en) {
+  font: 600 13px/1.3 var(--font-ui);
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.fpk .fpk-title {
+  margin: 0;
+  font: 700 clamp(32px, 3.2vw, 46px) / 1.25 var(--font-display-bn);
+  color: var(--forest-shadow);
+}
+.fpk .fpk-title:lang(en) {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.fpk .fpk-lede {
+  margin: var(--space-3) 0 0;
+  font: 400 21px/1.5 var(--font-ui-bn);
+  color: var(--moss);
+}
+.fpk .fpk-lede:lang(en) {
+  font-family: var(--font-ui);
+}
+.fpk .fpk-all {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: var(--space-2);
+  padding: var(--space-2) 0;
+  font: 600 18px/1.3 var(--font-ui-bn);
+  color: var(--forest-shadow);
+  text-decoration: none;
+}
+.fpk .fpk-all:lang(en) {
+  font-family: var(--font-ui);
+  font-size: 16px;
+}
+.fpk .fpk-all:hover {
+  color: var(--kacha);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+}
+.fpk .fpk-all:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.fpk .fpk-all svg {
+  width: 20px;
+  height: 20px;
+}
+.fpk-grid {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  /* Photo, name, line, price row, button: shared rows so they line up across the cards. */
+  grid-template-rows: auto auto auto auto auto;
+  gap: 0 var(--space-8);
+}
+.fpk-card {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-row: span 5;
+  grid-template-rows: subgrid;
+  min-width: 0;
+  /* Read by the reused product card pieces (.pc-heat, .pc-band). */
+  --pc-w: 320px;
+  overflow: hidden;
+  background: var(--linen-raised);
+  border: 1px solid var(--linen-deep);
+  border-radius: 20px;
+  box-shadow:
+    0 1px 2px rgba(52, 57, 43, 0.08),
+    0 10px 24px -12px rgba(52, 57, 43, 0.22);
+  transition: box-shadow var(--dur-base) var(--ease-settle);
+}
+.fpk-card:hover {
+  box-shadow:
+    0 1px 2px rgba(52, 57, 43, 0.1),
+    0 16px 32px -14px rgba(52, 57, 43, 0.3);
+}
+.fpk-card:hover .fpk-photo img {
+  scale: 1.03;
+}
+.fpk-body {
+  display: grid;
+  grid-row: 2 / span 4;
+  grid-template-rows: subgrid;
+  /* Scales down between 1440 and 720 px so the narrow tablet cards keep room for the price row. */
+  padding: clamp(16px, 1.7vw, 24px) clamp(16px, 2.2vw, 32px) clamp(16px, 2.2vw, 32px);
+}
+.fpk-photo {
+  position: relative;
+  /* Mockup: a wide photo strip (523 × 340 at the 2000 px board). */
+  aspect-ratio: 523 / 340;
+  overflow: hidden;
+  background: var(--field);
+}
+.fpk-photo img {
+  position: absolute;
+  inset: 0;
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 52%;
+  transition: scale var(--dur-base) var(--ease-settle);
+}
+.fpk-photo img[src="/jar.svg"] {
+  object-fit: contain;
+  padding: 14%;
+}
+.fpk-card.is-out .fpk-photo img {
+  filter: grayscale(1);
+}
+.fpk .fpk-badge {
+  position: absolute;
+  top: var(--space-4);
+  left: var(--space-4);
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  min-height: 32px;
+  padding: 0 var(--space-3);
+  /* Frosted glass (owner, 2026-11-22): the photo shows softly through; the text stays solid. */
+  background: rgba(243, 241, 230, 0.42);
+  -webkit-backdrop-filter: blur(10px) saturate(1.2);
+  backdrop-filter: blur(10px) saturate(1.2);
+  border: 1px solid rgba(243, 241, 230, 0.55);
+  border-radius: var(--radius-pill);
+  font: 600 15px/1 var(--font-ui-bn);
+  color: var(--kacha);
+  box-shadow: 0 2px 8px rgba(52, 57, 43, 0.12);
+}
+/* No blur support: a more opaque pill so the text stays readable. */
+@supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
+  .fpk .fpk-badge {
+    background: rgba(243, 241, 230, 0.85);
+  }
+}
+.fpk .fpk-badge:lang(en) {
+  font: 600 13px/1 var(--font-ui);
+  letter-spacing: 0.02em;
+}
+.fpk .fpk-badge.hot {
+  color: var(--chili);
+}
+.fpk .fpk-name {
+  margin: 0;
+  font: 700 clamp(24px, 2.2vw, 32px) / 1.15 var(--font-display-bn);
+  color: var(--forest-shadow);
+}
+.fpk .fpk-name:lang(en) {
+  font-family: var(--font-display);
+  font-weight: 600;
+}
+.fpk .fpk-name a {
+  /* The theme's ".ak :lang(bn)" rule would give the link the UI face at 1.75 leading. */
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  text-decoration: none;
+}
+.fpk .fpk-name a:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+/* The admin "ছোট লাইন", up to two lines so the owner's lines never end in "…". The row grows on
+   every card at once (subgrid), so the price rows still line up. */
+.fpk .fpk-line {
+  margin: 2px 0 0;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  -webkit-line-clamp: 2;
+  line-clamp: 2;
+  overflow: hidden;
+  font: 400 17px/1.4 var(--font-ui-bn);
+  color: var(--moss);
+}
+.fpk .fpk-line:lang(en) {
+  font-family: var(--font-ui);
+  font-size: 16px;
+}
+.fpk-buy {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--space-2) var(--space-3);
+  /* Mockup: a calm gap between the line and the price row. */
+  margin-top: clamp(20px, 3.3vw, 48px);
+  /* The price and chillies scale with this row's width (cqi). Only this row is a container: one
+     on the card would cut the card off from the shared rows (subgrid). */
+  container-type: inline-size;
+}
+.fpk-pw {
+  display: inline-flex;
+  align-items: baseline;
+  gap: var(--space-2);
+  white-space: nowrap;
+}
+.fpk-price {
+  font: 700 clamp(22px, 10.5cqi, 32px) / 1.1 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  color: var(--kacha);
+}
+.fpk-wt {
+  font: 500 clamp(13px, 5.4cqi, 16px) / 1 var(--font-ui);
+  color: var(--moss);
+}
+/* Chillies keep the right end of the price row; on a very narrow card they drop under the price. */
+.fpk-heat {
+  flex: none;
+  margin-left: auto;
+  gap: var(--space-1);
+}
+.fpk-heat .chilli {
+  width: clamp(16px, 8.6cqi, 26px);
+}
+.fpk-act {
+  margin-top: var(--space-4);
+}
+.fpk-act > .ak-btn,
+.fpk-act > .card-acts,
+.fpk-act > * {
+  width: 100%;
+}
+.fpk-act .ak-btn--brand {
+  justify-content: center;
+  min-height: 52px;
+  background: var(--kacha);
+  border-radius: 12px;
+  font-size: 17px;
+}
+.fpk-act .ak-btn--brand:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+}
+.fpk-act .card-acts {
+  justify-content: space-between;
+}
+.fpk-act .qty {
+  height: 52px;
+  background: var(--kacha);
+}
+.fpk-act .qty button {
+  width: 48px;
+  height: 52px;
+}
+.fpk-act .ok {
+  color: var(--kacha);
+}
+/* Narrow cards (tablet widths, no artboard): a taller photo, so the jar is not a thin strip. */
+@media (min-width: 721px) and (max-width: 1100px) {
+  .fpk-photo {
+    aspect-ratio: 4 / 3;
+  }
+}
+@media (max-width: 980px) {
+  .fpk-grid {
+    gap: 0 var(--space-4);
+  }
+}
+
+/* Home type follows the Our Story page (owner, 2026-11-22: "match the font size and weight with
+   story page"). One scale for every Home section: eyebrow 15/500, section heading 600 at
+   30–44px, hero heading 600 at 44–72px, body 18/1.75; English uses the Story page's English faces. */
+.page-home .hero-eyebrow:lang(bn),
+.page-home .ak-eyebrow:lang(bn),
+.page-home .fpk .fpk-eyebrow:lang(bn) {
+  font: 500 15px/1.5 var(--font-ui-bn);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.page-home .hero-eyebrow:lang(en),
+.page-home .ak-eyebrow:lang(en),
+.page-home .fpk .fpk-eyebrow:lang(en) {
+  font: 500 12px/1.5 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.page-home .hero-photo .h-xl:lang(bn) {
+  font: 600 clamp(44px, 5vw, 72px) / 1.18 var(--font-display-bn);
+  letter-spacing: 0;
+}
+.page-home .hero-photo .h-xl:lang(en) {
+  font: 300 clamp(44px, 5vw, 76px) / 1.04 var(--font-display);
+  letter-spacing: -0.015em;
+}
+.page-home .h-l:lang(bn),
+.page-home .fpk .fpk-title:lang(bn),
+.page-home .vc .vc-h:lang(bn) {
+  font: 600 clamp(30px, 3vw, 44px) / 1.25 var(--font-display-bn);
+  letter-spacing: 0;
+}
+.page-home .h-l:lang(en),
+.page-home .fpk .fpk-title:lang(en),
+.page-home .vc .vc-h:lang(en) {
+  font: 300 clamp(30px, 3vw, 46px) / 1.1 var(--font-display);
+  letter-spacing: -0.01em;
+}
+.page-home .hero-photo .lede:lang(bn) {
+  font: 400 19px/1.75 var(--font-ui-bn);
+}
+.page-home .hero-photo .lede:lang(en) {
+  font: 400 19px/1.75 var(--font-ui);
+}
+.page-home .lede:lang(bn),
+.page-home .first:lang(bn),
+.page-home .fpk .fpk-lede:lang(bn),
+.page-home .vc .vc-lede:lang(bn) {
+  font: 400 18px/1.75 var(--font-ui-bn);
+}
+.page-home .lede:lang(en),
+.page-home .first:lang(en),
+.page-home .fpk .fpk-lede:lang(en),
+.page-home .vc .vc-lede:lang(en) {
+  font: 400 17px/1.75 var(--font-ui);
+}
+.page-home .fpk .fpk-name {
+  font-weight: 600;
+}
+
+/* Shop redesign (owner concept, 2026-11-22; replaces the Shop / ShopMobile band, chips and filter
+   sidebar). Photo header, shelf tabs, one toolbar line (count, search, Filter, Sort) with the
+   filters in a panel under the Filter button, a four-column grid and a closing recipes band. */
+.page-shop .sh-hero,
+.page-shop .sh-band {
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  background: var(--forest-shadow);
+  color: var(--linen);
+}
+.page-shop .sh-hero {
+  min-height: clamp(380px, 33vw, 500px);
+}
+.page-shop .sh-band {
+  min-height: clamp(340px, 32vw, 480px);
+  background: #24160f;
+}
+.page-shop .sh-bg,
+.page-shop .sh-bg img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.page-shop .sh-bg img {
+  object-fit: cover;
+  object-position: 80% 50%;
+}
+.page-shop .sh-band .sh-bg img {
+  object-position: 75% 30%;
+}
+/* A dark wash on the left keeps the copy readable however the photo crops. */
+.page-shop .sh-hero::before,
+.page-shop .sh-band::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background: linear-gradient(
+    90deg,
+    rgba(12, 22, 14, 0.72) 0%,
+    rgba(12, 22, 14, 0.4) 36%,
+    transparent 62%
+  );
+  pointer-events: none;
+}
+.page-shop .sh-band::before {
+  background: linear-gradient(
+    90deg,
+    rgba(26, 14, 8, 0.78) 0%,
+    rgba(26, 14, 8, 0.45) 38%,
+    transparent 64%
+  );
+}
+.page-shop .sh-copy {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  padding-top: 40px;
+  padding-bottom: 56px;
+}
+.page-shop .sh-copy > * {
+  max-width: 560px;
+}
+.page-shop .sh-hero .crumbs {
+  display: flex;
+  gap: 8px;
+  margin: 0 0 40px;
+  padding: 0;
+  font: 500 14px/1.4 var(--font-ui-bn);
+  color: color-mix(in srgb, var(--linen) 70%, transparent);
+}
+.page-shop .sh-hero .crumbs a {
+  color: inherit;
+}
+.page-shop .sh-hero .crumbs a:hover {
+  color: var(--linen);
+}
+.page-shop .sh-hero .crumbs [aria-current] {
+  color: var(--linen);
+}
+.page-shop .sh-hero .ak-eyebrow {
+  display: block;
+  width: fit-content;
+  font: 500 15px/1.5 var(--font-ui-bn);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--linen);
+}
+.page-shop .sh-hero .ak-eyebrow:lang(en) {
+  font: 500 12px/1.5 var(--font-ui);
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+.page-shop .sh-hero .ak-eyebrow::after {
+  content: "";
+  display: block;
+  width: 56px;
+  height: 2px;
+  margin-top: 10px;
+  border-radius: 2px;
+  background: var(--mustard);
+}
+.page-shop .sh-hero .h-xl:lang(bn) {
+  margin: 20px 0 0;
+  font: 600 clamp(40px, 4.2vw, 60px) / 1.2 var(--font-display-bn);
+  letter-spacing: 0;
+  color: var(--linen);
+}
+.page-shop .sh-hero .h-xl:lang(en) {
+  margin: 20px 0 0;
+  font: 300 clamp(40px, 4.4vw, 64px) / 1.06 var(--font-display);
+  letter-spacing: -0.015em;
+  color: var(--linen);
+}
+.page-shop .sh-hero .lede:lang(bn),
+.page-shop .sh-hero .lede:lang(en) {
+  margin: 16px 0 0;
+  max-width: 480px;
+  font: 400 18px/1.75 var(--font-ui-bn);
+  color: color-mix(in srgb, var(--linen) 88%, transparent);
+}
+.page-shop .sh-hero .lede:lang(en) {
+  font-family: var(--font-ui);
+  font-size: 17px;
+}
+.page-shop .sh-hero .meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 22px;
+  margin: 24px 0 0;
+  font: 500 14px/1.4 var(--font-ui-bn);
+  color: color-mix(in srgb, var(--linen) 80%, transparent);
+}
+.page-shop .sh-hero .meta:lang(en) {
+  font-family: var(--font-ui);
+}
+.page-shop .sh-hero .meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+.page-shop .sh-hero .meta .ak-i {
+  width: 18px;
+  height: 18px;
+  color: var(--mustard);
+}
+
+/* Closing band. */
+.page-shop .sh-band .h-l:lang(bn) {
+  margin: 0;
+  max-width: 520px;
+  font: 600 clamp(30px, 3vw, 44px) / 1.3 var(--font-display-bn);
+  letter-spacing: 0;
+  color: var(--linen);
+}
+.page-shop .sh-band .h-l:lang(en) {
+  margin: 0;
+  max-width: 520px;
+  font: 300 clamp(30px, 3vw, 46px) / 1.12 var(--font-display);
+  letter-spacing: -0.01em;
+  color: var(--linen);
+}
+.page-shop .sh-band .ak-btn {
+  margin-top: 28px;
+  min-height: 50px;
+  padding: 0 26px;
+  gap: 10px;
+}
+.page-shop .sh-band .ak-btn .ak-i {
+  width: 18px;
+  height: 18px;
+}
+
+/* Shelf tabs: text with an underline under the active shelf, one line that scrolls sideways. */
+.page-shop .cats .sh-tab {
+  flex: none;
+  display: inline-flex;
+  align-items: center;
+  min-height: 52px;
+  padding: 0;
+  border-bottom: 2px solid transparent;
+  margin-bottom: -1px;
+  font: 500 16px/1.3 var(--font-ui-bn);
+  color: var(--ink-muted);
+  white-space: nowrap;
+  text-decoration: none;
+  transition: color var(--dur-quick) var(--ease-settle);
+}
+.page-shop .cats .sh-tab:lang(en) {
+  font-family: var(--font-ui);
+  font-size: 15px;
+}
+.page-shop .cats .sh-tab:hover {
+  color: var(--ink);
+}
+.page-shop .cats .sh-tab.is-on {
+  border-bottom-color: var(--brand);
+  font-weight: 600;
+  color: var(--brand);
+}
+.page-shop .cats .sh-tab:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+@media (min-width: 721px) {
+  .page-shop .shop {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-areas:
+      "tabs"
+      "tb"
+      "res";
+    gap: 0;
+    padding-top: 40px;
+  }
+  .page-shop .bar {
+    grid-area: tabs;
+    display: block;
+    padding: 0;
+  }
+  .page-shop .cats {
+    display: flex;
+    flex-wrap: nowrap;
+    gap: 36px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-shop .cats::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Toolbar: search on the left, Filter and Sort on the right. */
+  .page-shop .shop-tb {
+    grid-area: tb;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-top: 24px;
+  }
+  .page-shop .shop-tb .shop-srch {
+    flex: 0 1 340px;
+    width: auto;
+    min-width: 0;
+    height: 44px;
+    margin: 0 auto 0 0;
+    order: 0;
+  }
+  .page-shop .shop-tb .filt-m {
+    display: block;
+    flex: none;
+    margin: 0;
+    /* The Shop board's tablet rule adds 24px above the old Filter button. */
+    padding: 0;
+  }
+  .page-shop .shop-tb .sortw:not(.m-sort) {
+    display: block;
+    margin: 0;
+  }
+  .page-shop .shop-tb .m-sort {
+    display: none;
+  }
+  /* Filter button, the same pill as Sort. */
+  .page-shop .filt-m summary {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 0 20px 0 18px;
+    border-radius: 999px;
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line-control);
+    font: 500 14px/1 var(--font-ui-bn);
+    color: var(--ink);
+    cursor: pointer;
+    list-style: none;
+  }
+  .page-shop .filt-m summary::-webkit-details-marker {
+    display: none;
+  }
+  .page-shop .filt-m summary svg {
+    width: 18px;
+    height: 18px;
+  }
+  .page-shop .filt-m[open] summary {
+    box-shadow: inset 0 0 0 1.5px var(--brand);
+  }
+  .page-shop .filt-m summary:focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 3px;
+  }
+  .page-shop .filt-m .n {
+    display: inline-grid;
+    place-items: center;
+    min-width: 20px;
+    height: 20px;
+    padding: 0 6px;
+    box-sizing: border-box;
+    border-radius: 999px;
+    background: var(--brand);
+    color: var(--on-brand);
+    font: 600 12px/1 var(--font-ui);
+  }
+
+  /* The filter panel: hidden until Filter is open, then a card under the toolbar, right-aligned.
+     Header and footer stay put; the options scroll in a ScrollArea. */
+  .page-shop .fil {
+    display: none;
+  }
+  .page-shop .shop:has(.filt-m[open]) .fil {
+    display: flex;
+    flex-direction: column;
+    position: absolute;
+    grid-area: res;
+    top: 10px;
+    right: 0;
+    left: auto;
+    z-index: 30;
+    width: 360px;
+    padding: 0;
+    overflow: hidden;
+    border-top: 0;
+    border-radius: var(--radius-soft);
+    background: var(--surface);
+    box-shadow:
+      inset 0 0 0 1px var(--line),
+      var(--shadow-lift);
+  }
+  .page-shop .shop:has(.filt-m[open]) .fil-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin: 0 24px;
+    padding: 16px 0 10px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-shop .fil-vp {
+    max-height: min(calc(72vh - 140px), 540px);
+  }
+  .page-shop .fil-vp > div > details {
+    margin: 0 24px;
+  }
+  .page-shop .fil-vp > div > details:last-child {
+    border-bottom: 0;
+  }
+  .page-shop .fil-h .grab {
+    display: none;
+  }
+  .page-shop .fil-h h2 {
+    margin: 0;
+    font: 600 18px/1.3 var(--font-display-bn);
+    color: var(--ink);
+  }
+  .page-shop .fil-h h2:lang(en) {
+    font: 400 20px/1.2 var(--font-display);
+  }
+  .page-shop .fil-x {
+    display: grid;
+    place-items: center;
+    width: 36px;
+    height: 36px;
+    margin-right: -8px;
+    border-radius: 50%;
+    color: var(--ink);
+  }
+  .page-shop .fil-x:hover {
+    background: var(--bg);
+  }
+  .page-shop .fil-x .ak-i {
+    width: 18px;
+    height: 18px;
+  }
+  .page-shop .shop:has(.filt-m[open]) .fil-f {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 14px 24px 18px;
+    border-top: 1px solid var(--line);
+    background: var(--surface);
+  }
+  .page-shop .fil-f .tx {
+    font: 500 14px/1 var(--font-ui-bn);
+    color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 4px;
+  }
+  .page-shop .fil-f .ak-btn {
+    min-height: 44px;
+    padding: 0 20px;
+  }
+  /* Outside clicks close the panel (ShopSheets closes on .scrim). */
+  .page-shop .shop:has(.filt-m[open]) .scrim {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 25;
+    background: transparent;
+  }
+
+  .page-shop .shop > section {
+    grid-area: res;
+    align-self: start;
+    min-width: 0;
+    padding-top: 32px;
+  }
+  /* The count is not shown (owner, 2026-11-22); the live heading stays for screen readers. */
+  .page-shop .res {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .page-shop .act {
+    margin: 0 0 28px;
+  }
+
+  /* Four columns at full width, three on a narrow desktop. */
+  .page-shop .grid {
+    grid-template-columns: repeat(
+      auto-fill,
+      minmax(max(var(--pcard-min), (100% - 3 * 24px) / 4), 1fr)
+    );
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .page-shop .shop {
+    padding-bottom: 96px;
+  }
+}
+@container (min-width: 872px) {
+  .page-shop .grid > .pcard {
+    --pc-w: min((100cqi - 3 * 24px) / 4, var(--pcard-max));
+  }
+}
+/* Tablet: search grows to fill the line; Filter and Sort keep their size. */
+@media (min-width: 721px) and (max-width: 980px) {
+  .page-shop .shop-tb .shop-srch {
+    flex: 1 1 auto;
+  }
+  .page-shop .shop-tb .sortw:not(.m-sort) .sortm {
+    left: auto;
+    right: 0;
+  }
+}
+
+/* Product price row, one size (owner, 2026-11-22): the price in the card's price face and the size
+   once, as a quiet pill beside it. No zoom on the gallery. */
+.page-product .pv {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px 16px;
+  margin-top: 22px;
+}
+.page-product .pv-price {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.page-product .pv-price .p {
+  font: 700 38px/1 var(--font-ui);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.01em;
+  color: var(--ink);
+}
+.page-product .pv-price .u {
+  font: 500 17px/1 var(--font-ui);
+  color: var(--ink-muted);
+}
+.page-product .pv-size {
+  display: inline-flex;
+  align-items: center;
+  height: 30px;
+  padding: 0 14px;
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px var(--line-control);
+  font: 600 14px/1 var(--font-ui);
+  letter-spacing: 0.02em;
+  color: var(--ink);
+}
+.page-product .pv + .meta {
+  margin-top: 16px;
+}
+.page-product .pv ~ .buy {
+  margin-top: 28px;
+}
+.page-product .gal-main .jarimg {
+  cursor: default;
+}
+
+/* Home picks: a slimmer add-to-basket (owner, 2026-11-22: "looks bulky on tab"). One line, 44px;
+   the basket icon drops out when the card gets narrow so the words never wrap. */
+.fpk-act .ak-btn--brand {
+  min-height: 44px;
+  padding: 0 16px;
+  gap: 8px;
+  border-radius: 10px;
+  font-size: 15px;
+  white-space: nowrap;
+}
+.fpk-act .ak-btn--brand .ak-i {
+  width: 18px;
+  height: 18px;
+  flex: none;
+}
+.fpk-act .qty {
+  height: 44px;
+}
+.fpk-act .qty button {
+  width: 42px;
+  height: 44px;
+}
+@media (min-width: 721px) and (max-width: 1100px) {
+  .fpk-act .ak-btn--brand .ak-i {
+    display: none;
   }
 }

@@ -1,11 +1,11 @@
 "use client";
 
 import { useState, type Dispatch, type ReactNode, type SetStateAction } from "react";
+import { useLang } from "@/lib/i18n/lang-context";
 import {
   SERVING_OPTIONS,
   groupIngredients,
   ingredientAmount,
-  toBn,
   type IngredientLine,
 } from "@/lib/recipe-view";
 
@@ -19,6 +19,8 @@ export interface BodyStep {
   heat?: string | undefined;
   tip?: string | undefined;
   imageUrl?: string | undefined;
+  /** The language the step is written in (lib/recipe-view localStep). */
+  lang: "bn" | "en";
 }
 
 const clock = (
@@ -58,6 +60,9 @@ export function RecipeBody({
   steps: BodyStep[];
   children?: ReactNode;
 }) {
+  const { lang, t: all } = useLang();
+  const t = all.recipes;
+  const n = t.num;
   const base = baseServings ?? SERVING_OPTIONS[1];
   const [servings, setServings] = useState<number>(base);
   const [ingOn, setIngOn] = useState<Ticks>({});
@@ -83,15 +88,15 @@ export function RecipeBody({
   return (
     <>
       {steps.length > 0 && ingredients.length > 0 ? (
-        <nav className="rd-sn only-mob" aria-label="রেসিপির অংশ">
-          <a href="#ing" aria-current={sec === "ing"} onClick={(e) => go(e, "ing")} lang="bn">
-            উপকরণ
+        <nav className="rd-sn only-mob" aria-label={t.partsAria}>
+          <a href="#ing" aria-current={sec === "ing"} onClick={(e) => go(e, "ing")} lang={lang}>
+            {t.ing}
           </a>
-          <a href="#stp" aria-current={sec === "stp"} onClick={(e) => go(e, "stp")} lang="bn">
-            প্রণালী
+          <a href="#stp" aria-current={sec === "stp"} onClick={(e) => go(e, "stp")} lang={lang}>
+            {t.method}
           </a>
-          <span className="rd-prog" lang="bn" aria-hidden="true">
-            <b>{toBn(stepDone)}</b>/{toBn(steps.length)}
+          <span className="rd-prog" lang={lang} aria-hidden="true">
+            <b>{n(stepDone)}</b>/{n(steps.length)}
           </span>
         </nav>
       ) : null}
@@ -99,36 +104,43 @@ export function RecipeBody({
         {ingredients.length > 0 ? (
           <aside className="rd-ingp" id="ing" aria-labelledby="ing-h">
             <div className="rd-head">
-              <h2 className="rd-h2" id="ing-h" lang="bn">
-                উপকরণ
+              <h2 className="rd-h2" id="ing-h" lang={lang}>
+                {t.ing}
               </h2>
-              <p className="rd-sub" lang="bn">
-                {toBn(servings)} জনের জন্য{isSample ? " · পরিমাণ নমুনা" : ""}
+              <p className="rd-sub" lang={lang}>
+                {t.forN(servings)}
+                {isSample ? t.sampleQty : ""}
               </p>
             </div>
-            <div className="rd-sv" role="group" aria-label="কত জনের জন্য">
-              <span lang="bn">কত জন?</span>
+            <div className="rd-sv" role="group" aria-label={t.howManyAria}>
+              <span lang={lang}>{t.howMany}</span>
               {options.map((o) => (
                 <button
                   key={o}
                   type="button"
                   aria-pressed={servings === o}
                   onClick={() => setServings(o)}
-                  lang="bn"
+                  lang={lang}
                 >
-                  {toBn(o)} জন
+                  {t.people(o)}
                 </button>
               ))}
             </div>
-            <p className="rd-prog" aria-live="polite" lang="bn">
-              <b>{toBn(ingDone)}</b> / {toBn(ingredients.length)} টি গোছানো হয়েছে
+            <p className="rd-prog" aria-live="polite" lang={lang}>
+              <b>{n(ingDone)}</b>
+              {t.ingDone(ingredients.length)}
             </p>
             <div className="rd-bar" aria-hidden="true">
               <span style={{ width: `${Math.round((ingDone / ingredients.length) * 100)}%` }} />
             </div>
             {isSample ? (
-              <div className="ph rd-ing-ph" role="img" aria-label="উপকরণের ছবি">
-                <svg className="x" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+              <div className="ph rd-ing-ph" role="img" aria-label={t.ingPhoto}>
+                <svg
+                  className="x"
+                  viewBox="0 0 100 100"
+                  preserveAspectRatio="none"
+                  aria-hidden="true"
+                >
                   <path
                     d="M0 0L100 100M100 0L0 100"
                     stroke="#c4c3a5"
@@ -145,7 +157,7 @@ export function RecipeBody({
             <ul className="rd-il" aria-labelledby="ing-h">
               {groups.map((g) => (
                 <li key={g.group} className="rd-grp">
-                  <p className="rd-gh" lang="bn">
+                  <p className="rd-gh" lang={g.items[0]?.lang ?? "bn"}>
                     {g.group}
                   </p>
                   <ul className="rd-il">
@@ -159,10 +171,10 @@ export function RecipeBody({
                           />
                           <span className="box" aria-hidden="true" />
                           <span className="nm">
-                            <b lang="bn">{it.name}</b>
-                            {it.note ? <small lang="bn">{it.note}</small> : null}
+                            <b lang={it.lang ?? "bn"}>{it.name}</b>
+                            {it.note ? <small lang={it.lang ?? "bn"}>{it.note}</small> : null}
                           </span>
-                          <span className="qt" lang="bn">
+                          <span className="qt" lang={it.lang ?? "bn"}>
                             {ingredientAmount(it, servings, base)}
                           </span>
                         </label>
@@ -174,21 +186,26 @@ export function RecipeBody({
             </ul>
           </aside>
         ) : null}
-        <section className="rd-steps" id="stp" aria-labelledby={steps.length > 0 ? "stp-h" : undefined}>
+        <section
+          className="rd-steps"
+          id="stp"
+          aria-labelledby={steps.length > 0 ? "stp-h" : undefined}
+        >
           {steps.length > 0 ? (
             <>
               <div className="rd-head">
                 <div>
-                  <h2 className="rd-h2" id="stp-h" lang="bn">
-                    প্রস্তুত প্রণালী
+                  <h2 className="rd-h2" id="stp-h" lang={lang}>
+                    {t.steps}
                   </h2>
-                  <p className="rd-sub" lang="bn">
-                    {toBn(steps.length)}টি ধাপ · হয়ে গেলে টিক দিয়ে রাখুন
+                  <p className="rd-sub" lang={lang}>
+                    {t.stepsSub(steps.length)}
                   </p>
                 </div>
                 <div>
-                  <p className="rd-prog" aria-live="polite" lang="bn">
-                    <b>{toBn(stepDone)}</b> / {toBn(steps.length)} ধাপ সম্পন্ন
+                  <p className="rd-prog" aria-live="polite" lang={lang}>
+                    <b>{n(stepDone)}</b>
+                    {t.stepsDone(steps.length)}
                   </p>
                   <div className="rd-bar" aria-hidden="true">
                     <span style={{ width: `${Math.round((stepDone / steps.length) * 100)}%` }} />
@@ -204,30 +221,35 @@ export function RecipeBody({
                       className={`rd-st${done ? " is-done" : i === next ? " is-next" : ""}`}
                       id={`st${i + 1}`}
                     >
-                      <div className={`rd-no ak-blot ${["", "v2", "v3"][i % 3]}`} aria-hidden="true">
-                        <span>{toBn(i + 1)}</span>
+                      <div
+                        className={`rd-no ak-blot ${["", "v2", "v3"][i % 3]}`}
+                        aria-hidden="true"
+                      >
+                        <span>{n(i + 1)}</span>
                       </div>
                       <div className="rd-sb">
-                        <h3 lang="bn">
-                          <span className="sr">ধাপ {toBn(i + 1)}: </span>
+                        <h3 lang={s.lang}>
+                          <span className="sr" lang={lang}>
+                            {t.step(i + 1)}
+                          </span>
                           {s.title}
                         </h3>
                         {s.time || s.heat ? (
                           <div className="rd-chips">
                             {s.time ? (
-                              <span className="rd-tm" lang="bn">
+                              <span className="rd-tm" lang={s.lang}>
                                 {clock}
                                 {s.time}
                               </span>
                             ) : null}
                             {s.heat ? (
-                              <span className="rd-tm hot" lang="bn">
+                              <span className="rd-tm hot" lang={s.lang}>
                                 {s.heat}
                               </span>
                             ) : null}
                           </div>
                         ) : null}
-                        <p lang="bn">{s.text}</p>
+                        <p lang={s.lang}>{s.text}</p>
                         {s.imageUrl ? (
                           <div className="ph rd-step-ph">
                             {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -246,8 +268,8 @@ export function RecipeBody({
                           </div>
                         ) : null}
                         {s.tip ? (
-                          <aside className="rd-note" lang="bn">
-                            <b>ছোট্ট পরামর্শ: </b>
+                          <aside className="rd-note" lang={s.lang}>
+                            <b lang={lang}>{t.tip}</b>
                             {s.tip}
                           </aside>
                         ) : null}
@@ -258,7 +280,7 @@ export function RecipeBody({
                             onChange={() => flip(setStepOn, i)}
                           />
                           <span className="box" aria-hidden="true" />
-                          <span lang="bn">{done ? "হয়ে গেছে" : "ধাপটি হয়ে গেলে টিক দিন"}</span>
+                          <span lang={lang}>{done ? t.done : t.tick}</span>
                         </label>
                       </div>
                     </li>

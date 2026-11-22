@@ -6,3 +6,4 @@ pnpm-lock.yaml
 packages/db/drizzle
 playwright-report
 test-results
+.deploy

@@ -1,7 +1,9 @@
 /**
  * Order tracking view logic (Track.dc.html, TrackMobile.dc.html, TrackStates.dc.html).
- * Pure: safe on the client and the server. Copy is the design's Bengali text.
+ * Pure: safe on the client and the server. Copy is the design's Bengali text; the English site
+ * uses the `*_EN` drafts below (memory: storefront-bilingual).
  */
+import type { Lang } from "./i18n/lang";
 import { districtsOf } from "./bd-locations";
 
 export type OrderStatus =
@@ -21,10 +23,12 @@ const KEY: Record<OrderStatus, StateKey> = {
   returned: "returned",
 };
 
-const ST: Record<
+type StateCopy = Record<
   StateKey,
   { t: string; c: "" | "warn" | "sun" | "err"; lead: string; next: string; idx: number }
-> = {
+>;
+
+const ST: StateCopy = {
   pending: {
     t: "নিশ্চিতকরণের অপেক্ষায়",
     c: "warn",
@@ -76,6 +80,58 @@ const ST: Record<
   },
 };
 
+const ST_EN: StateCopy = {
+  pending: {
+    t: "Awaiting confirmation",
+    c: "warn",
+    lead: "We're looking at your order.",
+    next: "You'll see it here as soon as it's confirmed. Contact us if it's taking long.",
+    idx: -1,
+  },
+  confirmed: {
+    t: "Order confirmed",
+    c: "",
+    lead: "Your order is confirmed.",
+    next: "Next, we'll pack it.",
+    idx: 0,
+  },
+  packed: {
+    t: "Packed",
+    c: "",
+    lead: "Your pickles are packed.",
+    next: "Next, we'll send it out for delivery.",
+    idx: 1,
+  },
+  onway: {
+    t: "On the way",
+    c: "sun",
+    lead: "Your order is on the way.",
+    next: "Pay when it arrives (cash on delivery). Keep your phone on.",
+    idx: 2,
+  },
+  delivered: {
+    t: "Delivered",
+    c: "",
+    lead: "Your order has been delivered.",
+    next: "If anything isn't right, let us know.",
+    idx: 3,
+  },
+  cancelled: {
+    t: "Cancelled",
+    c: "err",
+    lead: "This order has been cancelled.",
+    next: "To place a new order, head back to the shop.",
+    idx: -2,
+  },
+  returned: {
+    t: "Return / refund",
+    c: "warn",
+    lead: "A return or refund is in progress for this order.",
+    next: "Contact us to find out where it stands.",
+    idx: -2,
+  },
+};
+
 const LB = [
   ["অর্ডার নিশ্চিত", "Confirmed"],
   ["প্যাকেট প্রস্তুত", "Packed"],
@@ -83,10 +139,14 @@ const LB = [
   ["পৌঁছে গেছে", "Delivered"],
 ] as const;
 const CUR = ["অর্ডার নিশ্চিত হয়েছে", "প্যাকেট প্রস্তুত করা হয়েছে", "পথে আছে", "পৌঁছে গেছে"];
+const CUR_EN = ["Order confirmed", "Packed", "On the way", "Delivered"];
+const NOTE = { wait: "নিশ্চিতকরণের অপেক্ষায়", later: "পরে", done: "সম্পন্ন" };
+const NOTE_EN = { wait: "Awaiting confirmation", later: "Later", done: "Done" };
 
 export interface Stage {
   cls: "up" | "wait" | "done" | "cur";
   mark: string;
+  /** Bangla and English step names; both show, the page language first. */
   bn: string;
   en: string;
   note: string;
@@ -131,17 +191,60 @@ const EXC: Partial<Record<StateKey, Exception>> = {
   },
 };
 
-export function statusView(status: OrderStatus): StatusView {
+const EXC_EN: Partial<Record<StateKey, Exception>> = {
+  cancelled: {
+    title: "Order cancelled",
+    body: "Your order has been cancelled. That isn't a delivery step, so no progress is shown here. Contact us to find out why or to place a new order.",
+    link: "Contact us",
+    href: "/contact",
+    soft: false,
+  },
+  returned: {
+    title: "Return / refund in progress",
+    body: "How and when: refunds are made within one business week. See the return and refund policy for the rules.",
+    link: "Return and refund policy",
+    href: "/return-refund-policy",
+    soft: true,
+  },
+};
+
+/**
+ * Owner decision (2026-11-15): once the shop books the parcel with the courier, the customer sees
+ * "handed over to courier" in place of "on the way". The progress step keeps its label.
+ */
+const HANDED = {
+  t: "কুরিয়ারে হস্তান্তর করা হয়েছে",
+  lead: "আপনার অর্ডার কুরিয়ারের কাছে হস্তান্তর করা হয়েছে।",
+};
+const HANDED_EN = {
+  t: "Handed to the courier",
+  lead: "Your order has been handed to the courier.",
+};
+
+export function statusView(status: OrderStatus, handedOver = false, lang: Lang = "bn"): StatusView {
+  const en = lang === "en";
+  const st = en ? ST_EN : ST;
+  const hd = en ? HANDED_EN : HANDED;
+  const cur = en ? CUR_EN : CUR;
+  const note = en ? NOTE_EN : NOTE;
   const k = KEY[status];
-  const d = ST[k];
+  const handed = k === "onway" && handedOver;
+  const d = handed ? { ...st[k], t: hd.t, lead: hd.lead } : st[k];
   const stages =
     d.idx === -2
       ? null
-      : LB.map(([bn, en], i): Stage => {
+      : LB.map(([bn, enName], i): Stage => {
           if (k === "pending") {
             return i === 0
-              ? { cls: "wait", mark: "1", bn, en, note: "নিশ্চিতকরণের অপেক্ষায়", current: true }
-              : { cls: "up", mark: String(i + 1), bn, en, note: "পরে", current: false };
+              ? { cls: "wait", mark: "1", bn, en: enName, note: note.wait, current: true }
+              : {
+                  cls: "up",
+                  mark: String(i + 1),
+                  bn,
+                  en: enName,
+                  note: note.later,
+                  current: false,
+                };
           }
           if (i < d.idx || (k === "delivered" && i === 3)) {
             const last = i === 3;
@@ -149,14 +252,28 @@ export function statusView(status: OrderStatus): StatusView {
               cls: "done",
               mark: "✓",
               bn,
-              en,
-              note: last ? (CUR[3] ?? "") : "সম্পন্ন",
+              en: enName,
+              note: last ? (cur[3] ?? "") : note.done,
               current: last,
             };
           }
           if (i === d.idx)
-            return { cls: "cur", mark: String(i + 1), bn, en, note: CUR[i] ?? "", current: true };
-          return { cls: "up", mark: String(i + 1), bn, en, note: "পরে", current: false };
+            return {
+              cls: "cur",
+              mark: String(i + 1),
+              bn,
+              en: enName,
+              note: handed ? hd.t : (cur[i] ?? ""),
+              current: true,
+            };
+          return {
+            cls: "up",
+            mark: String(i + 1),
+            bn,
+            en: enName,
+            note: note.later,
+            current: false,
+          };
         });
   return {
     title: d.t,
@@ -164,7 +281,7 @@ export function statusView(status: OrderStatus): StatusView {
     lead: d.lead,
     next: d.next,
     stages,
-    exception: EXC[k] ?? null,
+    exception: (en ? EXC_EN : EXC)[k] ?? null,
     showsEta: k === "confirmed" || k === "packed" || k === "onway",
   };
 }
@@ -184,8 +301,28 @@ const MONTHS = [
   "ডিসেম্বর",
 ];
 
+const MONTHS_EN = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
+
 /** "1 নভেম্বর 2026", as the summary bar shows it. Accepts a Date or a "YYYY-MM-DD" string. */
 export function formatBnDate(value: Date | string): string {
+  return formatDate(value, "bn");
+}
+
+/** "1 নভেম্বর 2026" or, on the English site, "1 November 2026". */
+export function formatDate(value: Date | string, lang: Lang): string {
   const [y, m, d] =
     typeof value === "string"
       ? value.slice(0, 10).split("-").map(Number)
@@ -193,7 +330,7 @@ export function formatBnDate(value: Date | string): string {
           const s = value.toLocaleDateString("en-CA", { timeZone: "Asia/Dhaka" });
           return s.split("-").map(Number);
         })();
-  return `${d ?? ""} ${MONTHS[(m ?? 1) - 1] ?? ""} ${y ?? ""}`;
+  return `${d ?? ""} ${(lang === "en" ? MONTHS_EN : MONTHS)[(m ?? 1) - 1] ?? ""} ${y ?? ""}`;
 }
 
 /** The district from checkout's "address, area, upazila, district, division, postal" string. */
@@ -218,10 +355,15 @@ export interface TrackedOrder {
   inDhaka: boolean;
   courierName: string | null;
   trackingRef: string | null;
+  /** Booked with the courier (the admin's "বুক করুন"). */
+  handedOver: boolean;
   items: {
     id: number;
     name: string;
     detail: string;
+    /** The English site's name and size/heat line. */
+    nameEn: string;
+    detailEn: string;
     unitPrice: number;
     quantity: number;
     image: string | null;

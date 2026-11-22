@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useRef, useState } from "react";
 import { trackLookupInput } from "@repo/validators";
 import { lookupOrder } from "@/app/actions/track";
+import { useLang } from "@/lib/i18n/lang-context";
 import type { TrackedOrder } from "@/lib/track";
 import { TrackResult } from "./track-result";
 
@@ -24,6 +25,8 @@ const clientErrors = (v: Record<Field, string>): Errors => {
 /** Track.dc.html guest lookup card and its states (TrackStates.dc.html section 5). */
 /** `initialOrder`: a valid order number from `?order=` (e.g. the checkout confirmation link). */
 export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
+  const { lang, t: all, href } = useLang();
+  const t = all.track;
   const [v, setV] = useState<Record<Field, string>>({ order: initialOrder, contact: "" });
   const [touched, setTouched] = useState<Partial<Record<Field, boolean>>>({});
   const [sub, setSub] = useState(false);
@@ -35,12 +38,19 @@ export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
   const contactRef = useRef<HTMLInputElement>(null);
 
   const errs = { ...clientErrors(v), ...server };
-  const show = (k: Field) => ((touched[k] || sub) && errs[k] ? errs[k] : "");
+  // Schema messages are Bangla; the English site maps them (dict `track.err`).
+  const show = (k: Field) => {
+    const m = (touched[k] || sub) && errs[k];
+    return m ? (t.err[m] ?? m) : "";
+  };
   const shown = (["order", "contact"] as const).filter((k) => show(k)).length;
 
   const set = (k: Field, value: string) => {
     setV((p) => ({ ...p, [k]: value }));
-    setServer((p) => ({ ...p, [k]: undefined }));
+    // Delete the key: an `undefined` value would mask the client error when merged into `errs`.
+    setServer((p) =>
+      k in p ? Object.fromEntries(Object.entries(p).filter(([key]) => key !== k)) : p,
+    );
     if (outcome !== "idle") setOutcome("idle");
   };
 
@@ -78,9 +88,9 @@ export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
   if (order) {
     return (
       <>
-        <TrackResult order={order} fromAccount={false} />
-        <button type="button" className="another" onClick={another} lang="bn">
-          অন্য অর্ডার খুঁজুন
+        <TrackResult order={order} fromAccount={false} lang={lang} />
+        <button type="button" className="another" onClick={another} lang={lang}>
+          {t.another}
         </button>
       </>
     );
@@ -97,31 +107,29 @@ export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
 
   return (
     <div className="tk-card">
-      <form className="tk-form" aria-label="অর্ডার খুঁজুন" noValidate onSubmit={submit}>
+      <form className="tk-form" aria-label={t.form} noValidate onSubmit={submit}>
         {outcome === "unverified" && (
           <div className="alert" role="alert">
-            <b lang="bn">তথ্য মেলানো যায়নি</b>
-            <span lang="bn">
-              এই তথ্য দিয়ে কোনো অর্ডার যাচাই করা গেল না। অর্ডার নম্বর এবং চেকআউটে দেওয়া ইমেইল বা
-              মোবাইল নম্বর আবার দেখে নিন। সমস্যা থাকলে আমাদের জানান।
-            </span>
+            <b lang={lang}>{t.noMatchTitle}</b>
+            <span lang={lang}>{t.noMatchText}</span>
           </div>
         )}
         {outcome === "error" && (
           <div className="alert" role="alert">
-            <b lang="bn">ফর্মটি জমা দেওয়া যায়নি</b>
-            <span lang="bn">সংযোগে সমস্যা হয়েছে। আপনার লেখা সব ঠিকই আছে, আবার চেষ্টা করুন।</span>
+            <b lang={lang}>{t.failTitle}</b>
+            <span lang={lang}>{t.failText}</span>
           </div>
         )}
         {sub && shown > 1 && (
           <div className="alert" role="alert">
-            <b lang="bn">{shown}টি ঘর ঠিক করতে হবে</b>
-            <span lang="bn">লাল চিহ্নিত ঘরগুলো দেখুন।</span>
+            <b lang={lang}>{t.fixTitle(shown)}</b>
+            <span lang={lang}>{t.fixText}</span>
           </div>
         )}
         <div className="fld">
-          <label htmlFor="t-no" lang="bn">
-            অর্ডার নম্বর<em aria-hidden="true">*</em>
+          <label htmlFor="t-no" lang={lang}>
+            {t.orderNo}
+            <em aria-hidden="true">*</em>
           </label>
           <input
             id="t-no"
@@ -131,32 +139,33 @@ export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
             placeholder="AK-261108-123456"
             {...input("order")}
           />
-          <span className="ak-help" lang="bn">
-            নিশ্চিতকরণের বার্তা বা ইমেইলে অর্ডার নম্বর পাবেন। উদাহরণ: AK-261108-123456
+          <span className="ak-help" lang={lang}>
+            {t.orderHelp}
           </span>
           {show("order") && (
-            <span className="ak-help is-error" role="alert" lang="bn">
+            <span className="ak-help is-error" role="alert" lang={lang}>
               {show("order")}
             </span>
           )}
         </div>
         <div className="fld">
-          <label htmlFor="t-ct" lang="bn">
-            ইমেইল অথবা মোবাইল নম্বর<em aria-hidden="true">*</em>
+          <label htmlFor="t-ct" lang={lang}>
+            {t.contact}
+            <em aria-hidden="true">*</em>
           </label>
           <input
             id="t-ct"
             ref={contactRef}
             type="text"
             autoComplete="email"
-            placeholder="you@example.com বা 01XXXXXXXXX"
+            placeholder={t.contactPh}
             {...input("contact")}
           />
-          <span className="ak-help" lang="bn">
-            অর্ডার দেওয়ার সময় যেটি দিয়েছিলেন সেটিই লিখুন।
+          <span className="ak-help" lang={lang}>
+            {t.contactHelp}
           </span>
           {show("contact") && (
-            <span className="ak-help is-error" role="alert" lang="bn">
+            <span className="ak-help is-error" role="alert" lang={lang}>
               {show("contact")}
             </span>
           )}
@@ -167,19 +176,20 @@ export function TrackView({ initialOrder = "" }: { initialOrder?: string }) {
             className="ak-btn ak-btn--brand tk-go"
             disabled
             aria-busy="true"
-            lang="bn"
+            lang={lang}
           >
             <span className="spin" aria-hidden="true" />
-            খোঁজা হচ্ছে…
+            {t.searching}
           </button>
         ) : (
-          <button type="submit" className="ak-btn ak-btn--brand tk-go" lang="bn">
-            অর্ডার খুঁজুন
+          <button type="submit" className="ak-btn ak-btn--brand tk-go" lang={lang}>
+            {t.find}
           </button>
         )}
-        <p className="tk-priv" lang="bn">
-          নিরাপত্তার জন্য শুধু অর্ডার নম্বর দিয়ে কোনো তথ্য দেখানো হয় না। অ্যাকাউন্ট থাকলে{" "}
-          <Link href={"/account/orders" as never}>আমার অর্ডার</Link> থেকেও দেখতে পারেন।
+        <p className="tk-priv" lang={lang}>
+          {t.privA}
+          <Link href={href("/account/orders")}>{t.privLink}</Link>
+          {t.privB}
         </p>
       </form>
     </div>

@@ -1,6 +1,8 @@
 import { describe, expect, it } from "vitest";
 import {
+  authResetForm,
   bdPhone,
+  takaToPaisa,
   checkoutInput,
   contactInput,
   restockRequestInput,
@@ -100,5 +102,55 @@ describe("restockRequestInput", () => {
     expect(parse("").success).toBe(false);
     expect(parse("0171").success).toBe(false);
     expect(parse("not an email").success).toBe(false);
+  });
+});
+
+describe("takaToPaisa", () => {
+  it("reads taka with optional commas, paisa and Bangla digits", () => {
+    expect(takaToPaisa("420")).toBe(42000);
+    expect(takaToPaisa("1,450.5")).toBe(145050);
+    expect(takaToPaisa("৳ ৭৮০.২৫")).toBe(78025);
+  });
+  it("rejects empty or malformed amounts", () => {
+    expect(takaToPaisa("")).toBeNull();
+    expect(takaToPaisa("4.567")).toBeNull();
+    expect(takaToPaisa("abc")).toBeNull();
+  });
+});
+
+describe("authResetForm", () => {
+  const ok = (password: string, confirm = password) =>
+    authResetForm.safeParse({ password, confirm }).success;
+  it("accepts 8+ characters with a letter and a number, typed twice", () => {
+    expect(ok("pickle2026")).toBe(true);
+  });
+  it("rejects short, letters-only or numbers-only passwords", () => {
+    expect(ok("ab12")).toBe(false);
+    expect(ok("onlyletters")).toBe(false);
+    expect(ok("12345678")).toBe(false);
+  });
+  it("rejects a repeat that doesn't match", () => {
+    expect(ok("pickle2026", "pickle2025")).toBe(false);
+  });
+});
+
+describe("PLACE_EN", () => {
+  it("has an English name for every division and district", async () => {
+    const { DIVISIONS, districtsOf, PLACE_EN, placeName } = await import("./bd-locations");
+    const names = new Set<string>([...DIVISIONS, ...DIVISIONS.flatMap((d) => districtsOf(d))]);
+    expect(names.size).toBe(64); // each division name is also one of the 64 district names
+    for (const n of names) expect(PLACE_EN[n], n).toMatch(/^[A-Z][A-Za-z' ]+$/);
+    expect(placeName("চট্টগ্রাম", "en")).toBe("Chattogram");
+    expect(placeName("চট্টগ্রাম", "bn")).toBe("চট্টগ্রাম");
+  });
+
+  it("has an English name for every upazila / thana (owner, 2026-11-22)", async () => {
+    const { DIVISIONS, districtsOf, upazilasOf, placeName } = await import("./bd-locations");
+    for (const d of DIVISIONS)
+      for (const z of districtsOf(d))
+        for (const u of upazilasOf(d, z)) expect(placeName(u, "en"), u).not.toMatch(/[ঀ-৿]/);
+    expect(placeName("ধানমন্ডি", "en")).toBe("Dhanmondi");
+    expect(placeName("বরগুনা সদর", "en")).toBe("Barguna Sadar");
+    expect(placeName("ধানমন্ডি", "bn")).toBe("ধানমন্ডি");
   });
 });

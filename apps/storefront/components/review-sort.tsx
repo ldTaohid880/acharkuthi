@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import type { Route } from "next";
+import { useLang } from "@/lib/i18n/lang-context";
 
 /** Review sort select (ProductStates, section E). Each option value is the URL for that sort. */
 export function ReviewSort({
@@ -12,10 +13,11 @@ export function ReviewSort({
   current: string;
 }) {
   const router = useRouter();
+  const t = useLang().t.pdp;
   return (
     <>
       <label className="sr" htmlFor="rs">
-        Sort reviews
+        {t.sortLabel}
       </label>
       <select
         id="rs"

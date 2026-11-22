@@ -4,6 +4,8 @@
  * Static reference data: safe to import on the client and the server.
  */
 
+import { UPAZILA_EN } from "./bd-upazila-en";
+
 type Raw = Record<string, Record<string, string>>;
 
 const RAW: Raw = {
@@ -142,4 +144,90 @@ export const DHAKA_DISTRICT = "ঢাকা";
 /** The division a district belongs to (orders only store the district). */
 export function divisionOf(district: string): string | undefined {
   return DIVISIONS.find((d) => district in (RAW[d] ?? {}));
+}
+
+/**
+ * English names for divisions and districts (owner 2026-11-16: English checkout shows these;
+ * upazilas stay in Bangla script). Official spellings, including the 2018 changes (Chattogram,
+ * Cumilla, Barishal, Jashore, Bogura). Display only: orders always store the Bangla name.
+ */
+export const PLACE_EN: Readonly<Record<string, string>> = {
+  // Divisions
+  বরিশাল: "Barishal",
+  চট্টগ্রাম: "Chattogram",
+  ঢাকা: "Dhaka",
+  খুলনা: "Khulna",
+  ময়মনসিংহ: "Mymensingh",
+  রাজশাহী: "Rajshahi",
+  রংপুর: "Rangpur",
+  সিলেট: "Sylhet",
+  // Districts (the division-named ones above double as their district's name)
+  বরগুনা: "Barguna",
+  ভোলা: "Bhola",
+  ঝালকাঠি: "Jhalokati",
+  পটুয়াখালী: "Patuakhali",
+  পিরোজপুর: "Pirojpur",
+  বান্দরবান: "Bandarban",
+  ব্রাহ্মণবাড়িয়া: "Brahmanbaria",
+  চাঁদপুর: "Chandpur",
+  কুমিল্লা: "Cumilla",
+  কক্সবাজার: "Cox's Bazar",
+  ফেনী: "Feni",
+  খাগড়াছড়ি: "Khagrachhari",
+  লক্ষ্মীপুর: "Lakshmipur",
+  নোয়াখালী: "Noakhali",
+  রাঙ্গামাটি: "Rangamati",
+  ফরিদপুর: "Faridpur",
+  গাজীপুর: "Gazipur",
+  গোপালগঞ্জ: "Gopalganj",
+  কিশোরগঞ্জ: "Kishoreganj",
+  মাদারীপুর: "Madaripur",
+  মানিকগঞ্জ: "Manikganj",
+  মুন্সিগঞ্জ: "Munshiganj",
+  নারায়ণগঞ্জ: "Narayanganj",
+  নরসিংদী: "Narsingdi",
+  রাজবাড়ী: "Rajbari",
+  শরীয়তপুর: "Shariatpur",
+  টাঙ্গাইল: "Tangail",
+  বাগেরহাট: "Bagerhat",
+  চুয়াডাঙ্গা: "Chuadanga",
+  যশোর: "Jashore",
+  ঝিনাইদহ: "Jhenaidah",
+  কুষ্টিয়া: "Kushtia",
+  মাগুরা: "Magura",
+  মেহেরপুর: "Meherpur",
+  নড়াইল: "Narail",
+  সাতক্ষীরা: "Satkhira",
+  জামালপুর: "Jamalpur",
+  নেত্রকোনা: "Netrokona",
+  শেরপুর: "Sherpur",
+  বগুড়া: "Bogura",
+  জয়পুরহাট: "Joypurhat",
+  নওগাঁ: "Naogaon",
+  নাটোর: "Natore",
+  চাঁপাইনবাবগঞ্জ: "Chapainawabganj",
+  পাবনা: "Pabna",
+  সিরাজগঞ্জ: "Sirajganj",
+  দিনাজপুর: "Dinajpur",
+  গাইবান্ধা: "Gaibandha",
+  কুড়িগ্রাম: "Kurigram",
+  লালমনিরহাট: "Lalmonirhat",
+  নীলফামারী: "Nilphamari",
+  পঞ্চগড়: "Panchagarh",
+  ঠাকুরগাঁও: "Thakurgaon",
+  হবিগঞ্জ: "Habiganj",
+  মৌলভীবাজার: "Moulvibazar",
+  সুনামগঞ্জ: "Sunamganj",
+};
+
+/**
+ * A division, district or upazila / thana name for display: English in English when known
+ * ("<district> সদর" reads "<district> Sadar"), else as stored.
+ */
+export function placeName(name: string, lang: "bn" | "en"): string {
+  if (lang !== "en") return name;
+  const known = PLACE_EN[name] ?? UPAZILA_EN[name];
+  if (known) return known;
+  const sadar = name.endsWith(" সদর") ? PLACE_EN[name.slice(0, -4)] : undefined;
+  return sadar ? `${sadar} Sadar` : name;
 }

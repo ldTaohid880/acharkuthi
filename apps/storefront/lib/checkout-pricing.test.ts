@@ -1,5 +1,11 @@
 import { describe, expect, it } from "vitest";
-import { checkCoupon, totalsFor, zoneForDistrict, type CouponRow } from "./checkout-pricing";
+import {
+  checkCoupon,
+  newlyUnavailable,
+  totalsFor,
+  zoneForDistrict,
+  type CouponRow,
+} from "./checkout-pricing";
 
 const base: CouponRow = {
   code: "TEN",
@@ -65,5 +71,21 @@ describe("totalsFor", () => {
     expect(zoneForDistrict("ঢাকা")).toBe("in");
     expect(zoneForDistrict("গাজীপুর")).toBe("out");
     expect(zoneForDistrict(undefined)).toBeNull();
+  });
+});
+
+describe("newlyUnavailable", () => {
+  const lines = [
+    { variantId: 1, available: true },
+    { variantId: 2, available: false },
+  ];
+  it("allows an order when every unavailable item was shown as unavailable", () => {
+    expect(newlyUnavailable(lines, [2])).toBe(false);
+  });
+  it("stops an order when an item went missing after the last quote", () => {
+    expect(newlyUnavailable(lines, [])).toBe(true);
+  });
+  it("ignores items shown as unavailable that are back on sale", () => {
+    expect(newlyUnavailable([{ variantId: 1, available: true }], [1])).toBe(false);
   });
 });

@@ -2,17 +2,21 @@
 
 import { useActionState } from "react";
 import { subscribeToNewsletter, type NewsletterState } from "@/app/actions/newsletter";
+import { useLang } from "@/lib/i18n/lang-context";
 
 const initial: NewsletterState = { status: "idle", message: "", email: "" };
 
 /** Footer newsletter form, as drawn in the design. */
 export function NewsletterForm() {
   const [state, action, pending] = useActionState(subscribeToNewsletter, initial);
+  const t = useLang().t.newsletter;
   const failed = state.status === "invalid" || state.status === "fail";
+  // The message follows the result's status in the page language, not the server's text.
+  const message = state.status === "idle" ? "" : t[state.status];
   return (
-    <form className="nf" aria-label="Newsletter" action={action} noValidate>
+    <form className="nf" aria-label={t.label} action={action} noValidate>
       <label className="ak-field">
-        <span>Email</span>
+        <span>{t.email}</span>
         <input
           className={`ak-input ${failed ? "is-error" : ""}`}
           name="email"
@@ -21,7 +25,7 @@ export function NewsletterForm() {
           placeholder="you@example.com"
           defaultValue={state.email}
           aria-invalid={failed}
-          aria-describedby={state.message ? "nl-msg" : undefined}
+          aria-describedby={message ? "nl-msg" : undefined}
         />
       </label>
       <input
@@ -40,19 +44,19 @@ export function NewsletterForm() {
         aria-busy={pending}
       >
         {/* ErrorPatterns "Action processing": the label changes, the width does not. */}
-        <span className={pending ? "off" : undefined}>Subscribe</span>
+        <span className={pending ? "off" : undefined}>{t.subscribe}</span>
         <span className={pending ? undefined : "off"} aria-hidden={!pending}>
           <span className="spin" aria-hidden="true" />
-          Subscribing…
+          {t.subscribing}
         </span>
       </button>
-      {state.message ? (
+      {message ? (
         <p
           id="nl-msg"
           className={`nl-msg ${failed ? "is-error" : ""}`}
           role={failed ? "alert" : "status"}
         >
-          {state.message}
+          {message}
         </p>
       ) : null}
     </form>

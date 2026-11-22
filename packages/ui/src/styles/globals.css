@@ -66,15 +66,18 @@
   --font-sans: var(--font-ui);
 }
 
-/* next/font injects --font-fraunces etc. on <html>; point the design's font stacks at them. */
+/* next/font injects --font-fraunces etc. on <html>; point the design's font stacks at them.
+   Fraunces has no Bengali letters, so Anek Bangla follows it: a Bangla heading drawn with the
+   display face gets Anek Bangla for its letters (owner override) instead of a system font. */
 :root {
-  --font-display: var(--font-fraunces), Georgia, serif;
-  --font-display-bn: var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif; /* Owner override: Anek Bangla, not Tiro Bangla. */
+  --font-display: var(--font-fraunces), var(--font-anek), Georgia, serif;
+  --font-display-bn:
+    var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif; /* Owner override: Anek Bangla, not Tiro Bangla. */
   --font-accent: var(--font-baloo), system-ui, sans-serif;
   --font-accent-bn: var(--font-baloo), "Noto Sans Bengali", sans-serif;
   --font-shout: var(--font-accent);
   --font-shout-bn: var(--font-accent-bn);
-  --font-aside: var(--font-fraunces), Georgia, serif;
+  --font-aside: var(--font-fraunces), var(--font-anek), Georgia, serif;
   --font-ui: var(--font-instrument), var(--font-anek), system-ui, sans-serif;
   --font-ui-bn: var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif;
   --font-hand: var(--font-caveat), cursive;
@@ -90,7 +93,7 @@
     @apply bg-background text-foreground antialiased;
     font-family: var(--font-ui);
   }
-  :lang(bn) {
+  :lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
     font-family: var(--font-ui-bn);
     line-height: 1.75;
   }

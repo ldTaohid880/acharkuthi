@@ -1,4 +1,4 @@
-import { and, asc, db, eq, schema } from "@repo/db";
+import { and, asc, db, eq, getShopRules, schema } from "@repo/db";
 import type { Metadata } from "next";
 import { getDict } from "@/lib/i18n/server";
 import { requireAdmin } from "@/lib/require-admin";
@@ -13,7 +13,7 @@ export const metadata: Metadata = { title: "New order" };
 export default async function NewOrderPage() {
   await requireAdmin();
   const { productVariants: v, products: p } = schema;
-  const [{ lang, t }, variants] = await Promise.all([
+  const [{ lang, t }, variants, rules] = await Promise.all([
     getDict(),
     db
       .select({
@@ -28,6 +28,7 @@ export default async function NewOrderPage() {
       .innerJoin(p, eq(p.id, v.productId))
       .where(and(eq(v.isActive, true), eq(p.isActive, true)))
       .orderBy(asc(p.name), asc(v.price)),
+    getShopRules(),
   ]);
   const list: SellableVariant[] = variants.map((r) => ({
     id: r.id,
@@ -37,5 +38,5 @@ export default async function NewOrderPage() {
     price: r.price,
     stock: r.stock,
   }));
-  return <NewOrderForm variants={list} t={t.orders} lang={lang} />;
+  return <NewOrderForm variants={list} fees={rules.fees} t={t.orders} lang={lang} />;
 }

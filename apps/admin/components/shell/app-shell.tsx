@@ -8,7 +8,7 @@ import { Sheet, SheetClose, SheetContent, SheetTitle } from "@repo/ui/components
 import { ChevronLeft, ChevronRight, LogOut, Menu, PanelLeft } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 import type { Dict } from "@/lib/i18n/dict";
 import type { AdminLang } from "@repo/validators";
@@ -26,6 +26,8 @@ export interface ShellUser {
   name: string;
   email: string;
   initials: string;
+  /** Profile photo from My account (R2), or null for initials. */
+  image: string | null;
 }
 
 interface Props {
@@ -40,7 +42,11 @@ interface Props {
 }
 
 export const SIDEBAR_COOKIE = "ak_sidebar";
-const DETAIL_PAGE = /^\/orders\/(\d+|new)$/;
+// Pages with their own phone bottom bar (no bottom nav): order and product detail / new, and
+// the coupon editor (CouponEdit-Phone, /coupons?edit=…).
+const DETAIL_PAGE = /^\/(orders|products)\/(\d+|new)$/;
+const isDetail = (pathname: string, sp: URLSearchParams) =>
+  DETAIL_PAGE.test(pathname) || (pathname === "/coupons" && sp.has("edit"));
 
 /**
  * Fixed app shell (admin.css .shell): sidebar + top bar stay put, only the page scrolls.
@@ -58,6 +64,8 @@ export function AppShell({
   children,
 }: Props) {
   const pathname = usePathname();
+  const searchParams = useSearchParams();
+  const detail = isDetail(pathname, searchParams);
   const router = useRouter();
   const [searchOpen, setSearchOpen] = useState(false);
   const [notifOpen, setNotifOpen] = useState(false);
@@ -172,7 +180,7 @@ export function AppShell({
             className={cn(
               "flex h-full min-w-0 flex-1 flex-col overflow-hidden",
               // Phones: the content ends above the fixed bottom nav (detail pages have none).
-              !DETAIL_PAGE.test(pathname) && "max-tab:pb-[76px]",
+              !detail && "max-tab:pb-[76px]",
             )}
           >
             <header className="border-border tab:flex hidden h-14 flex-none items-center gap-3 border-b bg-white pr-4 pl-3">
@@ -217,9 +225,7 @@ export function AppShell({
           </div>
 
           {/* Detail pages (OrderDetail-Phone) have their own bottom action bar instead. */}
-          {DETAIL_PAGE.test(pathname) ? null : (
-            <BottomNav role={role} active={active} counts={counts} t={t} />
-          )}
+          {detail ? null : <BottomNav role={role} active={active} counts={counts} t={t} />}
           {/* Mounted only while open, so each opening starts fresh. */}
           {searchOpen ? <SearchPalette open onOpenChange={setSearchOpen} /> : null}
           {notifOpen ? <NotificationsPanel open onOpenChange={setNotifOpen} /> : null}
@@ -495,7 +501,8 @@ function BottomNav({ role, active, counts, t }: { role: AdminRole } & Omit<NavPr
     >
       {bottomNavFor(role).map((k) => {
         const Icon = NAV_ICONS[k];
-        const on = k === active;
+        // My account is opened from More on phones (Account-Phone: BottomNav active="more").
+        const on = k === active || (k === "more" && active === "account");
         const n = k === "more" ? undefined : counts[k];
         const label = k === "more" ? t.nav.more : t.nav.items[k];
         return (

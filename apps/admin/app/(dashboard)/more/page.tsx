@@ -62,7 +62,12 @@ export default async function MorePage() {
           href="/account"
           className="border-border flex items-center gap-3 rounded-xl border bg-white px-4 py-3.5 shadow-xs"
         >
-          <Avatar initials={initialsOf(session.user.name)} owner={owner} size="lg" />
+          <Avatar
+            initials={initialsOf(session.user.name)}
+            image={session.user.image ?? null}
+            owner={owner}
+            size="lg"
+          />
           <span className="flex min-w-0 flex-auto flex-col">
             <span className="font-medium">{session.user.name}</span>
             <span className="text-muted-foreground text-xs leading-4">

@@ -2,6 +2,7 @@
 
 import { useCallback, useState, useSyncExternalStore, type SyntheticEvent } from "react";
 import { fitFor, SQUARE_TOLERANCE, type ImageFit } from "@/lib/image-fit";
+import { useLang } from "@/lib/i18n/lang-context";
 import { Icon } from "./icon";
 
 /**
@@ -24,29 +25,38 @@ function useHydrating() {
 export interface GalleryImage {
   url: string;
   alt: string;
+  /** Known from the stored pixel size (admin saves it): the photo is shown at once in this fit. */
+  fit?: ImageFit | undefined;
 }
 
+/** The jar still-life stand-in (public/jar.svg, 220 × 300): always shown whole. */
+const JAR: GalleryImage = { url: "/jar.svg", alt: "", fit: fitFor(220, 300) };
+
 /**
- * Thumbnails, main stage, arrows, counter and zoom, as in the design. Only real photos are shown
- * (the jar still-life stands in when there are none); with a single photo the thumbnails, arrows,
- * counter and dots are hidden.
+ * Thumbnails, main stage and arrows. Owner (2026-11-22): no zoom and no photo counter; the page
+ * leaves out the photo flagged for Home's picks. Only real photos are shown (the jar still-life stands in when there are none); with a single photo the
+ * thumbnails, arrows and dots are hidden.
  *
  * Square photos (within 5 %) fill their frame; other shapes are shown whole on the field
- * background. The shape is read from the image's natural size on load. Every frame is a fixed
- * aspect ratio, so nothing reflows; the image stays transparent until its fit is known.
+ * background. The shape comes from the stored pixel size when admin saved one (so the photo shows
+ * at once), else from the image's natural size on load; the loaded size always wins. Every frame
+ * is a fixed aspect ratio, so nothing reflows; an image stays transparent only while its fit is
+ * still unknown.
  */
 export function ProductGallery({ name, images }: { name: string; images: GalleryImage[] }) {
   const slides: GalleryImage[] =
-    images.length > 0 ? images : [{ url: "/jar.svg", alt: `${name} jar, front` }];
+    images.length > 0 ? images : [{ ...JAR, alt: `${name} jar, front` }];
+  /** Fits known before load (stored size); the rest are learned from the loaded image. */
+  const known = new Map(slides.flatMap((s) => (s.fit ? [[s.url, s.fit] as const] : [])));
   const many = slides.length > 1;
   const [i, setI] = useState(0);
-  const [zoom, setZoom] = useState(false);
+  const { t: all } = useLang();
+  const t = all.gallery;
   const [m, setM] = useState(0);
   const [fits, setFits] = useState<Record<string, ImageFit>>({});
   const cur = slides[i] ?? slides[0];
   const go = (d: number) => {
     setI((n) => (n + d + slides.length) % slides.length);
-    setZoom(false);
   };
 
   const learn = useCallback((img: HTMLImageElement | null) => {
@@ -63,7 +73,7 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
     ref: learn,
     onLoad: (e: SyntheticEvent<HTMLImageElement>) => learn(e.currentTarget),
     onError: (e: SyntheticEvent<HTMLImageElement>) => learn(e.currentTarget),
-    "data-fit": fits[url] ?? "pending",
+    "data-fit": fits[url] ?? known.get(url) ?? "pending",
     // EARLY_FIT may already have set data-fit before hydration.
     suppressHydrationWarning: true,
   });
@@ -77,18 +87,15 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
       </noscript>
       <div className={`gwrap ${many ? "" : "single"}`}>
         {many ? (
-          <div className="thumbs" role="group" aria-label="Product photos">
+          <div className="thumbs" role="group" aria-label={t.thumbs}>
             {slides.map((s, n) => (
               <button
                 key={n}
                 type="button"
                 className={`tn ${n === i ? "on" : ""}`}
-                aria-label={`Photo ${n + 1}`}
+                aria-label={t.photo(n + 1)}
                 aria-current={n === i}
-                onClick={() => {
-                  setI(n);
-                  setZoom(false);
-                }}
+                onClick={() => setI(n)}
               >
                 {/* eslint-disable-next-line @next/next/no-img-element -- product art */}
                 <img {...fitProps(s.url)} alt="" />
@@ -97,7 +104,7 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
           </div>
         ) : null}
         <div>
-          <div className={`gal-main ${zoom ? "zoomed" : ""}`}>
+          <div className="gal-main">
             {cur ? (
               // eslint-disable-next-line @next/next/no-img-element -- product art
               <img
@@ -105,41 +112,18 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
                 className="jarimg"
                 {...fitProps(cur.url)}
                 alt={cur.alt || `${name} jar`}
-                onClick={() => setZoom((z) => !z)}
               />
             ) : null}
             {many ? (
               <>
-                <button
-                  type="button"
-                  className="gbtn p"
-                  aria-label="Previous photo"
-                  onClick={() => go(-1)}
-                >
+                <button type="button" className="gbtn p" aria-label={t.prev} onClick={() => go(-1)}>
                   <Icon name="arrow" />
                 </button>
-                <button
-                  type="button"
-                  className="gbtn n"
-                  aria-label="Next photo"
-                  onClick={() => go(1)}
-                >
+                <button type="button" className="gbtn n" aria-label={t.next} onClick={() => go(1)}>
                   <Icon name="arrow" />
                 </button>
-                <span className="cnt-pill" aria-live="polite">
-                  {i + 1} / {slides.length}
-                </span>
               </>
             ) : null}
-            <button
-              type="button"
-              className="zbtn"
-              aria-pressed={zoom}
-              onClick={() => setZoom((z) => !z)}
-              lang="bn"
-            >
-              {zoom ? "ছোট করুন" : "বড় করে দেখুন"}
-            </button>
           </div>
         </div>
       </div>
@@ -148,7 +132,7 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
         <div
           className="gtrack"
           role="group"
-          aria-label={many ? "Product photos, swipe to browse" : "Product photo"}
+          aria-label={many ? t.photos : t.one}
           onScroll={(e) =>
             setM(Math.round(e.currentTarget.scrollLeft / e.currentTarget.clientWidth))
           }
@@ -160,11 +144,6 @@ export function ProductGallery({ name, images }: { name: string; images: Gallery
             </div>
           ))}
         </div>
-        {many ? (
-          <span className="cnt-pill" aria-live="polite">
-            {m + 1} / {slides.length}
-          </span>
-        ) : null}
       </div>
       {many ? (
         <div className="dots" aria-hidden="true">

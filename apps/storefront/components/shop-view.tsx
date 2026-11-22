@@ -5,7 +5,6 @@ import type { Route } from "next";
 import { useEffect, useMemo, useRef, useState, type MouseEvent } from "react";
 import {
   HEAT_LEVELS,
-  SHOP_PAGE_SIZE,
   SHOP_SORTS,
   shopQuery,
   type ShopQuery,
@@ -13,33 +12,34 @@ import {
 import { Container } from "@/components/container";
 import { Heat, Icon } from "@/components/icon";
 import { PriceRange } from "@/components/price-range";
+import { ScrollArea } from "@repo/ui/components/scroll-area";
 import { ProductCard } from "@/components/product-card";
 import { ShopSheets } from "@/components/shop-sheets";
 import { applyShopQuery, priceBounds, sizeOptions } from "@/lib/product-view";
 import type { CatalogProduct } from "@/lib/queries";
+import { localePath, splitLangPath, type Lang } from "@/lib/i18n/lang";
+import { useLang } from "@/lib/i18n/lang-context";
+import { pickText } from "@/lib/i18n/pick";
 import { shopHref } from "@/lib/routes";
+import { RECIPES_LIVE } from "@/lib/features";
 
-const SORT_LABEL: Record<(typeof SHOP_SORTS)[number], string> = {
-  popular: "Most popular",
-  newest: "Newest",
-  "price-asc": "Price: low to high",
-  "price-desc": "Price: high to low",
-};
-/** Short sort value for the phone toolbar (the artboard shows "Popular"). */
-const SORT_SHORT: Record<(typeof SHOP_SORTS)[number], string> = {
-  popular: "Popular",
-  newest: "Newest",
-  "price-asc": "Price ↑",
-  "price-desc": "Price ↓",
-};
-const HEAT_PODS = { mild: 1, medium: 2, hot: 3 } as const;
-const HEAT_LABEL = { mild: "Mild", medium: "Medium", hot: "Hot" } as const;
+// Sort labels, heat words and all copy come from lib/i18n/dict.ts (memory: storefront-bilingual).
+const HEAT_PODS = { none: 0, mild: 1, medium: 2, hot: 3 } as const;
+const HEAT_LABEL = { none: "Not spicy", mild: "Mild", medium: "Medium", hot: "Hot" } as const;
 
 export interface ShopShelf {
   slug: string;
   name: string;
+  nameBn?: string | null;
+  /** English; `descriptionBn` is the Bangla twin (lib/i18n/pick falls back between them). */
   description: string | null;
+  descriptionBn?: string | null;
+  /** Shop header photo for this shelf, set in admin; null shows the default. */
+  headerImageUrl?: string | null;
 }
+
+/** Default Shop header photo (All pickles, and shelves without their own). */
+const HEADER = "/images/shop/header-1440.webp";
 
 interface Props {
   /** Every active product. The shop is small, so filtering, sorting and paging run here. */
@@ -58,7 +58,7 @@ type OnClick = (e: MouseEvent<HTMLAnchorElement>) => void;
 type Shelf = string | null | undefined;
 const ALL_SHELVES = null;
 
-function href(shelf: string | undefined, q: ShopQuery): Route {
+function href(lang: Lang, shelf: string | undefined, q: ShopQuery): Route {
   const params = new URLSearchParams();
   if (q.sort !== "popular") params.set("sort", q.sort);
   for (const h of q.heat) params.append("heat", h);
@@ -67,10 +67,9 @@ function href(shelf: string | undefined, q: ShopQuery): Route {
   if (q.maxPrice !== undefined) params.set("maxPrice", String(q.maxPrice));
   if (q.size) params.set("size", q.size);
   if (q.q) params.set("q", q.q);
-  if (q.show !== undefined && q.show !== SHOP_PAGE_SIZE) params.set("show", String(q.show));
   const qs = params.toString();
   const base = shopHref(shelf);
-  return (qs ? `${base}?${qs}` : base) as Route;
+  return localePath(lang, qs ? `${base}?${qs}` : base) as Route;
 }
 
 /** Reads shelf + filters back from the address bar (Back / Forward). */
@@ -81,7 +80,8 @@ function fromLocation(shelves: ShopShelf[]): { shelf: string | undefined; query:
     const all = sp.getAll(key);
     raw[key] = all.length > 1 ? all : all[0];
   }
-  const seg = window.location.pathname.split("/")[2];
+  // "/shop/mango" or "/en/shop/mango": the shelf follows "/shop/" either way.
+  const seg = splitLangPath(window.location.pathname).path.split("/")[2];
   const shelf = seg && shelves.some((s) => s.slug === seg) ? seg : undefined;
   return { shelf, query: shopQuery.parse(raw) };
 }
@@ -103,6 +103,12 @@ const NO_FILTERS: Patch = {
 export function ShopView({ products, shelves, initialShelf, initialQuery }: Props) {
   const [shelfSlug, setShelfSlug] = useState(initialShelf);
   const [query, setQuery] = useState(initialQuery);
+  const { lang, t: all } = useLang();
+  const t = all.shop;
+  /** Shelf name in the page language: short in chips and crumbs, full label in titles. */
+  const shelfName = (s: ShopShelf) => (lang === "bn" ? (s.nameBn ?? s.name) : s.name);
+  const shelfLabel = (s: ShopShelf) =>
+    lang === "bn" ? (all.shelf.label[s.slug] ?? `${s.nameBn ?? s.name} আচার`) : s.name;
 
   // Back / Forward restore the filters that were in the address bar.
   useEffect(() => {
@@ -116,10 +122,13 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
   }, [shelves]);
 
   const shelf = shelves.find((s) => s.slug === shelfSlug);
+  const shelfDesc = shelf ? pickText(lang, shelf.descriptionBn, shelf.description) : null;
   // Tab title follows the shelf (the server sets it on first load).
   useEffect(() => {
-    document.title = `${shelf ? `${shelf.name} pickles` : "Shop all pickles"} | Acharkuthi`;
-  }, [shelf]);
+    // The brand in the page language, as the server's title template writes it.
+    document.title = `${shelf ? t.titleShelf(shelfLabel(shelf)) : t.titleAll} | ${all.meta.site}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- the title follows the shelf and language only
+  }, [shelf, lang]);
   const inShelf = useMemo(
     () => (shelfSlug ? products.filter((p) => p.category?.slug === shelfSlug) : products),
     [products, shelfSlug],
@@ -127,26 +136,22 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
   const matching = useMemo(() => applyShopQuery(inShelf, query), [inShelf, query]);
   const bounds = useMemo(() => priceBounds(inShelf), [inShelf]);
   const sizes = useMemo(() => sizeOptions(inShelf), [inShelf]);
-  const items = matching.slice(0, query.show ?? SHOP_PAGE_SIZE);
-  const total = inShelf.length;
+  // Owner (2026-11-22): no "Load more"; every jar is listed and card photos load lazily.
+  const items = matching;
   const matched = matching.length;
   /** How many jars an option would show, keeping every other filter as it is. */
   const countWith = (patch: Patch) => applyShopQuery(inShelf, { ...query, ...patch }).length;
 
-  /** The query after `patch`. Filter changes go back to the first page; "Load more" keeps it. */
-  const nextQuery = (patch: Patch): ShopQuery => {
-    const next: ShopQuery = { ...query, ...patch };
-    if (!("show" in patch)) next.show = undefined;
-    return next;
-  };
+  /** The query after `patch`. */
+  const nextQuery = (patch: Patch): ShopQuery => ({ ...query, ...patch });
   // `nextShelf`: omit to stay on this shelf; pass ALL_SHELVES (null) for all pickles. (A plain
   // `undefined` would fall back to the default and keep the current shelf.)
   const link = (patch: Patch, nextShelf: Shelf = shelfSlug) =>
-    href(nextShelf ?? undefined, nextQuery(patch));
+    href(lang, nextShelf ?? undefined, nextQuery(patch));
   const apply = (patch: Patch, shelfArg: Shelf = shelfSlug) => {
     const nextShelf = shelfArg ?? undefined;
     const next = nextQuery(patch);
-    const url = href(nextShelf, next);
+    const url = href(lang, nextShelf, next);
     if (nextShelf !== shelfSlug) {
       window.history.pushState(null, "", url);
     } else {
@@ -171,13 +176,12 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
 
   const chips: { label: string; patch: Patch; shelf: Shelf }[] = [
     ...(query.q ? [{ label: `“${query.q}”`, patch: { q: undefined }, shelf: shelfSlug }] : []),
-    ...(shelf ? [{ label: shelf.name, patch: {}, shelf: ALL_SHELVES }] : []),
     ...query.heat.map((h) => ({
-      label: `${HEAT_LABEL[h]} heat`,
+      label: t.heatChip(all.heat[HEAT_LABEL[h]]),
       patch: { heat: query.heat.filter((x) => x !== h) },
       shelf: shelfSlug,
     })),
-    ...(query.inStock ? [{ label: "In stock", patch: { inStock: false }, shelf: shelfSlug }] : []),
+    ...(query.inStock ? [{ label: t.inStock, patch: { inStock: false }, shelf: shelfSlug }] : []),
     ...(query.minPrice !== undefined || query.maxPrice !== undefined
       ? [
           {
@@ -189,7 +193,7 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
       : []),
     ...(query.size ? [{ label: query.size, patch: { size: undefined }, shelf: shelfSlug }] : []),
   ];
-  // Badge on the phone's Filter button: one per active filter chip (ShopMobile).
+  // Badge on the Filter button: one per active filter chip (the shelf is shown by the tabs).
   const filterCount = chips.length;
 
   /** Price from the slider or the From / To boxes, in whole taka; swapped if typed backwards. */
@@ -209,96 +213,84 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
   };
 
   return (
-    <main className="page-shop">
-      <section className="band on-band" aria-labelledby="sh-h">
-        <Container>
+    <main className="page-shop" lang={lang}>
+      {/* Photo header (owner redesign 2026-11-22, from the owner's concept): a short still life with
+          the title on its left. A shelf shows its own name and description. */}
+      <section className="sh-hero" aria-labelledby="sh-h">
+        {/* The shelf's own photo from admin, else the default (wide, jar on the right). */}
+        <picture className="sh-bg" key={shelf?.headerImageUrl ?? HEADER}>
+          <img
+            src={shelf?.headerImageUrl ?? HEADER}
+            {...(shelf?.headerImageUrl
+              ? {}
+              : { srcSet: `${HEADER} 1440w, /images/shop/header-2400.webp 2400w`, sizes: "100vw" })}
+            alt=""
+            fetchPriority="high"
+            decoding="async"
+          />
+        </picture>
+        <Container className="sh-copy">
           <nav className="crumbs" aria-label="Breadcrumb">
-            <Link href="/">Home</Link>
+            <Link href={localePath(lang, "/")}>{t.crumbHome}</Link>
             <span aria-hidden="true">/</span>
             {shelf ? (
               <>
                 <Link href={link({}, ALL_SHELVES)} onClick={on({}, ALL_SHELVES)}>
-                  Shop
+                  {t.crumbShop}
                 </Link>
                 <span aria-hidden="true">/</span>
-                <span aria-current="page">{shelf.name}</span>
+                <span aria-current="page">{shelfName(shelf)}</span>
               </>
             ) : (
-              <span aria-current="page">Shop</span>
+              <span aria-current="page">{t.crumbShop}</span>
             )}
           </nav>
-          <div className="chead">
-            <div>
-              <span className="ak-eyebrow">The shop</span>
-              <h1 className="h-xl" id="sh-h">
-                {shelf ? `${shelf.name} ` : "All "}
-                <span className="ak-brush">pickles</span>
-              </h1>
-            </div>
-            <div>
-              <p className="lede">
-                {shelf?.description ?? (
-                  <>
-                    Every jar is filled by hand, with spices ground at home and pure wood-pressed
-                    mustard oil.
-                    <span className="only-desk"> Choose by fruit, heat or size.</span>
-                  </>
-                )}
-              </p>
-              <div className="meta">
-                <span>
-                  <Icon name="truck" />
-                  Cash on delivery
-                </span>
-                <span className="only-mob" aria-hidden="true">
-                  ·
-                </span>
-                <span>
-                  <Icon name="jar" />
-                  {total} {total === 1 ? "pickle" : "pickles"}
-                </span>
-              </div>
-            </div>
-          </div>
+          <span className="ak-eyebrow">{t.eyebrow}</span>
+          <h1 className="h-xl" id="sh-h">
+            {shelf ? shelfLabel(shelf) : t.heroTitle}
+          </h1>
+          <p className="lede" lang={shelfDesc?.lang}>
+            {shelfDesc?.text ?? t.heroLede}
+          </p>
         </Container>
-        <div className="ak-deckle deck-b" aria-hidden="true" />
       </section>
 
       <Container>
-        <div className="bar">
-          <div className="cats" role="group" aria-label="Category">
-            <Link
-              className={`ak-chip ${shelf ? "" : "is-on"}`}
-              href={link({}, ALL_SHELVES)}
-              onClick={on({}, ALL_SHELVES)}
-              aria-current={shelf ? undefined : "page"}
-            >
-              All pickles
-            </Link>
-            {shelves.map((s) => (
-              <Link
-                key={s.slug}
-                className={`ak-chip ${shelfSlug === s.slug ? "is-on" : ""}`}
-                href={link({}, s.slug)}
-                onClick={on({}, s.slug)}
-                aria-current={shelfSlug === s.slug ? "page" : undefined}
-              >
-                {s.name}
-              </Link>
-            ))}
-          </div>
-          <ShopSearch
-            value={query.q ?? ""}
-            action={shopHref(shelfSlug)}
-            query={query}
-            onSearch={(q) => apply({ q: q || undefined })}
-          />
-          <SortMenu query={query} link={link} on={on} className="sortw" label="Sort by" />
-        </div>
-
         <div className="shop">
           <ShopSheets />
+          {/* Shelf tabs: one line that scrolls sideways when the shelves run past the edge. */}
+          <div className="bar">
+            <nav className="cats" aria-label={t.category}>
+              <Link
+                className={`sh-tab ${shelf ? "" : "is-on"}`}
+                href={link({}, ALL_SHELVES)}
+                onClick={on({}, ALL_SHELVES)}
+                aria-current={shelf ? undefined : "page"}
+              >
+                {t.all}
+              </Link>
+              {shelves.map((s) => (
+                <Link
+                  key={s.slug}
+                  className={`sh-tab ${shelfSlug === s.slug ? "is-on" : ""}`}
+                  href={link({}, s.slug)}
+                  onClick={on({}, s.slug)}
+                  aria-current={shelfSlug === s.slug ? "page" : undefined}
+                >
+                  {shelfName(s)}
+                </Link>
+              ))}
+            </nav>
+          </div>
+          {/* Toolbar (owner, 2026-11-22): search, then Filter and Sort, one line at every width.
+              Sticky on phones, where Filter and Sort are round icon buttons and open the sheets. */}
           <div className="shop-tb">
+            <ShopSearch
+              value={query.q ?? ""}
+              action={localePath(lang, shopHref(shelfSlug)) as Route}
+              query={query}
+              onSearch={(q) => apply({ q: q || undefined })}
+            />
             <details className="filt-m">
               <summary>
                 <svg
@@ -313,176 +305,186 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
                   <circle cx="16" cy="7" r="2" />
                   <circle cx="8" cy="17" r="2" />
                 </svg>
-                Filter
-                {filterCount > 0 ? <span className="n">{filterCount}</span> : null}
+                <span className="tb-l">{t.filter}</span>
+                {filterCount > 0 ? (
+                  <span className="n">{filterCount}</span>
+                ) : null}
               </summary>
             </details>
+            <SortMenu query={query} link={link} on={on} className="sortw" label={t.sortBy} />
             <SortMenu
               query={query}
               link={link}
               on={on}
               className="sortw m-sort"
-              label="Sort"
+              label={t.sortShortLabel}
               mobile
             />
           </div>
           <Link className="scrim" href={link({})} aria-hidden="true" tabIndex={-1} />
-          <aside className="fil" aria-label="Filters">
+          <aside className="fil" aria-label={t.filters}>
             <div className="fil-h">
               <span className="grab" aria-hidden="true" />
-              <h2>Filters</h2>
-              <Link className="fil-x" href={link({})} aria-label="Close filters">
+              <h2>{t.filters}</h2>
+              <Link className="fil-x" href={link({})} aria-label={t.closeFilters}>
                 <Icon name="close" />
               </Link>
             </div>
-            {bounds && hi > lo ? (
-              <details open className="f-price">
-                <summary>
-                  Price<span className="only-mob"> in BDT</span>
-                </summary>
-                <div className="gb">
-                  <PriceRange
-                    lo={lo}
-                    hi={hi}
-                    min={Math.max(lo, Math.min(query.minPrice ?? lo, hi))}
-                    max={Math.min(hi, Math.max(query.maxPrice ?? hi, lo))}
-                    onChange={setPrice}
-                  />
-                  <form
-                    method="get"
-                    action={shopHref(shelfSlug)}
-                    className="prs"
-                    onSubmit={(e) => {
-                      e.preventDefault();
-                      const f = new FormData(e.currentTarget);
-                      setPrice(
-                        readBox(String(f.get("minPrice") ?? "")),
-                        readBox(String(f.get("maxPrice") ?? "")),
-                      );
-                    }}
-                  >
-                    {query.heat.map((h) => (
-                      <input key={h} type="hidden" name="heat" value={h} />
-                    ))}
-                    {query.inStock ? <input type="hidden" name="inStock" value="1" /> : null}
-                    {query.sort !== "popular" ? (
-                      <input type="hidden" name="sort" value={query.sort} />
-                    ) : null}
-                    {query.size ? <input type="hidden" name="size" value={query.size} /> : null}
-                    <label>
-                      <span className="sr only-desk">Lowest price</span>
-                      <span className="only-mob">From</span>
-                      <input
-                        key={`min-${query.minPrice ?? ""}`}
-                        className="ak-input"
-                        type="text"
-                        inputMode="numeric"
-                        name="minPrice"
-                        placeholder={`৳${lo}`}
-                        defaultValue={query.minPrice ?? ""}
-                        pattern="[0-9]*"
-                        onBlur={(e) => setPrice(readBox(e.target.value), query.maxPrice)}
-                      />
-                    </label>
-                    <span aria-hidden="true" className="dash">
-                      –
-                    </span>
-                    <label>
-                      <span className="sr only-desk">Highest price</span>
-                      <span className="only-mob">To</span>
-                      <input
-                        key={`max-${query.maxPrice ?? ""}`}
-                        className="ak-input"
-                        type="text"
-                        inputMode="numeric"
-                        name="maxPrice"
-                        placeholder={`৳${hi}`}
-                        defaultValue={query.maxPrice ?? ""}
-                        pattern="[0-9]*"
-                        onBlur={(e) => setPrice(query.minPrice, readBox(e.target.value))}
-                      />
-                    </label>
-                    <button type="submit" className="sr">
-                      Apply price filter
-                    </button>
-                  </form>
-                </div>
-              </details>
-            ) : null}
-            <details open>
-              <summary>Spice level</summary>
-              <div className="gb">
-                {HEAT_LEVELS.map((h) => {
-                  const checked = query.heat.includes(h);
-                  const n = countWith({ heat: [h] });
-                  const zero = !checked && n === 0;
-                  const next = checked ? query.heat.filter((x) => x !== h) : [...query.heat, h];
-                  return (
-                    <Link
-                      key={h}
-                      className={`chk ${checked ? "on" : ""} ${zero ? "is-zero" : ""}`}
-                      href={link({ heat: next })}
-                      onClick={on({ heat: next })}
-                      role="checkbox"
-                      aria-checked={checked}
-                      aria-disabled={zero ? true : undefined}
+            {/* The options scroll in a ScrollArea (owner, 2026-11-22); header and footer stay put. */}
+            <ScrollArea className="fil-body" viewportClassName="fil-vp">
+              {bounds && hi > lo ? (
+                <details open className="f-price">
+                  <summary>
+                    {t.price}
+                    <span className="only-mob">{t.priceUnit}</span>
+                  </summary>
+                  <div className="gb">
+                    <PriceRange
+                      lo={lo}
+                      hi={hi}
+                      min={Math.max(lo, Math.min(query.minPrice ?? lo, hi))}
+                      max={Math.min(hi, Math.max(query.maxPrice ?? hi, lo))}
+                      onChange={setPrice}
+                    />
+                    <form
+                      method="get"
+                      action={localePath(lang, shopHref(shelfSlug))}
+                      className="prs"
+                      onSubmit={(e) => {
+                        e.preventDefault();
+                        const f = new FormData(e.currentTarget);
+                        setPrice(
+                          readBox(String(f.get("minPrice") ?? "")),
+                          readBox(String(f.get("maxPrice") ?? "")),
+                        );
+                      }}
                     >
-                      <span className="box" />
-                      {HEAT_LABEL[h]}
-                      <span className="fn">{n}</span>
-                      <Heat pods={HEAT_PODS[h]} />
-                    </Link>
-                  );
-                })}
-              </div>
-            </details>
-            <details open>
-              <summary>Availability</summary>
-              <div className="gb">
-                <Link
-                  className={`sw ${query.inStock ? "on" : ""}`}
-                  href={link({ inStock: !query.inStock })}
-                  onClick={on({ inStock: !query.inStock })}
-                  role="switch"
-                  aria-checked={query.inStock}
-                >
-                  <span>
-                    In stock only <span className="fn">{countWith({ inStock: true })}</span>
-                  </span>
-                  <span className="tg" />
-                </Link>
-              </div>
-            </details>
-            {sizes.length > 0 ? (
-              <details open>
-                <summary>Size</summary>
-                <div className="gb">
-                  <div className="szs">
-                    {sizes.map((z) => {
-                      const picked = query.size === z;
-                      const n = countWith({ size: z });
-                      const zero = !picked && n === 0;
-                      return (
-                        <Link
-                          key={z}
-                          className={`ak-chip ${picked ? "is-on" : ""} ${zero ? "is-zero" : ""}`}
-                          href={link({ size: picked ? undefined : z })}
-                          onClick={on({ size: picked ? undefined : z })}
-                          aria-pressed={picked}
-                          aria-disabled={zero ? true : undefined}
-                        >
-                          {z}
-                          <span className="fn">{n}</span>
-                        </Link>
-                      );
-                    })}
+                      {query.heat.map((h) => (
+                        <input key={h} type="hidden" name="heat" value={h} />
+                      ))}
+                      {query.inStock ? <input type="hidden" name="inStock" value="1" /> : null}
+                      {query.sort !== "popular" ? (
+                        <input type="hidden" name="sort" value={query.sort} />
+                      ) : null}
+                      {query.size ? <input type="hidden" name="size" value={query.size} /> : null}
+                      <label>
+                        <span className="sr only-desk">{t.lowest}</span>
+                        <span className="only-mob">{t.from}</span>
+                        <input
+                          key={`min-${query.minPrice ?? ""}`}
+                          className="ak-input"
+                          type="text"
+                          inputMode="numeric"
+                          name="minPrice"
+                          placeholder={`৳${lo}`}
+                          defaultValue={query.minPrice ?? ""}
+                          pattern="[0-9]*"
+                          onBlur={(e) => setPrice(readBox(e.target.value), query.maxPrice)}
+                        />
+                      </label>
+                      <span aria-hidden="true" className="dash">
+                        –
+                      </span>
+                      <label>
+                        <span className="sr only-desk">{t.highest}</span>
+                        <span className="only-mob">{t.to}</span>
+                        <input
+                          key={`max-${query.maxPrice ?? ""}`}
+                          className="ak-input"
+                          type="text"
+                          inputMode="numeric"
+                          name="maxPrice"
+                          placeholder={`৳${hi}`}
+                          defaultValue={query.maxPrice ?? ""}
+                          pattern="[0-9]*"
+                          onBlur={(e) => setPrice(query.minPrice, readBox(e.target.value))}
+                        />
+                      </label>
+                      <button type="submit" className="sr">
+                        {t.applyPrice}
+                      </button>
+                    </form>
                   </div>
+                </details>
+              ) : null}
+              <details open>
+                <summary>{t.spice}</summary>
+                <div className="gb">
+                  {HEAT_LEVELS.map((h) => {
+                    const checked = query.heat.includes(h);
+                    const n = countWith({ heat: [h] });
+                    const zero = !checked && n === 0;
+                    const next = checked ? query.heat.filter((x) => x !== h) : [...query.heat, h];
+                    return (
+                      <Link
+                        key={h}
+                        className={`chk ${checked ? "on" : ""} ${zero ? "is-zero" : ""}`}
+                        href={link({ heat: next })}
+                        onClick={on({ heat: next })}
+                        role="checkbox"
+                        aria-checked={checked}
+                        aria-disabled={zero ? true : undefined}
+                      >
+                        <span className="box" />
+                        {all.heat[HEAT_LABEL[h]]}
+                        <span className="fn">{n}</span>
+                        <Heat pods={HEAT_PODS[h]} />
+                      </Link>
+                    );
+                  })}
                 </div>
               </details>
-            ) : null}
+              <details open>
+                <summary>{t.availability}</summary>
+                <div className="gb">
+                  <Link
+                    className={`sw ${query.inStock ? "on" : ""}`}
+                    href={link({ inStock: !query.inStock })}
+                    onClick={on({ inStock: !query.inStock })}
+                    role="switch"
+                    aria-checked={query.inStock}
+                  >
+                    <span>
+                      {t.inStockOnly} <span className="fn">{countWith({ inStock: true })}</span>
+                    </span>
+                    <span className="tg" />
+                  </Link>
+                </div>
+              </details>
+              {sizes.length > 0 ? (
+                <details open>
+                  <summary>{t.size}</summary>
+                  <div className="gb">
+                    <div className="szs">
+                      {sizes.map((z) => {
+                        const picked = query.size === z;
+                        const n = countWith({ size: z });
+                        const zero = !picked && n === 0;
+                        return (
+                          <Link
+                            key={z}
+                            className={`ak-chip ${picked ? "is-on" : ""} ${zero ? "is-zero" : ""}`}
+                            href={link({ size: picked ? undefined : z })}
+                            onClick={on({ size: picked ? undefined : z })}
+                            // A link can't carry aria-pressed; the toggle role matches the heat and
+                            // stock filters' role="checkbox" / "switch" links.
+                            role="button"
+                            aria-pressed={picked}
+                            aria-disabled={zero ? true : undefined}
+                          >
+                            {z}
+                            <span className="fn">{n}</span>
+                          </Link>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </details>
+              ) : null}
+            </ScrollArea>
             <div className="fil-f">
               <Link className="tx" href={clearHref} onClick={clearAll}>
-                Clear all
+                {t.clearAll}
               </Link>
               {/* Filters already apply live; this only closes the sheet (see ShopSheets). */}
               <Link
@@ -490,33 +492,42 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
                 href={link({})}
                 onClick={(e) => e.preventDefault()}
               >
-                Show {matched} {matched === 1 ? "pickle" : "pickles"}
+                {t.show(matched)}
               </Link>
             </div>
           </aside>
 
           <section aria-labelledby="res-h">
             <div className="res">
+              {/* No visible count (owner, 2026-11-22); screen readers still hear the result. */}
               <h2 className="cnt" id="res-h" aria-live="polite">
-                Showing <b>{items.length}</b> of <b>{matched}</b> pickles
+                {lang === "bn" ? (
+                  <>
+                    <b>{matched}</b>টি আচার পাওয়া গেছে
+                  </>
+                ) : (
+                  <>
+                    <b>{matched}</b> {matched === 1 ? "pickle" : "pickles"} found
+                  </>
+                )}
               </h2>
             </div>
             {chips.length > 0 ? (
-              <div className="act" aria-label="Active filters">
+              <div className="act" aria-label={t.activeFilters}>
                 {chips.map((c) => (
                   <Link
                     key={c.label}
                     className="fc"
                     href={link(c.patch, c.shelf)}
                     onClick={on(c.patch, c.shelf)}
-                    aria-label={`Remove filter ${c.label}`}
+                    aria-label={t.removeFilter(c.label)}
                   >
                     {c.label}
                     <Icon name="close" />
                   </Link>
                 ))}
                 <Link className="clr" href={clearHref} onClick={clearAll}>
-                  Clear all
+                  {t.clearAll}
                 </Link>
               </div>
             ) : null}
@@ -524,54 +535,55 @@ export function ShopView({ products, shelves, initialShelf, initialQuery }: Prop
             <div className="gw">
               <div className="grid">
                 {items.length > 0 ? (
-                  items.map((p) => (
-                    <ProductCard key={p.id} product={p} />
-                  ))
+                  items.map((p) => <ProductCard key={p.id} product={p} lang={lang} />)
                 ) : (
                   <div className="empty">
                     <div className="eb ak-blot v2" aria-hidden="true">
                       <Icon name="jar" />
                     </div>
-                    <h2>No pickles match these filters</h2>
-                    <p>
-                      Try a different size or spice level, or clear the filters to see every jar on
-                      the shelf.
-                    </p>
+                    <h2>{t.emptyTitle}</h2>
+                    <p>{t.emptyText}</p>
                     <Link
                       className="ak-btn ak-btn--brand"
                       style={{ minHeight: 48 }}
                       href={clearHref}
                       onClick={clearAll}
                     >
-                      Clear filters
+                      {t.clearFilters}
                     </Link>
                   </div>
                 )}
               </div>
             </div>
-            {items.length > 0 ? (
-              <div className="more">
-                <div className="cnt">
-                  You have seen <b>{items.length}</b> of <b>{matched}</b>
-                </div>
-                <div className="pg" aria-hidden="true">
-                  <span style={{ width: `${Math.round((items.length / matched) * 100)}%` }} />
-                </div>
-                {items.length < matched ? (
-                  <Link
-                    className="ak-btn ak-btn--line"
-                    style={{ minHeight: 50, padding: "0 30px" }}
-                    href={link({ show: items.length + SHOP_PAGE_SIZE })}
-                    onClick={on({ show: items.length + SHOP_PAGE_SIZE })}
-                  >
-                    Load more pickles
-                  </Link>
-                ) : null}
-              </div>
-            ) : null}
           </section>
         </div>
       </Container>
+
+      {/* Closing band (owner concept 2026-11-22): achar with the meal, on to the recipes. Hidden
+          while Recipes is (lib/features). */}
+      {RECIPES_LIVE ? (
+        <section className="sh-band" aria-labelledby="sh-band-h">
+        <picture className="sh-bg">
+          <source media="(max-width: 720px)" srcSet="/images/shop/band-mobile-900.webp" />
+          <img
+            src="/images/shop/band-1440.webp"
+            srcSet="/images/shop/band-1440.webp 1440w, /images/shop/band-2400.webp 2400w"
+            sizes="100vw"
+            alt=""
+            loading="lazy"
+            decoding="async"
+          />
+        </picture>
+        <Container className="sh-copy">
+          <h2 className="h-l" id="sh-band-h">
+            {t.bandTitle}
+          </h2>
+          <Link className="ak-btn ak-btn--sun" href={localePath(lang, "/recipes")}>
+            {t.bandCta} <Icon name="arrow" />
+          </Link>
+        </Container>
+        </section>
+      ) : null}
     </main>
   );
 }
@@ -593,6 +605,7 @@ function SortMenu({
   mobile?: boolean;
 }) {
   const ref = useRef<HTMLDetailsElement>(null);
+  const t = useLang().t.shop;
   // Dropdown behaviour: a click or tap outside, or Escape, closes it; clicks inside keep it open.
   useEffect(() => {
     const close = (e: Event) => {
@@ -625,15 +638,17 @@ function SortMenu({
             <path d="M8 5v14M4 15l4 4 4-4M16 19V5M12 9l4-4 4 4" />
           </svg>
         ) : null}
-        {label} <b>{mobile ? SORT_SHORT[query.sort] : SORT_LABEL[query.sort]}</b>
+        <span className="tb-l">
+          {label} <b>{mobile ? t.sortShort[query.sort] : t.sort[query.sort]}</b>
+        </span>
         {mobile ? null : <span className="chev" aria-hidden="true" />}
       </summary>
       <div className="sortm">
         {mobile ? (
           <div className="sort-h">
             <span className="grab" aria-hidden="true" />
-            <h2>Sort by</h2>
-            <Link className="fil-x" href={link({})} aria-label="Close sort">
+            <h2>{t.sortSheet}</h2>
+            <Link className="fil-x" href={link({})} aria-label={t.closeSort}>
               <Icon name="close" />
             </Link>
           </div>
@@ -649,7 +664,7 @@ function SortMenu({
             }}
             aria-current={query.sort === s ? "true" : undefined}
           >
-            {SORT_LABEL[s]}
+            {t.sort[s]}
           </Link>
         ))}
       </div>
@@ -673,6 +688,7 @@ function ShopSearch({
   onSearch: (q: string) => void;
 }) {
   const [text, setText] = useState(value);
+  const t = useLang().t.shop;
   // A chip, "Clear all" or Back changed the search from outside: show it in the box.
   const [seen, setSeen] = useState(value);
   if (value !== seen) {
@@ -698,7 +714,7 @@ function ShopSearch({
     >
       <Icon name="search" />
       <label className="sr" htmlFor="shop-search">
-        Search pickles
+        {t.searchLabel}
       </label>
       <input
         id="shop-search"
@@ -707,7 +723,7 @@ function ShopSearch({
         enterKeyHint="search"
         autoComplete="off"
         maxLength={80}
-        placeholder="Search pickles, e.g. raw mango"
+        placeholder={t.searchPlaceholder}
         value={text}
         onChange={(e) => {
           setText(e.target.value);
@@ -724,7 +740,7 @@ function ShopSearch({
         <button
           type="button"
           className="shop-srch-x"
-          aria-label="Clear search"
+          aria-label={t.clearSearch}
           onClick={() => {
             setText("");
             run("", 0);

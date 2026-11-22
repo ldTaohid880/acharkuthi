@@ -1,0 +1,1 @@
+ALTER TABLE `categories` ADD `header_image_url` varchar(500);

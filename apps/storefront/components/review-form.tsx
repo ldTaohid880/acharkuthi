@@ -3,23 +3,18 @@
 import { useActionState, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { submitProductReview, type ProductReviewState } from "@/app/actions/product-review";
+import { getDict, type Dict } from "@/lib/i18n/dict";
+import { useLang } from "@/lib/i18n/lang-context";
 import { Icon } from "./icon";
 
-const SPICE = [
-  ["low", "কম ঝাল"],
-  ["ok", "ঠিক ঝাল"],
-  ["high", "বেশি ঝাল"],
-] as const;
+const SPICE = ["low", "ok", "high"] as const;
 
 const initial: ProductReviewState = { status: "idle", errors: {} };
 
-const rateError = (r: number) => (r ? "" : "তারকা দিয়ে রেটিং বেছে নিন");
-const textError = (t: string) =>
-  t.trim().length === 0
-    ? "আপনার অভিজ্ঞতা লিখুন"
-    : t.trim().length < 10
-      ? "আরেকটু বিস্তারিত লিখুন (কমপক্ষে ১০ অক্ষর)"
-      : "";
+type Err = Dict["review"]["err"];
+const rateError = (r: number, e: Err) => (r ? "" : e.rating);
+const textError = (t: string, e: Err) =>
+  t.trim().length === 0 ? e.bodyEmpty : t.trim().length < 10 ? e.bodyShort : "";
 
 /** Check panel shown on success (Product.dc.html .wok). */
 function Tick() {
@@ -59,6 +54,10 @@ export function ReviewForm({
   const [photo, setPhoto] = useState<File | null>(null);
   const [touched, setTouched] = useState(false);
   const [tried, setTried] = useState(false);
+  const { lang } = useLang();
+  const t = getDict(lang).review;
+  // The labels below set their font inline: the page language's UI face.
+  const uiFont = lang === "bn" ? "var(--font-ui-bn)" : "var(--font-ui)";
   const fileRef = useRef<HTMLInputElement>(null);
   const [state, action, pending] = useActionState(
     async (prev: ProductReviewState, data: FormData) => {
@@ -98,11 +97,22 @@ export function ReviewForm({
   }, [open]);
 
   const local = {
-    rating: tried ? rateError(rating) : "",
-    body: touched || tried ? textError(body) : "",
-    name: tried && !signedIn && !name.trim() ? "আপনার নাম লিখুন" : "",
+    rating: tried ? rateError(rating, t.err) : "",
+    body: touched || tried ? textError(body, t.err) : "",
+    name: tried && !signedIn && !name.trim() ? t.err.name : "",
   };
-  const server = state.status === "invalid" && tried ? state.errors : {};
+  const raw = state.status === "invalid" && tried ? state.errors : {};
+  // The server's messages are Bangla; on the English page each field gets its English message.
+  const server =
+    lang === "bn"
+      ? raw
+      : {
+          name: raw.name ? t.err.name : "",
+          rating: raw.rating ? t.err.rating : "",
+          title: raw.title ? t.err.title : "",
+          body: raw.body ? t.err.bodyShort : "",
+          photo: raw.photo ? t.err.photo : "",
+        };
   const err = {
     name: local.name || server.name || "",
     rating: local.rating || server.rating || "",
@@ -123,27 +133,22 @@ export function ReviewForm({
           style={{ minHeight: 50 }}
           aria-expanded={open}
           onClick={toggle}
-          lang="bn"
+          lang={lang}
         >
-          রিভিউ লিখুন
+          {t.write}
         </button>
       </div>
       {open ? (
         <div className="wr-ov" onClick={toggle}>
           <section
             className="wr"
+            lang={lang}
             role="dialog"
             aria-modal="true"
             aria-labelledby="wrh"
             onClick={(ev) => ev.stopPropagation()}
           >
-            <button
-              type="button"
-              className="wr-x"
-              aria-label="বন্ধ করুন"
-              onClick={toggle}
-              autoFocus
-            >
+            <button type="button" className="wr-x" aria-label={t.close} onClick={toggle} autoFocus>
               <Icon name="close" />
             </button>
             {done ? (
@@ -151,13 +156,11 @@ export function ReviewForm({
                 <div className="eb ak-blot v2" aria-hidden="true">
                   <Tick />
                 </div>
-                <h3 id="wrh" lang="bn">
-                  ধন্যবাদ, রিভিউ জমা হয়েছে
-                </h3>
-                <p lang="bn">আপনার রিভিউ আমাদের কাছে পৌঁছেছে। অনুমোদনের পর এটি এখানে দেখা যাবে।</p>
+                <h3 id="wrh">{t.doneTitle}</h3>
+                <p>{t.doneText}</p>
                 <div className="wr-act" style={{ justifyContent: "center" }}>
-                  <button type="button" className="ak-btn ak-btn--line" onClick={toggle} lang="bn">
-                    বন্ধ করুন
+                  <button type="button" className="ak-btn ak-btn--line" onClick={toggle}>
+                    {t.close}
                   </button>
                 </div>
               </div>
@@ -167,17 +170,20 @@ export function ReviewForm({
                 noValidate
                 onSubmit={(e) => {
                   setTried(true);
-                  if (rateError(rating) || textError(body) || (!signedIn && !name.trim())) {
+                  if (
+                    rateError(rating, t.err) ||
+                    textError(body, t.err) ||
+                    (!signedIn && !name.trim())
+                  ) {
                     e.preventDefault();
                   }
                 }}
               >
-                <h3 id="wrh" lang="bn">
-                  {productName}-এর রিভিউ
-                </h3>
-                <p className="ak-help" style={{ margin: "4px 0 0" }} lang="bn">
-                  শুধু এই পণ্য নিয়ে লিখুন। <span style={{ color: "var(--error)" }}>*</span> চিহ্নিত
-                  ঘর আবশ্যক।
+                <h3 id="wrh">{t.title(productName)}</h3>
+                <p className="ak-help" style={{ margin: "4px 0 0" }}>
+                  {t.intro}
+                  <span style={{ color: "var(--error)" }}>*</span>
+                  {t.required}
                 </p>
                 <input type="hidden" name="productId" value={productId} />
                 <input type="hidden" name="rating" value={rating || ""} />
@@ -186,8 +192,9 @@ export function ReviewForm({
                 <div className="fg">
                   {signedIn ? null : (
                     <label className="ak-field">
-                      <span lang="bn">
-                        আপনার নাম<em aria-hidden="true">*</em>
+                      <span>
+                        {t.name}
+                        <em aria-hidden="true">*</em>
                       </span>
                       <input
                         className={`ak-input ${err.name ? "is-error" : ""}`}
@@ -208,8 +215,8 @@ export function ReviewForm({
                     </label>
                   )}
                   <div>
-                    <span style={{ font: "600 15px/1.3 var(--font-ui-bn)" }} lang="bn" id="rl">
-                      রেটিং
+                    <span style={{ font: `600 15px/1.3 ${uiFont}` }} id="rl">
+                      {t.rating}
                       <em
                         style={{ color: "var(--error)", fontStyle: "normal", marginLeft: 4 }}
                         aria-hidden="true"
@@ -225,7 +232,7 @@ export function ReviewForm({
                           role="radio"
                           className={rating >= n ? "on" : undefined}
                           aria-checked={rating === n}
-                          aria-label={`${n} star`}
+                          aria-label={t.star(n)}
                           onClick={() => setRating(n)}
                         >
                           ★
@@ -239,15 +246,15 @@ export function ReviewForm({
                     ) : null}
                   </div>
                   <label className="ak-field">
-                    <span lang="bn">
-                      রিভিউয়ের শিরোনাম <small>ঐচ্ছিক</small>
+                    <span>
+                      {t.headline} <small>{t.optional}</small>
                     </span>
                     <input
                       className="ak-input"
                       type="text"
                       name="title"
                       maxLength={120}
-                      placeholder="এক লাইনে সারকথা"
+                      placeholder={t.headlinePh}
                       value={title}
                       onChange={(e) => setTitle(e.target.value)}
                     />
@@ -258,14 +265,15 @@ export function ReviewForm({
                     ) : null}
                   </label>
                   <label className="ak-field">
-                    <span lang="bn">
-                      আপনার রিভিউ<em aria-hidden="true">*</em>
+                    <span>
+                      {t.body}
+                      <em aria-hidden="true">*</em>
                     </span>
                     <textarea
                       className={`ak-input ${err.body ? "is-error" : ""}`}
                       name="body"
                       maxLength={1500}
-                      placeholder="স্বাদ, ঝাল, আপনি কীভাবে খেয়েছেন"
+                      placeholder={t.bodyPh}
                       aria-required="true"
                       aria-invalid={!!err.body}
                       value={body}
@@ -279,44 +287,43 @@ export function ReviewForm({
                     ) : null}
                   </label>
                   <div>
-                    <span style={{ font: "600 15px/1.3 var(--font-ui-bn)" }} lang="bn">
-                      ঝাল কেমন ছিল?{" "}
+                    <span style={{ font: `600 15px/1.3 ${uiFont}` }}>
+                      {t.spice}{" "}
                       <small
                         style={{
-                          font: "400 13px/1 var(--font-ui-bn)",
+                          font: `400 13px/1 ${uiFont}`,
                           color: "var(--ink-muted)",
                           marginLeft: 6,
                         }}
                       >
-                        ঐচ্ছিক
+                        {t.optional}
                       </small>
                     </span>
                     <div className="chipsrow" style={{ marginTop: 10 }}>
-                      {SPICE.map(([k, label]) => (
+                      {SPICE.map((k) => (
                         <button
                           key={k}
                           type="button"
                           className={`ak-chip ${spice === k ? "is-on" : ""}`}
                           aria-pressed={spice === k}
                           onClick={() => setSpice((s) => (s === k ? "" : k))}
-                          lang="bn"
                         >
-                          {label}
+                          {t.spiceWord[k]}
                         </button>
                       ))}
                     </div>
                   </div>
                   <div>
-                    <span style={{ font: "600 15px/1.3 var(--font-ui-bn)" }} lang="bn">
-                      ছবি{" "}
+                    <span style={{ font: `600 15px/1.3 ${uiFont}` }}>
+                      {t.photo}{" "}
                       <small
                         style={{
-                          font: "400 13px/1 var(--font-ui-bn)",
+                          font: `400 13px/1 ${uiFont}`,
                           color: "var(--ink-muted)",
                           marginLeft: 6,
                         }}
                       >
-                        ঐচ্ছিক
+                        {t.optional}
                       </small>
                     </span>
                     <div className="upl" style={{ marginTop: 10 }}>
@@ -331,7 +338,6 @@ export function ReviewForm({
                       <button
                         type="button"
                         className="ak-btn ak-btn--line"
-                        lang="bn"
                         onClick={() => {
                           if (photo) {
                             setPhoto(null);
@@ -339,7 +345,7 @@ export function ReviewForm({
                           } else fileRef.current?.click();
                         }}
                       >
-                        {photo ? "ছবি সরান" : "ছবি যোগ করুন"}
+                        {photo ? t.removePhoto : t.addPhoto}
                       </button>
                       {photo ? (
                         <>
@@ -364,14 +370,14 @@ export function ReviewForm({
                 </div>
                 {tried && hasErr ? (
                   <div className="carterr" role="alert" style={{ marginTop: 20 }}>
-                    <b lang="bn">রিভিউ জমা দেওয়ার আগে ঘরগুলো ঠিক করুন</b>
-                    <span lang="bn">আপনার লেখা সব থাকছে।</span>
+                    <b>{t.fixTitle}</b>
+                    <span>{t.fixText}</span>
                   </div>
                 ) : null}
                 {tried && state.status === "fail" && !pending ? (
                   <div className="carterr" role="alert" style={{ marginTop: 20 }}>
-                    <b lang="bn">রিভিউ জমা দেওয়া যায়নি</b>
-                    <span lang="bn">আপনার লেখা সব থাকছে। আবার চেষ্টা করুন।</span>
+                    <b>{t.failTitle}</b>
+                    <span>{t.failText}</span>
                   </div>
                 ) : null}
                 <div className="wr-act">
@@ -382,23 +388,17 @@ export function ReviewForm({
                       style={{ minHeight: 52 }}
                       disabled
                       aria-busy="true"
-                      lang="bn"
                     >
                       <span className="spin" aria-hidden="true" />
-                      জমা হচ্ছে…
+                      {t.sending}
                     </button>
                   ) : (
-                    <button
-                      type="submit"
-                      className="ak-btn ak-btn--sun"
-                      style={{ minHeight: 52 }}
-                      lang="bn"
-                    >
-                      রিভিউ জমা দিন
+                    <button type="submit" className="ak-btn ak-btn--sun" style={{ minHeight: 52 }}>
+                      {t.submit}
                     </button>
                   )}
-                  <button type="button" className="ak-btn ak-btn--line" onClick={toggle} lang="bn">
-                    বাতিল
+                  <button type="button" className="ak-btn ak-btn--line" onClick={toggle}>
+                    {t.cancel}
                   </button>
                 </div>
               </form>
@@ -413,14 +413,15 @@ export function ReviewForm({
 /** "আবার চেষ্টা করুন" for the reviews error state: re-renders the page on the server. */
 export function RetryReviews() {
   const router = useRouter();
+  const { lang, t } = useLang();
   return (
     <button
       type="button"
       className="ak-btn ak-btn--line"
       onClick={() => router.refresh()}
-      lang="bn"
+      lang={lang}
     >
-      আবার চেষ্টা করুন
+      {t.review.retry}
     </button>
   );
 }

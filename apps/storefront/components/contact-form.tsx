@@ -3,19 +3,21 @@
 import Link from "next/link";
 import { contactInput } from "@repo/validators";
 import { useActionState, useState } from "react";
-import { sendContactMessage, type ContactField, type ContactState } from "@/app/contact/actions";
+import { sendContactMessage, type ContactField, type ContactState } from "@/app/actions/contact";
 import { shopHref } from "@/lib/routes";
+import { useLang } from "@/lib/i18n/lang-context";
+import type { Dict } from "@/lib/i18n/dict";
 import { Icon } from "./icon";
 import { Select } from "./select";
 
-const SUBJECTS = [
-  ["", "বিষয় বেছে নিন"],
-  ["order", "অর্ডার নিয়ে"],
-  ["delivery", "ডেলিভারি নিয়ে"],
-  ["product", "পণ্য নিয়ে প্রশ্ন"],
-  ["refund", "রিটার্ন বা রিফান্ড"],
-  ["feedback", "মতামত বা পরামর্শ"],
-  ["other", "অন্যান্য"],
+const subjects = (t: Dict["contact"]) => [
+  ["", t.pick],
+  ["order", t.sOrder],
+  ["delivery", t.sDelivery],
+  ["product", t.sProduct],
+  ["refund", t.sRefund],
+  ["feedback", t.sFeedback],
+  ["other", t.sOther],
 ] as const;
 
 const initialState: ContactState = {
@@ -26,6 +28,8 @@ const initialState: ContactState = {
 
 /** Contact form from the design: inline errors, summary, loading, success and failure states. */
 export function ContactForm({ whatsapp }: { whatsapp: string }) {
+  const { lang, t: all, href } = useLang();
+  const t = all.contact;
   const [state, action, pending] = useActionState(sendContactMessage, initialState);
   // After a success the visitor can dismiss the panel to write another message.
   const [dismissed, setDismissed] = useState<ContactState | null>(null);
@@ -44,7 +48,10 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
   };
   const merged: Partial<Record<ContactField, string | null>> = { ...state.errors, ...liveErrs };
   const errors = Object.fromEntries(
-    Object.entries(merged).filter((e): e is [ContactField, string] => !!e[1]),
+    Object.entries(merged)
+      .filter((e): e is [ContactField, string] => !!e[1])
+      // Schema messages are Bangla; the English site maps them (dict `contact.err`).
+      .map(([k, m]) => [k, t.err[m] ?? m]),
   ) as Partial<Record<ContactField, string>>;
   const errorCount = Object.keys(errors).length;
 
@@ -64,23 +71,23 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
               <path d="M5 12.5l4.5 4.5L19 7.5" />
             </svg>
           </div>
-          <h2 lang="bn">বার্তাটি পাঠানো হয়েছে</h2>
-          <p lang="bn">আপনার বার্তাটি আমাদের কাছে পৌঁছেছে। ধন্যবাদ।</p>
+          <h2 lang={lang}>{t.okTitle}</h2>
+          <p lang={lang}>{t.okText}</p>
           <div className="row">
             <button
               type="button"
               className="ak-btn ak-btn--line"
               style={{ minHeight: 48 }}
-              lang="bn"
+              lang={lang}
               onClick={() => {
                 setDismissed(state);
                 setRound((r) => r + 1);
               }}
             >
-              আরেকটি বার্তা লিখুন
+              {t.another}
             </button>
-            <Link className="ak-btn ak-btn--text" href={shopHref()} lang="bn">
-              আচারের তাক দেখুন
+            <Link className="ak-btn ak-btn--text" href={href(shopHref())} lang={lang}>
+              {t.shelves}
             </Link>
           </div>
         </div>
@@ -104,15 +111,14 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
 
   return (
     <div className="fcard ct-card">
-      <h2 className="ct-h2" lang="bn">
-        বার্তা পাঠান
+      <h2 className="ct-h2" lang={lang}>
+        {t.formTitle}
       </h2>
       {state.status === "fail" ? (
         <div className="fail" role="alert">
-          <b lang="bn">বার্তাটি পাঠানো যায়নি।</b>
-          <p lang="bn">
-            ইন্টারনেট সংযোগ দেখে আবার চেষ্টা করুন। আপনার লেখা বার্তা এখানেই আছে। চাইলে সরাসরি
-            WhatsApp-এও লিখতে পারেন।
+          <b lang={lang}>{t.failTitle}</b>
+          <p lang={lang}>
+            {t.failText}
           </p>
           <div className="row">
             <button
@@ -121,33 +127,33 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
               className="ak-btn ak-btn--brand"
               style={{ minHeight: 46 }}
               disabled={pending}
-              lang="bn"
+              lang={lang}
             >
-              আবার চেষ্টা করুন
+              {t.retry}
             </button>
-            <a className="ak-btn ak-btn--text" href={whatsapp} lang="bn">
-              WhatsApp-এ লিখুন
+            <a className="ak-btn ak-btn--text" href={whatsapp} lang={lang}>
+              {t.whatsapp}
             </a>
           </div>
         </div>
       ) : null}
       {state.status === "invalid" && errorCount > 0 ? (
-        <div className="summary" role="alert" lang="bn">
-          {errorCount}টি ঘর ঠিক করতে হবে। নিচে লাল চিহ্নিত ঘরগুলো দেখুন।
+        <div className="summary" role="alert" lang={lang}>
+          {t.fix(errorCount)}
         </div>
       ) : null}
       <form id="contact-form" key={round} action={action} noValidate>
         <div className={`fgrid ${pending ? "busy" : ""}`}>
           <label className="ak-field">
-            <span lang="bn">
-              নাম<em aria-hidden="true">*</em>
+            <span lang={lang}>
+              {t.name}<em aria-hidden="true">*</em>
             </span>
             <input
               className={cls("name")}
               name="name"
               type="text"
               autoComplete="name"
-              placeholder="আপনার নাম"
+              placeholder={t.namePh}
               defaultValue={state.values.name}
               aria-required="true"
               aria-invalid={invalid("name")}
@@ -156,8 +162,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
             {err("name")}
           </label>
           <label className="ak-field">
-            <span lang="bn">
-              ইমেইল<em aria-hidden="true">*</em>
+            <span lang={lang}>
+              {t.email}<em aria-hidden="true">*</em>
             </span>
             <input
               className={cls("email")}
@@ -173,8 +179,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
             {err("email")}
           </label>
           <label className="ak-field">
-            <span lang="bn">
-              ফোন নম্বর<small>ঐচ্ছিক</small>
+            <span lang={lang}>
+              {t.phone}<small>{t.optional}</small>
             </span>
             <input
               className={cls("phone")}
@@ -189,29 +195,29 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
             {err("phone")}
           </label>
           <label className="ak-field">
-            <span lang="bn">
-              বিষয়<em aria-hidden="true">*</em>
+            <span lang={lang}>
+              {t.subject}<em aria-hidden="true">*</em>
             </span>
             <Select
               name="subject"
-              label="বিষয়"
-              options={SUBJECTS.map(([value, label]) => ({ value, label }))}
+              label={t.subject}
+              options={subjects(t).map(([value, label]) => ({ value, label }))}
               defaultValue={state.values.subject}
               invalid={Boolean(field("subject"))}
               onChange={(v) => check("subject", v)}
               required
-              lang="bn"
+              lang={lang}
             />
             {err("subject")}
           </label>
           <label className="ak-field full">
-            <span lang="bn">
-              আপনার বার্তা<em aria-hidden="true">*</em>
+            <span lang={lang}>
+              {t.message}<em aria-hidden="true">*</em>
             </span>
             <textarea
               className={cls("message")}
               name="message"
-              placeholder="যা জানতে চান বা বলতে চান, লিখে ফেলুন"
+              placeholder={t.messagePh}
               defaultValue={state.values.message}
               aria-required="true"
               aria-invalid={invalid("message")}
@@ -231,8 +237,8 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
           </div>
         </div>
         <div className="send">
-          <span className="req-note" lang="bn">
-            <span style={{ color: "var(--error)" }}>*</span> চিহ্নিত ঘরগুলো আবশ্যক
+          <span className="req-note" lang={lang}>
+            <span style={{ color: "var(--error)" }}>*</span> {t.req}
           </span>
           {pending ? (
             <button
@@ -240,14 +246,14 @@ export function ContactForm({ whatsapp }: { whatsapp: string }) {
               className="ak-btn ak-btn--brand"
               disabled
               aria-busy="true"
-              lang="bn"
+              lang={lang}
             >
               <span className="spin" aria-hidden="true" />
-              পাঠানো হচ্ছে…
+              {t.sending}
             </button>
           ) : (
-            <button type="submit" className="ak-btn ak-btn--brand" lang="bn">
-              বার্তা পাঠান{" "}
+            <button type="submit" className="ak-btn ak-btn--brand" lang={lang}>
+              {t.send}{" "}
               <span className="ak-ico">
                 <Icon name="arrow" />
               </span>

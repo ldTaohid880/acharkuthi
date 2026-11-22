@@ -31,9 +31,16 @@ export const contactMessages = mysqlTable(
     phone: varchar("phone", { length: 20 }),
     subject: mysqlEnum("subject", CONTACT_SUBJECTS).notNull(),
     message: text("message").notNull(),
+    /** Admin Messages: when someone opened it (null = unread). "না-পড়া করুন" clears it. */
+    readAt: timestamp("read_at"),
+    /** Admin Messages "আর্কাইভ": off the inbox, kept under the Archive tab. */
+    archivedAt: timestamp("archived_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
-  (t) => [index("contact_messages_created_idx").on(t.createdAt)],
+  (t) => [
+    index("contact_messages_created_idx").on(t.createdAt),
+    index("contact_messages_inbox_idx").on(t.archivedAt, t.createdAt),
+  ],
 );
 
 export const newsletterSubscribers = mysqlTable(
@@ -57,6 +64,9 @@ export const siteReviews = mysqlTable(
     rating: tinyint("rating").notNull(),
     body: text("body").notNull(),
     isApproved: boolean("is_approved").default(false).notNull(),
+    /** "আচারকুঠির উত্তর": the shop's public reply (Reviews-* boards), shown under the review. */
+    reply: text("reply"),
+    replyAt: timestamp("reply_at"),
     createdAt: timestamp("created_at").defaultNow().notNull(),
   },
   (t) => [

@@ -1,11 +1,11 @@
 "use client";
 
-import type { Route } from "next";
 import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { signOut } from "@repo/auth/client";
 import { changePasswordInput, profileInput } from "@repo/validators";
 import { changePassword, updateProfile } from "@/app/actions/account";
+import { useLang } from "@/lib/i18n/lang-context";
 import { FailAlert } from "./addresses-view";
 
 type Errs<K extends string> = Partial<Record<K, string>>;
@@ -26,6 +26,8 @@ function issues<K extends string>(r: {
 function useForm<K extends string>(
   initial: Record<K, string>,
   validate: (v: Record<K, string>) => Errs<K>,
+  /** Bangla schema message → the English site's wording. */
+  tr: Readonly<Record<string, string>>,
 ) {
   const [v, setV] = useState(initial);
   const [touched, setTouched] = useState<Partial<Record<K, boolean>>>({});
@@ -33,7 +35,8 @@ function useForm<K extends string>(
   const [server, setServer] = useState<Errs<K>>({});
   const errs = { ...validate(v), ...server };
   const field = (k: K, id: string) => {
-    const err = (touched[k] || submitted) && errs[k] ? errs[k] : "";
+    const m = (touched[k] || submitted) && errs[k];
+    const err = m ? (tr[m] ?? m) : "";
     return {
       err,
       errId: `${id}-e`,
@@ -61,8 +64,9 @@ function useForm<K extends string>(
 }
 
 function Err({ id, err }: { id: string; err: string }) {
+  const { lang } = useLang();
   return err ? (
-    <span className="ak-help is-error" role="alert" id={id} lang="bn">
+    <span className="ak-help is-error" role="alert" id={id} lang={lang}>
       {err}
     </span>
   ) : null;
@@ -78,14 +82,18 @@ export function SettingsView({
   askSignOut: boolean;
 }) {
   const router = useRouter();
+  const { lang, t: all, href } = useLang();
+  const t = all.account;
   const [pending, start] = useTransition();
 
   // ব্যক্তিগত তথ্য
   const [editing, setEditing] = useState(false);
   const [profSaved, setProfSaved] = useState(false);
   const [profFail, setProfFail] = useState(false);
-  const pf = useForm({ name: profile.name, phone: profile.phone }, (v) =>
-    issues(profileInput.safeParse(v)),
+  const pf = useForm(
+    { name: profile.name, phone: profile.phone },
+    (v) => issues(profileInput.safeParse(v)),
+    t.err,
   );
   const pfName = pf.field("name", "pf-nm");
   const pfPhone = pf.field("phone", "pf-ph");
@@ -106,8 +114,10 @@ export function SettingsView({
   // পাসওয়ার্ড
   const [pwOpen, setPwOpen] = useState(false);
   const [pwStat, setPwStat] = useState<"idle" | "loading" | "done" | "fail">("idle");
-  const pw = useForm({ current: "", next: "", confirm: "" }, (v) =>
-    issues(changePasswordInput.safeParse(v)),
+  const pw = useForm(
+    { current: "", next: "", confirm: "" },
+    (v) => issues(changePasswordInput.safeParse(v)),
+    t.err,
   );
   const pwCur = pw.field("current", "pw-c");
   const pwNew = pw.field("next", "pw-n");
@@ -138,7 +148,7 @@ export function SettingsView({
     void signOut()
       .then((r) => {
         if (r.error) return setSo("fail");
-        router.replace("/account/signed-out" as Route);
+        router.replace(href("/account/signed-out"));
         router.refresh();
       })
       .catch(() => setSo("fail"));
@@ -146,17 +156,17 @@ export function SettingsView({
 
   return (
     <div>
-      <h1 className="h1a" lang="bn">
-        সেটিংস
+      <h1 className="h1a" lang={lang}>
+        {t.settings}
       </h1>
-      <p className="sub" lang="bn">
-        আপনার তথ্য ও নিরাপত্তা।
+      <p className="sub" lang={lang}>
+        {t.settingsSub}
       </p>
 
       <section className="panel" aria-labelledby="sp1">
         <div className="sech first">
-          <h2 className="ph" id="sp1" lang="bn">
-            ব্যক্তিগত তথ্য
+          <h2 className="ph" id="sp1" lang={lang}>
+            {t.personal}
           </h2>
           {!editing && (
             <button
@@ -168,31 +178,31 @@ export function SettingsView({
                 setProfFail(false);
                 setEditing(true);
               }}
-              lang="bn"
+              lang={lang}
             >
-              সম্পাদনা
+              {t.edit}
             </button>
           )}
         </div>
         {profSaved && (
-          <div className="alert info" role="status" lang="bn">
-            তথ্য সংরক্ষণ করা হয়েছে।
+          <div className="alert info" role="status" lang={lang}>
+            {t.profSaved}
           </div>
         )}
         {!editing ? (
           <dl className="kv">
             <div>
-              <dt lang="bn">নাম</dt>
+              <dt lang={lang}>{t.name}</dt>
               <dd>{profile.name}</dd>
             </div>
             {profile.phone && (
               <div>
-                <dt lang="bn">মোবাইল নম্বর</dt>
+                <dt lang={lang}>{t.phone}</dt>
                 <dd>{profile.phone}</dd>
               </div>
             )}
             <div>
-              <dt lang="bn">ইমেইল</dt>
+              <dt lang={lang}>{t.email}</dt>
               <dd>
                 {profile.email} {!hasPassword && <span className="chip2">Google</span>}
               </dd>
@@ -203,15 +213,17 @@ export function SettingsView({
             {profFail && <FailAlert />}
             <div className="afg one">
               <div className="fld">
-                <label htmlFor="pf-nm" lang="bn">
-                  নাম<em aria-hidden="true">*</em>
+                <label htmlFor="pf-nm" lang={lang}>
+                  {t.name}
+                  <em aria-hidden="true">*</em>
                 </label>
-                <input {...pfName.props} type="text" autoComplete="name" placeholder="পুরো নাম" />
+                <input {...pfName.props} type="text" autoComplete="name" placeholder={t.fullName} />
                 <Err id={pfName.errId} err={pfName.err} />
               </div>
               <div className="fld">
-                <label htmlFor="pf-ph" lang="bn">
-                  মোবাইল নম্বর<small>ঐচ্ছিক</small>
+                <label htmlFor="pf-ph" lang={lang}>
+                  {t.phone}
+                  <small>{t.optional}</small>
                 </label>
                 <input
                   {...pfPhone.props}
@@ -223,8 +235,8 @@ export function SettingsView({
                 <Err id={pfPhone.errId} err={pfPhone.err} />
               </div>
               <div className="fld">
-                <span className="lb" lang="bn">
-                  ইমেইল
+                <span className="lb" lang={lang}>
+                  {t.email}
                 </span>
                 <div className="ro">{profile.email}</div>
               </div>
@@ -235,17 +247,17 @@ export function SettingsView({
                 className="ak-btn ak-btn--brand sm2"
                 onClick={saveProfile}
                 disabled={pending}
-                lang="bn"
+                lang={lang}
               >
-                সংরক্ষণ করুন
+                {t.save}
               </button>
               <button
                 type="button"
                 className="ak-btn ak-btn--line sm2"
                 onClick={() => setEditing(false)}
-                lang="bn"
+                lang={lang}
               >
-                বাতিল
+                {t.cancel}
               </button>
             </div>
           </>
@@ -255,13 +267,13 @@ export function SettingsView({
       {/* Google-only accounts get no password panel at all (user request; replaces the board's note). */}
       {hasPassword && (
         <section className="panel" aria-labelledby="sp2">
-          <h2 className="ph" id="sp2" lang="bn">
-            পাসওয়ার্ড
+          <h2 className="ph" id="sp2" lang={lang}>
+            {t.password}
           </h2>
           {!pwOpen ? (
             <>
-              <p className="sub" lang="bn">
-                নিরাপত্তার জন্য মাঝে মাঝে পাসওয়ার্ড বদলাতে পারেন।
+              <p className="sub" lang={lang}>
+                {t.pwHint}
               </p>
               <div className="row2">
                 <button
@@ -272,43 +284,46 @@ export function SettingsView({
                     setPwStat("idle");
                     setPwOpen(true);
                   }}
-                  lang="bn"
+                  lang={lang}
                 >
-                  পাসওয়ার্ড বদলান
+                  {t.changePw}
                 </button>
               </div>
             </>
           ) : (
             <>
               {pwStat === "done" && (
-                <div className="alert info" role="status" lang="bn">
-                  পাসওয়ার্ড বদলানো হয়েছে।
+                <div className="alert info" role="status" lang={lang}>
+                  {t.pwChanged}
                 </div>
               )}
               {pwStat === "fail" && <FailAlert />}
               <div className="afg one">
                 <div className="fld">
-                  <label htmlFor="pw-c" lang="bn">
-                    বর্তমান পাসওয়ার্ড<em aria-hidden="true">*</em>
+                  <label htmlFor="pw-c" lang={lang}>
+                    {t.curPw}
+                    <em aria-hidden="true">*</em>
                   </label>
                   <input {...pwCur.props} type="password" autoComplete="current-password" />
                   <Err id={pwCur.errId} err={pwCur.err} />
                 </div>
                 <div className="fld">
-                  <label htmlFor="pw-n" lang="bn">
-                    নতুন পাসওয়ার্ড<em aria-hidden="true">*</em>
+                  <label htmlFor="pw-n" lang={lang}>
+                    {t.newPw}
+                    <em aria-hidden="true">*</em>
                   </label>
                   <input
                     {...pwNew.props}
                     type="password"
                     autoComplete="new-password"
-                    placeholder="কমপক্ষে ৮টি অক্ষর, একটি অক্ষর ও একটি সংখ্যা"
+                    placeholder={t.newPwPh}
                   />
                   <Err id={pwNew.errId} err={pwNew.err} />
                 </div>
                 <div className="fld">
-                  <label htmlFor="pw-f" lang="bn">
-                    নতুন পাসওয়ার্ড আবার<em aria-hidden="true">*</em>
+                  <label htmlFor="pw-f" lang={lang}>
+                    {t.newPwAgain}
+                    <em aria-hidden="true">*</em>
                   </label>
                   <input {...pwCf.props} type="password" autoComplete="new-password" />
                   <Err id={pwCf.errId} err={pwCf.err} />
@@ -321,28 +336,28 @@ export function SettingsView({
                     className="ak-btn ak-btn--brand sm2"
                     disabled
                     aria-busy="true"
-                    lang="bn"
+                    lang={lang}
                   >
                     <span className="spin" aria-hidden="true" />
-                    বদলানো হচ্ছে…
+                    {t.changing}
                   </button>
                 ) : (
                   <button
                     type="button"
                     className="ak-btn ak-btn--brand sm2"
                     onClick={savePassword}
-                    lang="bn"
+                    lang={lang}
                   >
-                    পাসওয়ার্ড বদলান
+                    {t.changePw}
                   </button>
                 )}
                 <button
                   type="button"
                   className="ak-btn ak-btn--line sm2"
                   onClick={() => setPwOpen(false)}
-                  lang="bn"
+                  lang={lang}
                 >
-                  বাতিল
+                  {t.cancel}
                 </button>
               </div>
             </>
@@ -351,8 +366,8 @@ export function SettingsView({
       )}
 
       <section className="panel" aria-labelledby="sp3">
-        <h2 className="ph" id="sp3" lang="bn">
-          সাইন আউট
+        <h2 className="ph" id="sp3" lang={lang}>
+          {t.signOut}
         </h2>
         {(so === "idle" || so === "fail") && (
           <>
@@ -362,9 +377,9 @@ export function SettingsView({
                 type="button"
                 className="ak-btn ak-btn--line sm2"
                 onClick={() => setSo("confirm")}
-                lang="bn"
+                lang={lang}
               >
-                সাইন আউট
+                {t.signOut}
               </button>
             </div>
           </>
@@ -376,26 +391,26 @@ export function SettingsView({
             aria-labelledby="so-q"
             style={{ marginTop: 12 }}
           >
-            <b id="so-q" lang="bn">
-              সাইন আউট করবেন?
+            <b id="so-q" lang={lang}>
+              {t.outQ}
             </b>
-            <span lang="bn">আপনার অর্ডার ও ঠিকানা আবার সাইন ইন করলে পাবেন।</span>
+            <span lang={lang}>{t.outQText}</span>
             <div className="row2">
               <button
                 type="button"
                 className="ak-btn ak-btn--brand sm2"
                 onClick={doSignOut}
-                lang="bn"
+                lang={lang}
               >
-                হ্যাঁ, সাইন আউট
+                {t.outYes}
               </button>
               <button
                 type="button"
                 className="ak-btn ak-btn--line sm2"
                 onClick={() => setSo("idle")}
-                lang="bn"
+                lang={lang}
               >
-                থাকছি
+                {t.stay}
               </button>
             </div>
           </div>
@@ -407,10 +422,10 @@ export function SettingsView({
               className="ak-btn ak-btn--brand sm2"
               disabled
               aria-busy="true"
-              lang="bn"
+              lang={lang}
             >
               <span className="spin" aria-hidden="true" />
-              সাইন আউট হচ্ছে…
+              {t.signingOut}
             </button>
           </div>
         )}

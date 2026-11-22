@@ -1,0 +1,30 @@
+diff --git a/mysql-core/dialect.cjs b/mysql-core/dialect.cjs
+index bf44f233e58054311d4cba4370840053138fba27..4d68da4b60b4f4738bd713e72bf9eca77da11db2 100644
+--- a/mysql-core/dialect.cjs
++++ b/mysql-core/dialect.cjs
+@@ -893,7 +893,9 @@ class MySqlDialect {
+           selection
+         }
+       ];
+-      const needsSubquery = limit !== void 0 || offset !== void 0 || orderBy.length > 0;
++      // acharkuthi patch: to-one relations select one row directly. The derived table referenced
++      // the outer row, which MariaDB (Hostinger) rejects; results are the same.
++      const needsSubquery = (0, import_entity.is)(nestedQueryRelation, import_relations.Many) && (limit !== void 0 || offset !== void 0 || orderBy.length > 0);
+       if (needsSubquery) {
+         result = this.buildSelectQuery({
+           table: (0, import_alias.aliasedTable)(table, tableAlias),
+diff --git a/mysql-core/dialect.js b/mysql-core/dialect.js
+index 2504a62264d916751ce70b6aa6d50de0c3d6f6e2..bae9a04e86bcd05f42ff07135a57cac159208ea1 100644
+--- a/mysql-core/dialect.js
++++ b/mysql-core/dialect.js
+@@ -876,7 +876,9 @@ class MySqlDialect {
+           selection
+         }
+       ];
+-      const needsSubquery = limit !== void 0 || offset !== void 0 || orderBy.length > 0;
++      // acharkuthi patch: to-one relations select one row directly. The derived table referenced
++      // the outer row, which MariaDB (Hostinger) rejects; results are the same.
++      const needsSubquery = is(nestedQueryRelation, Many) && (limit !== void 0 || offset !== void 0 || orderBy.length > 0);
+       if (needsSubquery) {
+         result = this.buildSelectQuery({
+           table: aliasedTable(table, tableAlias),

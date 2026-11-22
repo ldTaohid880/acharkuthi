@@ -1,29 +1,32 @@
 "use client";
 
-import type { Route } from "next";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import type { Dict } from "@/lib/i18n/dict";
+import { useLang } from "@/lib/i18n/lang-context";
 
-export const ACCOUNT_NAV: { href: Route; t: string }[] = [
-  { href: "/account" as Route, t: "অ্যাকাউন্ট" },
-  { href: "/account/orders" as Route, t: "আমার অর্ডার" },
-  { href: "/account/addresses" as Route, t: "ঠিকানা" },
-  { href: "/account/reviews" as Route, t: "আমার রিভিউ" },
-  { href: "/account/settings" as Route, t: "সেটিংস" },
+const accountNav = (t: Dict["account"]): { href: string; t: string }[] => [
+  { href: "/account", t: t.account },
+  { href: "/account/orders", t: t.myOrders },
+  { href: "/account/addresses", t: t.addresses },
+  { href: "/account/reviews", t: t.myReviews },
+  { href: "/account/settings", t: t.settings },
 ];
 
 /** Desktop sidebar list (`nav2`) or the phone's scrolling tabs (`tabsc`). */
 export function AccountNav({ variant }: { variant: "side" | "tabs" }) {
   const path = usePathname();
-  const links = ACCOUNT_NAV.map((n) => {
-    const on = path === n.href;
+  const { lang, t: all, href } = useLang();
+  const t = all.account;
+  const links = accountNav(t).map((n) => {
+    const on = path === href(n.href);
     return (
       <Link
         key={n.href}
-        href={n.href}
+        href={href(n.href)}
         className={on ? "on" : ""}
         aria-current={on ? "page" : undefined}
-        lang="bn"
+        lang={lang}
       >
         {n.t}
       </Link>
@@ -31,7 +34,7 @@ export function AccountNav({ variant }: { variant: "side" | "tabs" }) {
   });
   if (variant === "tabs") {
     return (
-      <nav className="tabsc" aria-label="অ্যাকাউন্ট">
+      <nav className="tabsc" aria-label={t.account}>
         {links}
       </nav>
     );

@@ -57,9 +57,16 @@ export function agoText(d: Date, lang: AdminLang, now = new Date()): string {
   return lang === "bn" ? `${digits(n, "bn")} ${bn} আগে` : `${n} ${en} ago`;
 }
 
-/** Fills "{n}"-style slots in a dictionary string. */
+/**
+ * Fills "{n}"-style slots in a dictionary string. "{s}" (unless given) is the English plural
+ * ending for {n}: "{n} item{s}" gives "1 item" and "3 items".
+ */
 export function fill(template: string, values: Record<string, string | number>): string {
-  return template.replace(/\{(\w+)\}/g, (m, k: string) => (k in values ? String(values[k]) : m));
+  return template.replace(/\{(\w+)\}/g, (m, k: string) => {
+    if (k in values) return String(values[k]);
+    if (k === "s" && "n" in values) return String(values.n) === "1" ? "" : "s";
+    return m;
+  });
 }
 
 /** "১১ নভেম্বর, ১০:১৫ AM" / "11 Nov, 10:15 AM" (Bangladesh time). `withTime: false` drops the clock. */
@@ -68,4 +75,15 @@ export function orderDate(d: Date, lang: AdminLang, withTime = true): string {
     new Intl.DateTimeFormat(lang === "bn" ? "bn-BD" : "en-GB", { timeZone: ZONE, ...o }).format(d);
   const day = `${fmt({ day: "numeric" })} ${fmt({ month: lang === "bn" ? "long" : "short" })}`;
   return withTime ? `${day}, ${clock(d, lang)}` : day;
+}
+
+/**
+ * A device's last activity (Account boards: "গতকাল ৯:১০ PM"): like relativeTime, but yesterday
+ * keeps its time.
+ */
+export function lastActive(d: Date, lang: AdminLang, now = new Date()): string {
+  const yesterday = new Date(now.getTime() - 86400000);
+  if (dayKey(d) === dayKey(yesterday) && now.getTime() - d.getTime() >= 3600000)
+    return `${lang === "bn" ? "গতকাল" : "Yesterday"} ${clock(d, lang)}`;
+  return relativeTime(d, lang, now);
 }

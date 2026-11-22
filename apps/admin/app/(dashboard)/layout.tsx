@@ -14,12 +14,12 @@ export default async function DashboardLayout({ children }: { children: React.Re
     unreadCount(session.user.id, role),
     cookies(),
   ]);
-  const { name, email } = session.user;
+  const { name, email, image } = session.user;
 
   return (
     <AppShell
       role={role}
-      user={{ name, email, initials: initialsOf(name) }}
+      user={{ name, email, initials: initialsOf(name), image: image ?? null }}
       lang={lang}
       t={t}
       counts={counts}

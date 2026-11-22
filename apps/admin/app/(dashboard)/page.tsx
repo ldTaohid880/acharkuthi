@@ -1,6 +1,6 @@
-import { cn } from "@repo/ui/lib/utils";
+import { cn, formatTaka } from "@repo/ui/lib/utils";
 import type { AdminLang } from "@repo/validators";
-import { ChevronRight, RefreshCw } from "lucide-react";
+import { ChevronRight } from "lucide-react";
 import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { btn } from "@/components/btn";
@@ -14,12 +14,13 @@ import type { Dict } from "@/lib/i18n/dict";
 import { getDict } from "@/lib/i18n/server";
 import type { StatusTone } from "@/lib/order-status";
 import { requireAdmin } from "@/lib/require-admin";
+import { DashSync } from "./dash-sync";
 
 export const metadata: Metadata = { title: "Dashboard" };
 
 /**
  * "আজকের কাজ" (Dashboard-Desktop ≥1440, Dashboard-Tablet1194 1024–1439, Dashboard-Tablet
- * 768–1023, Dashboard-Phone <768). Values the database can't answer yet show "needs storage".
+ * 768–1023, Dashboard-Phone <768).
  */
 export default async function DashboardPage() {
   const { role } = await requireAdmin();
@@ -56,20 +57,7 @@ export default async function DashboardPage() {
             </p>
           </div>
           <div className="wide:flex-row flex flex-row-reverse flex-wrap items-center gap-2">
-            {/* Courier sync needs the Steadfast integration: disabled until then. */}
-            <button
-              type="button"
-              disabled
-              className={btn({
-                variant: "outline",
-                size: "lg",
-                className: "wide:h-8 wide:px-3 wide:text-[13px] wide:gap-1.5",
-              })}
-            >
-              <RefreshCw aria-hidden />
-              {d.sync}
-            </button>
-            <NeedsStorage />
+            <DashSync label={d.sync} owner={owner} lang={lang} t={t.orders} />
           </div>
         </div>
 
@@ -220,11 +208,11 @@ function Kpis({
       key: "deliv",
       label: (
         <>
-          {d.deliveredToday} <NeedsStorage />
+          {d.deliveredToday}
         </>
       ),
       labelPhone: d.deliveredToday,
-      value: "—",
+      value: String(data.deliveredToday),
     },
   ];
   if (owner) {
@@ -233,21 +221,21 @@ function Kpis({
         key: "cod",
         label: (
           <>
-            {d.collectedToday} <NeedsStorage />
+            {d.collectedToday}
           </>
         ),
         labelPhone: d.collectedTodayShort,
-        value: "—",
+        value: data.cash ? formatTaka(data.cash.collectedToday) : "—",
       },
       {
         key: "sf",
         label: (
           <>
-            {d.steadfast} <NeedsStorage />
+            {d.steadfast}
           </>
         ),
         labelPhone: d.steadfast,
-        value: "—",
+        value: data.cash?.balance != null ? formatTaka(data.cash.balance) : "—",
       },
     );
   }
@@ -311,8 +299,9 @@ function todoCards(data: DashboardData, d: DashDict, lang: AdminLang, owner: boo
       tag: d.tagConf,
       n: String(data.confirmed.n),
       label: d.toPack,
-      sub: `${digits(data.confirmed.items, lang)}${d.items}`,
-      subPhone: `${digits(data.confirmed.items, lang)}${d.items}`,
+      // English: "1 item" / "3 items" (the dictionary has the plural).
+      sub: `${digits(data.confirmed.items, lang)}${data.confirmed.items === 1 && lang === "en" ? " item" : d.items}`,
+      subPhone: `${digits(data.confirmed.items, lang)}${data.confirmed.items === 1 && lang === "en" ? " item" : d.items}`,
     },
     {
       key: "pack",
@@ -331,9 +320,9 @@ function todoCards(data: DashboardData, d: DashDict, lang: AdminLang, owner: boo
       tag: d.tagProblem,
       n: String(data.returned),
       label: d.problems,
-      // Courier holds and unknown statuses come from Steadfast (needs storage).
-      sub: `${d.hold} — · ${d.unknown} — · ${d.returned} ${digits(data.returned, lang)}`,
-      subPhone: `${d.hold} — · ${d.unknown} — · ${d.returned} ${digits(data.returned, lang)}`,
+      // Courier holds and unknown statuses come from the Steadfast status on booked orders.
+      sub: `${d.hold} ${digits(data.courier.hold, lang)} · ${d.unknown} ${digits(data.courier.unknown, lang)} · ${d.returned} ${digits(data.returned, lang)}`,
+      subPhone: `${d.hold} ${digits(data.courier.hold, lang)} · ${d.unknown} ${digits(data.courier.unknown, lang)} · ${d.returned} ${digits(data.returned, lang)}`,
     },
   ];
   if (owner) {
@@ -342,10 +331,10 @@ function todoCards(data: DashboardData, d: DashDict, lang: AdminLang, owner: boo
       href: "/orders?status=delivered",
       tone: "deliv",
       tag: d.tagDeliv,
-      n: "—",
+      n: String(data.cash?.pending.n ?? 0),
       label: d.codPending,
-      sub: <NeedsStorage />,
-      subPhone: <NeedsStorage />,
+      sub: data.cash ? formatTaka(data.cash.pending.amount) : "",
+      subPhone: data.cash ? formatTaka(data.cash.pending.amount) : "",
     });
   }
   return list;
@@ -366,12 +355,12 @@ function sideCards(data: DashboardData, d: DashDict, lang: AdminLang, owner: boo
   const messages: Side = {
     key: "messages",
     href: "/messages",
-    n: null,
+    n: data.messages.n,
     label: d.messages,
     sub: d.messagesSub,
-    needs: true,
+    needs: false,
     dot: "bg-primary",
-    items: [],
+    items: data.messages.latest.map((x) => ({ id: x.id, text: x.text, meta: x.name })),
   };
   if (!owner || !data.reviews || !data.restock) return [messages];
   return [

@@ -76,10 +76,13 @@ export function DateCalendar({
   value,
   onChange,
   lang,
+  fromToday,
 }: {
   value?: string | undefined;
   onChange: (iso: string | undefined) => void;
   lang: AdminLang;
+  /** Days before today can't be picked (ban end date). */
+  fromToday?: boolean;
 }) {
   const selected = isoToDate(value);
   return (
@@ -88,6 +91,7 @@ export function DateCalendar({
       {...(selected ? { selected } : {})}
       onSelect={(d) => onChange(dateToIso(d))}
       defaultMonth={selected ?? new Date()}
+      {...(fromToday ? { disabled: { before: new Date() } } : {})}
       {...(lang === "bn" ? { locale: bn, formatters: bnFormatters } : {})}
     />
   );

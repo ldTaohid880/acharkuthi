@@ -4,6 +4,7 @@ import { useId, useRef, useState } from "react";
 import { BellMark } from "./card-marks";
 import { Icon } from "./icon";
 import { RestockAlert } from "./restock-alert";
+import { useLang } from "@/lib/i18n/lang-context";
 
 /**
  * Out-of-stock bell on the product card. Opens the back-in-stock form in a modal dialog
@@ -20,6 +21,8 @@ export function CardRestock({
   const bell = useRef<HTMLButtonElement>(null);
   const [open, setOpen] = useState(false);
   const titleId = useId();
+  const { lang, t: all } = useLang();
+  const t = all.restock;
 
   return (
     <>
@@ -27,7 +30,7 @@ export function CardRestock({
         ref={bell}
         type="button"
         className="pc-btn above"
-        aria-label={`Notify me when ${productName} is back`}
+        aria-label={t.bell(productName)}
         aria-haspopup="dialog"
         onClick={() => {
           setOpen(true);
@@ -39,6 +42,7 @@ export function CardRestock({
       <dialog
         ref={dialog}
         className="pc-dlg"
+        lang={lang}
         aria-labelledby={titleId}
         onClose={() => {
           setOpen(false);
@@ -52,14 +56,16 @@ export function CardRestock({
           <button
             type="button"
             className="pc-dlg-x"
-            aria-label="বন্ধ করুন"
+            aria-label={t.close}
             onClick={() => dialog.current?.close()}
           >
             <Icon name="close" />
           </button>
           <h2 id={titleId} className="pc-dlg-t">
-            <span lang="bn">স্টকে এলে জানান</span>
-            <span className="pc-dlg-n">{productName}</span>
+            <span>{t.title}</span>
+            <span className="pc-dlg-n" lang="en">
+              {productName}
+            </span>
           </h2>
           {open ? <RestockAlert variantId={variantId} startOpen /> : null}
         </div>

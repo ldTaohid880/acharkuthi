@@ -10,7 +10,7 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from "@repo/ui/components/popover";
 import { cn } from "@repo/ui/lib/utils";
 import type { AdminLang } from "@repo/validators";
-import { CalendarDays, CircleX, Copy, Ellipsis, Printer, Truck } from "lucide-react";
+import { CalendarDays, Check, CircleX, Copy, Ellipsis, Printer, RefreshCw, Truck } from "lucide-react";
 import type { Route } from "next";
 import Link from "next/link";
 import { useRef, useState, useTransition } from "react";
@@ -21,13 +21,14 @@ import {
   undoAdvance,
   updateTracking,
 } from "@/app/actions/orders";
+import { bookCourier, syncCourier, unsettleOrder } from "@/app/actions/courier";
 import { btn } from "@/components/btn";
 import { useBreakpoint } from "@/components/shell/shell-context";
 import { DateCalendar } from "@/components/date-range-calendar";
 import { useToast } from "@/components/toast";
-import { fill, orderDate } from "@/lib/format";
+import { digits, fill, orderDate } from "@/lib/format";
 import { statusLabel, type StatusTone } from "@/lib/order-status";
-import { CancelDialog, CANCELLABLE, type OT } from "../orders-parts";
+import { CancelDialog, CANCELLABLE, SettleDialog, type OT } from "../orders-parts";
 
 type DbStatus = Parameters<typeof CANCELLABLE.has>[0];
 
@@ -174,7 +175,7 @@ export function OrderActions({
     </DropdownMenu>
   );
 
-  /** confirm / pack advance here; "packed" jumps to the courier card (booking needs storage). */
+  /** confirm / pack advance here; "packed" jumps to the courier card, where booking happens. */
   function primary(className: string, withIcon: boolean) {
     const size = lg ? "lg" : "default";
     if (order.status === "pending" || order.status === "confirmed") {
@@ -191,13 +192,6 @@ export function OrderActions({
       );
     }
     if (order.status !== "processing") return null;
-    if (place === "tab")
-      return (
-        <button type="button" disabled className={btn({ size, className })}>
-          <Truck aria-hidden />
-          {t.bookSf}
-        </button>
-      );
     return (
       <a href="#courier" className={btn({ size, className })}>
         {withIcon ? <Truck aria-hidden /> : null}
@@ -486,5 +480,157 @@ export function CourierNoteField({ id, initial, t }: { id: number; initial: stri
       }}
       className="border-input focus:border-primary min-h-16 w-full resize-y rounded-md border bg-white px-3 py-2 text-sm leading-5 font-normal shadow-xs outline-none focus:shadow-[0_0_0_3px_var(--ring)]"
     />
+  );
+}
+
+/**
+ * Courier card actions (OrderDetail-*): "Steadfast-এ বুক করুন" for a packed order, "স্ট্যাটাস আনুন"
+ * once booked, the manual "পথে চিহ্ন দিন" / "ডেলিভার্ড চিহ্ন দিন" for orders not booked, and for the owner "টাকা পাওয়া গেছে" on a delivered order (or undo).
+ */
+export function CourierActions({
+  id,
+  status,
+  booked,
+  settledAt,
+  payoutRef,
+  owner,
+  t,
+  lang,
+}: {
+  id: number;
+  status: string;
+  booked: boolean;
+  settledAt: Date | null;
+  payoutRef: string | null;
+  owner: boolean;
+  t: OT;
+  lang: AdminLang;
+}) {
+  const toast = useToast();
+  const [pending, start] = useTransition();
+  const [settling, setSettling] = useState<number[]>([]);
+  const cls = "wide:h-10 wide:text-sm";
+  const fail = () => toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub });
+  const book = () =>
+    start(async () => {
+      try {
+        const r = await bookCourier({ ids: [id] });
+        if (!r.ok) toast({ tone: "err", title: t.sfKeys, sub: t.sfKeysSub });
+        else if (r.booked.length) toast({ tone: "ok", title: t.toastBookedOne });
+        else
+          toast({
+            tone: "err",
+            title: fill(t.toastBookFailed, { list: r.failed[0]?.number ?? "" }),
+            sub: r.failed[0]?.message ?? t.saveFailedSub,
+          });
+      } catch {
+        fail();
+      }
+    });
+  const sync = () =>
+    start(async () => {
+      try {
+        const r = await syncCourier({ ids: [id] });
+        if (!r.ok) toast({ tone: "err", title: t.sfKeys, sub: t.sfKeysSub });
+        else
+          toast({
+            tone: "ok",
+            title: fill(t.toastSynced, { n: digits(r.checked, lang), c: digits(r.changed, lang) }),
+          });
+      } catch {
+        fail();
+      }
+    });
+  const unsettle = () =>
+    start(async () => {
+      try {
+        await unsettleOrder({ id });
+        toast({ tone: "ok", title: t.toastUnsettled });
+      } catch {
+        fail();
+      }
+    });
+  /** Manual পথে / ডেলিভার্ড for orders not booked with Steadfast (owner, 2026-11-15). */
+  const manual = (step: "ship" | "deliver") =>
+    start(async () => {
+      try {
+        const { moved } = await advanceOrders({ ids: [id], step });
+        if (!moved.length) return;
+        toast({
+          tone: "ok",
+          title: step === "ship" ? t.toastShipped : t.toastDelivered,
+          action: {
+            label: t.undo,
+            onClick: () => start(async () => void (await undoAdvance({ ids: [id], step }))),
+          },
+        });
+      } catch {
+        fail();
+      }
+    });
+  return (
+    <div className="flex flex-col gap-2">
+      {status === "processing" && !booked ? (
+        <>
+          <button type="button" disabled={pending} onClick={book} className={btn({ size: "lg", block: true, className: cls })}>
+            <Truck aria-hidden />
+            {t.bookSf}
+          </button>
+          <button
+            type="button"
+            disabled={pending}
+            onClick={() => manual("ship")}
+            className={btn({ variant: "outline", size: "lg", block: true, className: cls })}
+          >
+            {t.markShipped}
+          </button>
+        </>
+      ) : null}
+      {!booked && status === "shipped" ? (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={() => manual("deliver")}
+          className={btn({ size: "lg", block: true, className: cls })}
+        >
+          <Check aria-hidden />
+          {t.markDelivered}
+        </button>
+      ) : null}
+      {booked && status === "shipped" ? (
+        <button
+          type="button"
+          disabled={pending}
+          onClick={sync}
+          className={btn({ variant: "outline", size: "lg", block: true, className: cls })}
+        >
+          <RefreshCw aria-hidden />
+          {t.syncOne}
+        </button>
+      ) : null}
+      {owner && status === "delivered" ? (
+        settledAt ? (
+          <div className="bg-badge-ok-bg text-badge-ok-fg flex items-center justify-between gap-2 rounded-md px-3 py-2 text-xs leading-4">
+            <span>
+              {fill(t.settledOn, { d: orderDate(settledAt, lang, false) })}
+              {payoutRef ? ` · ${payoutRef}` : ""}
+            </span>
+            <button type="button" disabled={pending} onClick={unsettle} className="font-medium underline">
+              {t.unsettle}
+            </button>
+          </div>
+        ) : (
+          <button
+            type="button"
+            onClick={() => setSettling([id])}
+            className={btn({ size: "lg", block: true, className: cls })}
+          >
+            <Check aria-hidden />
+            {t.settleTitle}
+          </button>
+        )
+      ) : null}
+      <SettleDialog ids={settling} t={t} lang={lang} onClose={() => setSettling([])} />
+    </div>
   );
 }

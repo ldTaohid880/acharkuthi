@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   applyShopQuery,
   defaultVariant,
+  featuredBadge,
   heatOf,
   isOnSale,
   matchesSearch,
@@ -31,10 +32,12 @@ const product = (
 const base = { sort: "popular", heat: [], inStock: false } as const;
 
 describe("heatOf", () => {
-  it("maps spice level 0-5 onto three pods", () => {
-    expect(heatOf(0)).toEqual({ word: "Mild", pods: 1 });
-    expect(heatOf(3)).toEqual({ word: "Medium", pods: 2 });
-    expect(heatOf(5)).toEqual({ word: "Hot", pods: 3 });
+  it("uses the spice level 0-3 as the number of red chillies", () => {
+    expect(heatOf(0)).toEqual({ word: "Not spicy", key: "none", pods: 0 });
+    expect(heatOf(1)).toEqual({ word: "Mild", key: "mild", pods: 1 });
+    expect(heatOf(2)).toEqual({ word: "Medium", key: "medium", pods: 2 });
+    expect(heatOf(3)).toEqual({ word: "Hot", key: "hot", pods: 3 });
+    expect(heatOf(5)).toEqual({ word: "Hot", key: "hot", pods: 3 });
   });
 });
 
@@ -59,8 +62,8 @@ describe("isOnSale", () => {
 describe("applyShopQuery", () => {
   const items = [
     product("Lemon", 1, false, [variant(1, 22000, 5)]),
-    product("Garlic", 5, true, [variant(2, 23400, 0)]),
-    product("Mango", 3, true, [variant(3, 25000, 9)]),
+    product("Garlic", 3, true, [variant(2, 23400, 0)]),
+    product("Mango", 2, true, [variant(3, 25000, 9)]),
   ];
 
   it("lists featured products first by default", () => {
@@ -111,5 +114,23 @@ describe("matchesSearch", () => {
     expect(applyShopQuery(list, { ...base, heat: [], q: "aam" }).map((p) => p.name)).toEqual([
       "Raw Mango Pickle",
     ]);
+  });
+});
+
+describe("featuredBadge", () => {
+  const now = new Date("2026-11-21T12:00:00Z");
+  const old = new Date("2026-01-01T00:00:00Z");
+  const recent = new Date("2026-11-10T00:00:00Z");
+  it("marks the top seller first, even when it is new and hot", () => {
+    expect(featuredBadge({ id: 7, spiceLevel: 3, createdAt: recent }, 7, now)).toBe("bestseller");
+  });
+  it("marks products added in the last 30 days as new", () => {
+    expect(featuredBadge({ id: 1, spiceLevel: 3, createdAt: recent }, 7, now)).toBe("new");
+  });
+  it("marks 3-chilli products as hot", () => {
+    expect(featuredBadge({ id: 1, spiceLevel: 3, createdAt: old }, undefined, now)).toBe("hot");
+  });
+  it("shows no badge otherwise", () => {
+    expect(featuredBadge({ id: 1, spiceLevel: 2, createdAt: old }, 7, now)).toBeNull();
   });
 });

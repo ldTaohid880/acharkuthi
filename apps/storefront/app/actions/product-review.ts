@@ -1,12 +1,10 @@
 "use server";
 
-import { randomUUID } from "node:crypto";
-import { mkdir, unlink, writeFile } from "node:fs/promises";
-import path from "node:path";
 import { headers } from "next/headers";
 import { auth } from "@repo/auth";
 import { and, db, eq, notifyAdmins, schema } from "@repo/db";
 import { productReviewInput } from "@repo/validators";
+import { deleteReviewPhoto, putReviewPhoto } from "@/lib/review-photos";
 
 export type ProductReviewField = "name" | "rating" | "title" | "body" | "photo";
 
@@ -30,9 +28,6 @@ function imageExt(bytes: Uint8Array): "jpg" | "png" | "webp" | null {
   if (riff === "RIFF" && webp === "WEBP") return "webp";
   return null;
 }
-
-/** Dev storage: apps/storefront/public/uploads/reviews. Swap for object storage before production. */
-const UPLOAD_DIR = path.join(process.cwd(), "public", "uploads", "reviews");
 
 /**
  * Stores a product review as unapproved. Anyone may review; signed-in reviewers get their account
@@ -75,17 +70,12 @@ export async function submitProductReview(
   if (!product) return { status: "fail", errors: {} };
 
   let photoUrl: string | null = null;
-  let photoPath: string | null = null;
   if (input.photo) {
     const bytes = new Uint8Array(await input.photo.arrayBuffer());
     const ext = imageExt(bytes);
     if (!ext) return { status: "invalid", errors: { photo: "শুধু JPG, PNG বা WebP ছবি দিন" } };
-    const file = `${randomUUID()}.${ext}`;
     try {
-      await mkdir(UPLOAD_DIR, { recursive: true });
-      photoPath = path.join(UPLOAD_DIR, file);
-      await writeFile(photoPath, bytes);
-      photoUrl = `/uploads/reviews/${file}`;
+      photoUrl = await putReviewPhoto(bytes, ext);
     } catch (err) {
       console.error("review photo save failed", err);
       return { status: "fail", errors: {} };
@@ -106,7 +96,7 @@ export async function submitProductReview(
   } catch (err) {
     // Includes a signed-in customer reviewing the same product twice (unique user + product).
     console.error("product review insert failed", err);
-    if (photoPath) await unlink(photoPath).catch(() => undefined);
+    if (photoUrl) await deleteReviewPhoto(photoUrl).catch(() => undefined);
     return { status: "fail", errors: {} };
   }
   await notifyAdmins({

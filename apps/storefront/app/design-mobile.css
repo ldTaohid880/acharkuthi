@@ -12,6 +12,11 @@
   .hd-menu {
     display: grid;
   }
+  /* The desktop shop menu can't open here (the drawer replaces it), but while hidden it still
+     took up layout, and its fixed 300 px column made phone pages wider than the screen. */
+  .mega {
+    display: none;
+  }
 }
 
 @media (max-width: 720px) {
@@ -1493,6 +1498,14 @@
     height: 100px;
     margin: -50px 0 0 -55px;
   }
+  .mb .empty .art.art-blob {
+    width: 170px;
+    height: 160px;
+  }
+  .mb .empty .art .blob-art {
+    width: 148px;
+    height: 148px;
+  }
   .mb .empty h2 {
     font-size: 24px;
   }
@@ -2679,5 +2692,568 @@
   }
   .pc-buy .qty output {
     font: 700 15px/1 var(--font-ui);
+  }
+}
+
+/* Home hero photo on phones (owner, 2026-11-20): portrait still life, copy on the wall at the top. */
+@media (max-width: 720px) {
+  .page-home .hero.hero-photo {
+    align-items: flex-start;
+    min-height: min(calc(100vw * 16 / 9), 900px);
+    padding: 0;
+  }
+  .page-home .hero-bg img {
+    object-position: 50% 100%;
+  }
+  .page-home .hero-photo::before {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 45%, transparent) 0%,
+      transparent 50%
+    );
+  }
+  .page-home .hero-copy {
+    padding: 32px 20px 0;
+  }
+  .page-home .hero-copy > * {
+    max-width: none;
+  }
+  .page-home .hero-eyebrow {
+    font-size: 17px;
+  }
+  .page-home .hero-photo .h-xl,
+  .page-home .hero-photo .h-xl:lang(bn) {
+    font-size: 38px;
+    margin: 18px 0 14px;
+  }
+  .page-home .hero-photo .lede,
+  .page-home .hero-photo .lede:lang(bn) {
+    font-size: 16px;
+  }
+  .page-home .hero-photo .cta {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    margin-top: 22px;
+  }
+  .page-home .hero-photo .cta .ak-btn--text {
+    justify-self: auto;
+  }
+  .page-home .hero-note {
+    display: none;
+  }
+}
+
+/* Our story restyle on phones (owner, 2026-11-20). */
+@media (max-width: 720px) {
+  .page-story .st-hero {
+    align-items: flex-start;
+    min-height: min(calc(100vw * 16 / 9), 900px);
+  }
+  .page-story .st-bg img {
+    object-position: 50% 100%;
+  }
+  .page-story .st-hero::before {
+    background: linear-gradient(
+      180deg,
+      rgba(20, 22, 15, 0.6) 0%,
+      rgba(20, 22, 15, 0.25) 45%,
+      transparent 62%
+    );
+  }
+  .page-story .st-hero-in {
+    padding: 36px 20px 0;
+  }
+  .page-story .st-hero-in > *,
+  .page-story .st-band-in > * {
+    max-width: none;
+  }
+  .page-story .st-chapters {
+    margin-top: 28px;
+  }
+  .page-story .st-chapters a {
+    padding: 14px 12px 4px;
+    font-size: 16px;
+  }
+  .page-story .st-chapters a::after {
+    left: 12px;
+    right: 12px;
+  }
+  .page-story .st-chapters a:first-child::after {
+    left: 0;
+  }
+  .page-story .st-band {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .page-story .st-band-img {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    object-position: 80% 50%;
+  }
+  .page-story .st-band::before {
+    display: none;
+  }
+  .page-story .st-band-in {
+    padding: 36px 20px 48px;
+  }
+  .page-story .st-close {
+    background: var(--kacha);
+  }
+  /* Chapter 3's words sit right under its own photo on phones: same espresso brown as that
+     photo's bottom edge, so photo and words read as one surface (owner, 2026-11-22: chapter 3
+     background follows the image). No token covers it. */
+  .page-story .st-phil {
+    background: #341f15;
+  }
+  .page-story .st-split {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .page-story .st-split-img,
+  .page-story .st-split--rev .st-split-img {
+    order: 0;
+    min-height: 0;
+    aspect-ratio: 4 / 3;
+  }
+  .page-story .st-split-copy {
+    padding: 36px 20px 48px;
+  }
+  .page-story .st-craft {
+    padding: 56px 0 64px;
+  }
+  .page-story .st-craft-head {
+    margin-bottom: 28px;
+    gap: 20px;
+  }
+  .page-story .st-pills {
+    column-gap: 20px;
+  }
+  .page-story .st-pills li {
+    gap: 10px;
+    padding: 13px 0;
+    font-size: 15px;
+  }
+  .page-story .st-pills li:lang(bn) {
+    font-size: 15px;
+  }
+  .page-story .st-cards {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 20px;
+  }
+}
+
+/* Contact redesign on phones (owner, 2026-11-21). */
+@media (max-width: 720px) {
+  .page-contact .cx-hero {
+    align-items: flex-start;
+    min-height: min(calc(100vw * 16 / 9), 860px);
+  }
+  .page-contact .cx-bg img {
+    object-position: 50% 100%;
+  }
+  .page-contact .cx-hero::before {
+    background: linear-gradient(
+      180deg,
+      color-mix(in srgb, var(--bg) 55%, transparent) 0%,
+      transparent 50%
+    );
+  }
+  .page-contact .cx-hero-in {
+    padding: 36px 20px 0;
+  }
+  .page-contact .cx-hero-in > *,
+  .page-contact .cx-follow-in > * {
+    max-width: none;
+  }
+  .page-contact .cx-main {
+    padding: 44px 0 56px;
+  }
+  .page-contact .cx-main::before {
+    display: none;
+  }
+  .page-contact .cx-follow {
+    flex-direction: column;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .page-contact .cx-follow-img {
+    position: relative;
+    aspect-ratio: 4 / 3;
+    height: auto;
+    object-position: 78% 50%;
+  }
+  .page-contact .cx-follow::before {
+    display: none;
+  }
+  .page-contact .cx-follow-in {
+    padding: 32px 20px 44px;
+  }
+  .page-contact .cx-follow-btns {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
+/* Home featured picks on phones (owner, 2026-11-21; no phone mockup): the header stacks with the
+   "all pickles" link under the lede, and the three cards scroll sideways, one and a bit in view.
+   Desktop: design-pages.css "Home featured picks". */
+@media (max-width: 720px) {
+  /* The grid scrolls sideways on phones and would clip the art; no phone board shows it. */
+  .fpk-sprig {
+    display: none;
+  }
+  .fpk-head {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-3);
+    margin-bottom: var(--space-6);
+  }
+  .fpk .fpk-title {
+    font-size: clamp(28px, 8.4vw, 36px);
+  }
+  .fpk .fpk-lede {
+    font-size: 17px;
+  }
+  .fpk .fpk-all {
+    font-size: 17px;
+  }
+  .fpk-grid {
+    grid-template-columns: none;
+    grid-auto-flow: column;
+    grid-auto-columns: min(78vw, 320px);
+    gap: 0 var(--space-4);
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    /* Bleed to the screen edge, keep the first card on the page gutter and room for shadows. */
+    margin: 0 calc(-1 * var(--gutter, 20px)) -16px;
+    padding: 0 var(--gutter, 20px) 16px;
+    scroll-padding-inline: var(--gutter, 20px);
+  }
+  .fpk-grid::-webkit-scrollbar {
+    display: none;
+  }
+  .fpk-card {
+    scroll-snap-align: start;
+  }
+  /* Phones (no artboard): a square photo, so the whole jar and plate show. */
+  .fpk-photo {
+    aspect-ratio: 1 / 1;
+  }
+  .fpk-body {
+    padding: var(--space-4) var(--space-4) var(--space-4);
+  }
+  .fpk .fpk-name {
+    font-size: 24px;
+  }
+  .fpk .fpk-line {
+    font-size: 16px;
+  }
+  .fpk-price {
+    font-size: 26px;
+  }
+}
+
+/* Home type follows the Our Story page on phones too (owner, 2026-11-22): the Story page keeps
+   its fluid sizes at phone widths, so these restate them over the older Home phone sizes. */
+@media (max-width: 720px) {
+  .page-home .hero-eyebrow:lang(bn),
+  .page-home .ak-eyebrow:lang(bn),
+  .page-home .fpk .fpk-eyebrow:lang(bn) {
+    font-size: 15px;
+  }
+  .page-home .hero-photo .h-xl,
+  .page-home .hero-photo .h-xl:lang(bn) {
+    font-size: 44px;
+  }
+  .page-home .h-l,
+  .page-home .fpk .fpk-title,
+  .page-home .vc .vc-h {
+    font-size: 30px;
+  }
+  .page-home .hero-photo .lede,
+  .page-home .hero-photo .lede:lang(bn) {
+    font-size: 19px;
+  }
+  .page-home .lede:lang(bn),
+  .page-home .first:lang(bn),
+  .page-home .fpk .fpk-lede:lang(bn),
+  .page-home .vc .vc-lede:lang(bn) {
+    font-size: 18px;
+  }
+  .page-home .lede:lang(en),
+  .page-home .first:lang(en),
+  .page-home .fpk .fpk-lede:lang(en),
+  .page-home .vc .vc-lede:lang(en) {
+    font-size: 17px;
+  }
+}
+
+/* Home customer reviews on phones (owner concept, 2026-11-22): photo as a short banner with the
+   featured card rising over it, the other reviews as a swipe rail. */
+@media (max-width: 720px) {
+  .page-home .hr .hr-eyebrow::before,
+  .page-home .hr .hr-eyebrow::after {
+    width: 32px;
+  }
+  .page-home .hr .hr-sum {
+    gap: 12px;
+  }
+  .page-home .hr .hr-avg {
+    padding: 0 12px;
+    font-size: 22px;
+  }
+  .page-home .hr .hr-body {
+    margin-top: 36px;
+  }
+  .page-home .hr .hr-stage {
+    display: block;
+  }
+  .page-home .hr .hr-photo {
+    width: 100%;
+    min-height: 0;
+    aspect-ratio: 16 / 10;
+  }
+  .page-home .hr .hr-feat {
+    margin: -56px 14px 0;
+    padding: 28px 22px 22px;
+  }
+  .page-home .hr .hr-mark {
+    height: 34px;
+    font-size: 68px;
+  }
+  .page-home .hr .hr-feat .hr-q {
+    font-size: 19px;
+  }
+  .page-home .hr .hr-list {
+    display: grid;
+    grid-auto-flow: column;
+    grid-auto-columns: min(80vw, 300px);
+    grid-template-columns: none;
+    gap: 14px;
+    margin: 0 -20px;
+    padding: 0 20px 6px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding: 0 20px;
+    scrollbar-width: none;
+  }
+  .page-home .hr .hr-list li,
+  .page-home .hr .hr-list li:first-child,
+  .page-home .hr .hr-list li:last-child {
+    scroll-snap-align: start;
+    padding: 20px;
+    border: 0;
+    border-radius: var(--radius-soft);
+    background: var(--surface);
+    box-shadow: inset 0 0 0 1px var(--line);
+  }
+  .page-home .hr .hr-cta {
+    margin-top: 44px;
+  }
+  .page-home .hr .hr-invite {
+    font-size: 19px;
+    text-wrap: balance;
+  }
+  .page-home .hr .hr-invite::before,
+  .page-home .hr .hr-invite::after {
+    display: none;
+  }
+}
+
+/* Shop redesign on phones (owner, 2026-11-22): the copy on the deep green, the shelf's wide photo
+   under it (any admin photo fits); underline tabs that scroll; one sticky toolbar line (search,
+   round Filter and Sort buttons); the filter sheet's options in a ScrollArea; the closing band as
+   photo over copy. */
+@media (max-width: 720px) {
+  .page-shop .sh-hero {
+    display: flex;
+    flex-direction: column-reverse;
+    align-items: stretch;
+    min-height: 0;
+  }
+  .page-shop .sh-hero .sh-bg {
+    position: relative;
+    display: block;
+    aspect-ratio: 16 / 10;
+    height: auto;
+  }
+  .page-shop .sh-hero .sh-bg img {
+    object-position: 78% 50%;
+  }
+  .page-shop .sh-hero::before {
+    display: none;
+  }
+  .page-shop .sh-copy {
+    padding-top: 16px;
+    padding-bottom: 28px;
+  }
+  .page-shop .sh-hero .crumbs {
+    margin: 0 0 22px;
+    font-size: 13px;
+    gap: 6px;
+  }
+  .page-shop .sh-hero .h-xl:lang(bn) {
+    margin-top: 14px;
+    font-size: 34px;
+    line-height: 1.25;
+  }
+  .page-shop .sh-hero .h-xl:lang(en) {
+    margin-top: 14px;
+    font-size: 36px;
+  }
+  .page-shop .sh-hero .lede:lang(bn),
+  .page-shop .sh-hero .lede:lang(en) {
+    margin-top: 10px;
+    font-size: 16px;
+    line-height: 1.65;
+  }
+
+  .page-shop .shop {
+    padding-top: 0;
+  }
+  .page-shop .bar {
+    display: block;
+    padding: 0;
+  }
+  .page-shop .cats {
+    display: flex;
+    gap: 26px;
+    padding: 8px 20px 0;
+    margin: 0 -20px;
+    border-bottom: 1px solid var(--line);
+  }
+  .page-shop .cats .sh-tab {
+    min-height: 48px;
+    font-size: 15px;
+  }
+
+  /* One sticky line: search, then round Filter and Sort buttons. */
+  .page-shop .shop-tb {
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    gap: 8px;
+    padding: 10px 20px;
+  }
+  .page-shop .shop-tb .shop-srch {
+    width: auto;
+    height: 46px;
+    margin: 0;
+    order: 0;
+    align-self: center;
+  }
+  .page-shop .shop-tb .sortb,
+  .page-shop .shop-tb summary {
+    position: relative;
+    width: 46px;
+    height: 46px;
+    min-height: 46px;
+    padding: 0;
+    justify-content: center;
+    border-radius: 50%;
+  }
+  .page-shop .shop-tb .tb-l {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .page-shop .shop-tb summary svg,
+  .page-shop .shop-tb .sortb svg {
+    width: 20px;
+    height: 20px;
+  }
+  .page-shop .shop-tb .n {
+    position: absolute;
+    top: -2px;
+    right: -2px;
+    margin: 0;
+  }
+  .page-shop .res {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+  .page-shop .shop > section {
+    padding-top: 20px;
+  }
+
+  /* Filter sheet: header and footer fixed, the options scroll in the ScrollArea. */
+  .page-shop .shop:has(.filt-m[open]) .fil {
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  .page-shop .fil-h {
+    position: static;
+    flex: none;
+  }
+  .page-shop .fil-body {
+    flex: 1 1 0;
+    min-height: 0;
+  }
+  .page-shop .fil-vp {
+    max-height: none;
+    height: 100%;
+  }
+  .page-shop .fil-f {
+    position: static;
+    flex: none;
+    margin: 0;
+    padding: 14px 20px calc(14px + env(safe-area-inset-bottom, 0px));
+  }
+
+  .page-shop .sh-band {
+    display: block;
+    min-height: 0;
+  }
+  .page-shop .sh-band .sh-bg {
+    position: relative;
+    display: block;
+    aspect-ratio: 4 / 3;
+    height: auto;
+  }
+  .page-shop .sh-band .sh-bg img {
+    object-position: 50% 50%;
+  }
+  .page-shop .sh-band::before {
+    display: none;
+  }
+  .page-shop .sh-band .sh-copy {
+    padding-top: 28px;
+    padding-bottom: 44px;
+  }
+  .page-shop .sh-band .h-l:lang(bn) {
+    font-size: 28px;
+    line-height: 1.35;
+  }
+  .page-shop .sh-band .h-l:lang(en) {
+    font-size: 30px;
+  }
+  .page-shop .sh-band .ak-btn {
+    margin-top: 22px;
+  }
+}
+
+/* Product price row, one size, on phones (owner, 2026-11-22). */
+@media (max-width: 720px) {
+  .page-product .pv {
+    margin-top: 16px;
+  }
+  .page-product .pv-price .p {
+    font-size: 32px;
+  }
+  .page-product .pv-size {
+    height: 28px;
+    padding: 0 12px;
+    font-size: 13px;
   }
 }

@@ -2931,10 +2931,10 @@ body {
 
 /* Spans inside Bengali display headings (e.g. the brush-underlined word) must keep the heading's
    font; the theme's `.ak :lang(bn)` rule would otherwise switch them to the UI font. */
-.ak h1 span:lang(bn),
-.ak h2 span:lang(bn),
-.ak h3 span:lang(bn),
-.ak .ak-brush:lang(bn) {
+.ak h1 span:lang(bn):where(body [lang="bn"], body [lang="bn"] *),
+.ak h2 span:lang(bn):where(body [lang="bn"], body [lang="bn"] *),
+.ak h3 span:lang(bn):where(body [lang="bn"], body [lang="bn"] *),
+.ak .ak-brush:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
   font-family: inherit;
   line-height: inherit;
 }
@@ -2975,4 +2975,32 @@ body {
 .page-shop .range:has(.rng:focus-visible) .knob {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
+}
+
+/* Bangla chrome (bilingual storefront, 2026-11-16; memory: storefront-bilingual). The header,
+   strip, footer, phone menu and basket carry lang="bn" in the Bangla version. Bangla has no
+   capitals and its letters join, so the eyebrow-style footer headings drop the uppercase and
+   letter-spacing, as the design system's .ak-eyebrow:lang(bn) does. The strip keeps its English
+   line height so switching language doesn't move the page. */
+.ft h3:lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  font: 500 14px/1.5 var(--font-ui-bn);
+  letter-spacing: 0;
+  text-transform: none;
+}
+.strip:lang(bn):where(body [lang="bn"], body [lang="bn"] *),
+.strip :lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  line-height: 1.3;
+}
+
+/* English site (html[data-site-lang="en"], memory: storefront-bilingual). Many Bangla-designed
+   page styles name the Bangla faces directly (--font-display-bn, --font-ui-bn). On the English
+   site those tokens point at the English faces, and back at Anek Bangla for anything marked
+   Bangla (product names, stored Bangla text). The Bangla site is untouched. */
+html[data-site-lang="en"] :not(:lang(bn):where(body [lang="bn"], body [lang="bn"] *)) {
+  --font-display-bn: var(--font-display);
+  --font-ui-bn: var(--font-ui);
+}
+html[data-site-lang="en"] :lang(bn):where(body [lang="bn"], body [lang="bn"] *) {
+  --font-display-bn: var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif;
+  --font-ui-bn: var(--font-anek), "Noto Sans Bengali", system-ui, sans-serif;
 }

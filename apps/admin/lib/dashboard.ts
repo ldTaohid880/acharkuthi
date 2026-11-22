@@ -2,7 +2,8 @@ import "server-only";
 
 import type { AdminRole } from "@repo/auth";
 import { and, asc, count, db, desc, eq, gte, isNull, lt, min, schema, sql, sum } from "@repo/db";
-import { LOW_STOCK_LIMIT } from "@/lib/nav-counts";
+import { latestUnread, unreadCount } from "@/lib/messages";
+import { lowStockLimit } from "@/lib/nav-counts";
 
 /** Start of today in Bangladesh time (UTC+6, no DST), as a Date. */
 function startOfTodayDhaka(now = new Date()): Date {
@@ -42,19 +43,32 @@ export interface DashboardData {
   packed: number;
   returned: number;
   lowStock: LowStockRow[];
+  /** Orders that reached "delivered" today (order history). */
+  deliveredToday: number;
+  /** Booked parcels Steadfast reports as on hold / unknown. */
+  courier: { hold: number; unknown: number };
+  /** Owner only: cash marked received today, COD still to settle, Steadfast balance. */
+  cash: {
+    collectedToday: number;
+    pending: { n: number; amount: number };
+    balance: number | null;
+  } | null;
+  /** Unread inbox messages (staff and owner). */
+  messages: { n: number; latest: { id: string; name: string; text: string }[] };
   reviews: { n: number; latest: WaitingReview[] } | null;
   restock: { n: number; top: RestockTop[] } | null;
 }
 
 /**
  * Everything on Dashboard-*.dc.html that the database can answer today. Delivered/collected
- * today, Steadfast, courier holds, COD settling and unread messages need storage (shown so).
+ * today comes from the order history; courier, COD and balance figures from the Steadfast fields.
  * Staff get no reviews or restock data (owner-only pages).
  */
 export async function getDashboard(role: AdminRole): Promise<DashboardData> {
   const { orders, orderItems, productVariants, products, reviews, siteReviews, restockRequests } =
     schema;
   const one = async <T>(q: Promise<T[]>) => (await q)[0];
+  const limit = await lowStockLimit();
 
   const openRequests = db
     .select({ variantId: restockRequests.variantId, n: count().as("n") })
@@ -63,7 +77,7 @@ export async function getDashboard(role: AdminRole): Promise<DashboardData> {
     .groupBy(restockRequests.variantId)
     .as("open_requests");
 
-  const [today, fresh, conf, packed, returned, low] = await Promise.all([
+  const [today, fresh, conf, packed, returned, low, unread, unreadLatest] = await Promise.all([
     one(db.select({ n: count() }).from(orders).where(gte(orders.createdAt, startOfTodayDhaka()))),
     one(
       db
@@ -96,11 +110,13 @@ export async function getDashboard(role: AdminRole): Promise<DashboardData> {
         and(
           eq(productVariants.isActive, true),
           eq(products.isActive, true),
-          lt(productVariants.stock, LOW_STOCK_LIMIT),
+          lt(productVariants.stock, limit),
         ),
       )
       .orderBy(asc(productVariants.stock), desc(sql`coalesce(${openRequests.n}, 0)`))
       .limit(5),
+    unreadCount(),
+    latestUnread(2),
   ]);
 
   const data: DashboardData = {
@@ -114,10 +130,61 @@ export async function getDashboard(role: AdminRole): Promise<DashboardData> {
       bn: v.bn ?? v.en,
       requests: Number(v.requests),
     })),
+    messages: {
+      n: unread,
+      latest: unreadLatest.map((x) => ({ id: String(x.id), name: x.name, text: x.preview })),
+    },
+    deliveredToday: 0,
+    courier: { hold: 0, unknown: 0 },
+    cash: null,
     reviews: null,
     restock: null,
   };
+  const since = startOfTodayDhaka();
+  const [delivered, hold, unknown] = await Promise.all([
+    one(
+      db
+        .select({ n: sql<number>`count(distinct ${schema.orderStatusEvents.orderId})` })
+        .from(schema.orderStatusEvents)
+        .where(and(eq(schema.orderStatusEvents.status, "delivered"), gte(schema.orderStatusEvents.createdAt, since))),
+    ),
+    one(
+      db
+        .select({ n: count() })
+        .from(orders)
+        .where(and(eq(orders.status, "shipped"), eq(orders.courierStatus, "hold"))),
+    ),
+    one(
+      db
+        .select({ n: count() })
+        .from(orders)
+        .where(and(eq(orders.status, "shipped"), sql`${orders.courierStatus} like 'unknown%'`)),
+    ),
+  ]);
+  data.deliveredToday = Number(delivered?.n ?? 0);
+  data.courier = { hold: hold?.n ?? 0, unknown: unknown?.n ?? 0 };
   if (role !== "owner") return data;
+
+  const [collected, pendingCod, sf] = await Promise.all([
+    one(
+      db
+        .select({ v: sum(orders.total) })
+        .from(orders)
+        .where(gte(orders.settledAt, since)),
+    ),
+    one(
+      db
+        .select({ n: count(), v: sum(orders.total) })
+        .from(orders)
+        .where(and(eq(orders.status, "delivered"), isNull(orders.settledAt))),
+    ),
+    one(db.select({ b: schema.shopSettings.steadfastBalance }).from(schema.shopSettings)),
+  ]);
+  data.cash = {
+    collectedToday: Number(collected?.v ?? 0),
+    pending: { n: pendingCod?.n ?? 0, amount: Number(pendingCod?.v ?? 0) },
+    balance: sf?.b ?? null,
+  };
 
   const [pr, sr, prLatest, srLatest, restockN, restockTop] = await Promise.all([
     one(db.select({ n: count() }).from(reviews).where(eq(reviews.isApproved, false))),

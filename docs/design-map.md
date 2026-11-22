@@ -92,6 +92,8 @@ discovery (search, recipes), then the cross-cutting error states.
 | Mobile 390            | `ShopMobile.dc.html` | https://claude.ai/artifact/MWs1GnK59jjJDybM5aFW7W#play-60b593fd3e4b |
 | States and components | `ShopStates.dc.html` | https://claude.ai/artifact/MWs1GnK59jjJDybM5aFW7W#play-1c8fdf5af51b |
 
+> **Owner redesign (2026-11-22, from the owner's concept image):** the boards' title band, pill chips and left filter sidebar are replaced by a photo header (`.sh-hero`), underline shelf tabs (`.sh-tab`, one scrolling line), a desktop toolbar (count, search, Filter, Sort) with the filters in a panel opened by Filter, a four-column grid and a closing recipes band (`.sh-band`, hidden while `RECIPES_LIVE` is false). Follow-ups the same day: each shelf has its own header photo set in admin (`categories.header_image_url`); no COD tag, no visible counts and no Load more (every jar listed, photos lazy-load); one toolbar line at every width (search, Filter, Sort; round icon buttons on phones); filter options scroll in the shadcn ScrollArea. Product cards are unchanged. The boards still apply to the sheets, filter controls and empty state.
+
 ## Product details — `/pickles/[slug]`
 
 | Variant               | File                    | Live URL                                                            |
@@ -267,6 +269,8 @@ discovery (search, recipes), then the cross-cutting error states.
 - **Scrolling:** shadcn ScrollArea only. Scroll the content (list, table, pane), never the whole page, phones included; headers, filters, pagers and save bars stay fixed. See "Admin scrolling" in `AGENTS.md`.
 - **Language:** every admin string comes from the bn/en dictionary (`apps/admin/lib/i18n`), per user, Bangla by default. User data is never translated (see `LanguageGuide.dc.html`).
 
+- **Canvas syncs:** the owner approved two one-time updates of the admin canvas on 2026-11-13 (versions 137 and 142) to match the shipped UI. Rule 0 still applies: never edit the canvas unless the owner asks again.
+
 ## Admin build status and order
 
 Same rules as the storefront table: one row per task, top to bottom, only the user sets `Done`.
@@ -274,34 +278,34 @@ Same rules as the storefront table: one row per task, top to bottom, only the us
 | #   | Task                                                                                                                          | Route                   | Status                                        |
 | --- | ----------------------------------------------------------------------------------------------------------------------------- | ----------------------- | --------------------------------------------- |
 | A0  | App shell: sidebar, icon rail, top bar, bottom nav, More, user menu, language switch, ⌘K search, notifications, no-access/404 | —                       | Ready for review                              |
-| A1  | Sign in                                                                                                                       | `/login`                | Ready for review |
-| A2  | Dashboard                                                                                                                     | `/`                     | Ready for review |
-| A3  | Orders list                                                                                                                   | `/orders`               | Ready for review |
+| A1  | Sign in                                                                                                                       | `/login`                | Ready for review                              |
+| A2  | Dashboard                                                                                                                     | `/`                     | Ready for review                              |
+| A3  | Orders list                                                                                                                   | `/orders`               | Ready for review                              |
 | A4  | Order detail                                                                                                                  | `/orders/[id]`          | Ready for review                              |
 | A4b | New order (owner request, no board)                                                                                           | `/orders/new`           | Ready for review                              |
 | A5  | Packing slip / label (desktop only)                                                                                           | `/orders/[id]/print`    | Ready for review                              |
 | A6  | Stock                                                                                                                         | `/stock`                | Ready for review                              |
-| A7  | Products list                                                                                                                 | `/products`             | Not built                                     |
-| A8  | Product edit                                                                                                                  | `/products/[id]`        | Not built                                     |
-| A9  | Categories                                                                                                                    | `/categories`           | Not built                                     |
-| A10 | Restock alerts (replaces `/restock-requests`)                                                                                 | `/restock-alerts`       | Not built                                     |
-| A11 | Customers list                                                                                                                | `/customers`            | Not built                                     |
-| A12 | Customer detail                                                                                                               | `/customers/[id]`       | Not built                                     |
-| A13 | Reviews                                                                                                                       | `/reviews`              | Not built                                     |
-| A14 | Messages                                                                                                                      | `/messages`             | Not built                                     |
-| A15 | Newsletter subscribers                                                                                                        | `/messages/subscribers` | Not built                                     |
+| A7  | Products list                                                                                                                 | `/products`             | Ready for review                              |
+| A8  | Product edit                                                                                                                  | `/products/[id]`        | Ready for review                              |
+| A9  | Categories                                                                                                                    | `/categories`           | Ready for review                              |
+| A10 | Restock alerts (replaces `/restock-requests`)                                                                                 | `/restock-alerts`       | Ready for review                              |
+| A11 | Customers list                                                                                                                | `/customers`            | Ready for review                              |
+| A12 | Customer detail                                                                                                               | `/customers/[id]`       | Ready for review                              |
+| A13 | Reviews                                                                                                                       | `/reviews`              | Ready for review                              |
+| A14 | Messages                                                                                                                      | `/messages`             | Ready for review                              |
+| A15 | Newsletter subscribers                                                                                                        | `/messages/subscribers` | Ready for review                              |
 | A16 | Recipes list                                                                                                                  | `/content/recipes`      | Not built                                     |
 | A17 | Recipe editor                                                                                                                 | `/content/recipes/[id]` | Not built                                     |
 | A18 | Home picks                                                                                                                    | `/content/home`         | Not built                                     |
 | A19 | Policies (needs content storage)                                                                                              | `/content/policies`     | Not built                                     |
 | A20 | FAQ (needs content storage)                                                                                                   | `/content/faq`          | Not built                                     |
 | A21 | Our story (needs content storage)                                                                                             | `/content/our-story`    | Not built                                     |
-| A22 | Coupons                                                                                                                       | `/coupons`              | Not built                                     |
+| A22 | Coupons                                                                                                                       | `/coupons`              | Ready for review                              |
 | A23 | Staff & roles                                                                                                                 | `/staff`                | Not built                                     |
 | A24 | Add staff                                                                                                                     | `/staff/new`            | Not built                                     |
 | A25 | Staff detail / remove                                                                                                         | `/staff/[id]`           | Not built                                     |
-| A26 | Settings                                                                                                                      | `/settings`             | Not built                                     |
-| A27 | My account                                                                                                                    | `/account`              | Not built                                     |
+| A26 | Settings                                                                                                                      | `/settings`             | Ready for review                              |
+| A27 | My account                                                                                                                    | `/account`              | Ready for review                              |
 | A28 | Reports                                                                                                                       | `/reports`              | Blocked: needs variant cost + expenses tables |
 
 ## Admin boards per task
@@ -362,30 +366,39 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A4 · Order detail — `/orders/[id]`
 
-> **Owner decisions (2026-11-13):** status history is stored (`order_status_events`) and internal notes too (`order_notes`), so their "needs storage" badges are gone; the "কুরিয়ারে বুক" and "টাকা পাওয়া গেছে" steps and the Steadfast card still need storage. Tracking fields save on change ("সংরক্ষিত" toast). The "…" menu holds ফোন কপি · ঠিকানা কপি · প্যাকিং স্লিপ (A5) · আগের ধাপে ফিরিয়ে নিন · বাতিল….
+> **Owner decisions (2026-11-13):** status history is stored (`order_status_events`) and internal notes too (`order_notes`), so their "needs storage" badges are gone; the "কুরিয়ারে বুক" and "টাকা পাওয়া গেছে" steps and the Steadfast card are real since 2026-11-15 (below). Tracking fields save on change ("সংরক্ষিত" toast). The "…" menu holds ফোন কপি · ঠিকানা কপি · প্যাকিং স্লিপ (A5) · আগের ধাপে ফিরিয়ে নিন · বাতিল….
 
-| Board                          | File                             |
-| ------------------------------ | -------------------------------- |
-| অর্ডার বিস্তারিত · Desktop     | `OrderDetail-Desktop.dc.html`    |
-| অর্ডার বিস্তারিত · Tablet 834  | `OrderDetail-Tablet.dc.html`     |
-| অর্ডার বিস্তারিত · Tablet 1194 | `OrderDetail-Tablet1194.dc.html` |
-| অর্ডার বিস্তারিত · Phone       | `OrderDetail-Phone.dc.html`      |
+> **Owner decisions (2026-11-15), courier and settlement (migration 0026):** "বুক করুন" sends a packed order to Steadfast (`create_order`) and makes it `shipped`, storing `orders.consignment_id`, `tracking_ref`, `courier_status`, `courier_booked_at`. The customer then sees "কুরিয়ারে হস্তান্তর করা হয়েছে" on Track (and "কুরিয়ারে হস্তান্তর" in My account) instead of "পথে আছে"; a shipped order with no consignment keeps "পথে আছে". "কুরিয়ার সিঙ্ক" (Orders, Dashboard, order detail) and the webhook update `courier_status`; delivered / partial → delivered, cancelled → returned. "টাকা পাওয়া গেছে" (owner) stores `settled_at` + optional `payout_ref` and marks the COD payment paid; "চিহ্ন তুলে নিন" undoes it. The admin-only "বুকড" and "সেটেলড" tones come from these fields; the database still has 7 statuses. Dashboard "আজ ডেলিভার্ড" counts today's delivered events. Booking was not pressed in local testing (it would create a real parcel); settle / undo was.
 
-### A4b · New order — `/orders/new` (owner request 2026-11-13, no board)
+| Board                                 | File                             |
+| ------------------------------------- | -------------------------------- |
+| অর্ডার বিস্তারিত · Desktop            | `OrderDetail-Desktop.dc.html`    |
+| অর্ডার বিস্তারিত · Tablet 834         | `OrderDetail-Tablet.dc.html`     |
+| অর্ডার বিস্তারিত · Tablet 1194        | `OrderDetail-Tablet1194.dc.html` |
+| অর্ডার বিস্তারিত · Phone              | `OrderDetail-Phone.dc.html`      |
+| ঠিকানা বদলান · Dialog (owner request) | `OrderAddress-Desktop.dc.html`   |
 
-> No canvas board. Built from the order-detail card styles after the owner approved a mockup: source chips (in person, phone, Facebook / Messenger, Instagram, WhatsApp; saved in `orders.source`), item search with quantities, checkout's address fields (district sets the delivery charge), payment (COD / bKash / Nagad, "টাকা পাওয়া গেছে", transaction ID), coupon and note. Prices are re-read on the server, stock goes down, and the order starts Confirmed. The order detail page also gained "ঠিকানা বদলান" (until booked; a notice shows the new delivery charge and total, layout A) and shows the order's source instead of always "ওয়েবসাইট থেকে".
+### A4b · New order — `/orders/new` (owner request 2026-11-13)
+
+| Board                 | File                       |
+| --------------------- | -------------------------- |
+| নতুন অর্ডার · Desktop | `NewOrder-Desktop.dc.html` |
+| নতুন অর্ডার · Phone   | `NewOrder-Phone.dc.html`   |
+
+> Built first from the order-detail card styles after the owner approved a mockup; the boards above were added to the canvas afterwards (owner-approved sync, version 142). Contents: source chips (in person, phone, Facebook / Messenger, Instagram, WhatsApp; saved in `orders.source`), item search with quantities, checkout's address fields (district sets the delivery charge), payment (COD / bKash / Nagad, "টাকা পাওয়া গেছে", transaction ID), coupon and note. Prices are re-read on the server, stock goes down, and the order starts Confirmed. The order detail page also gained "ঠিকানা বদলান" (until booked; a notice shows the new delivery charge and total, layout A) and shows the order's source instead of always "ওয়েবসাইট থেকে".
 
 ### A5 · Packing slip / label (desktop only) — `/orders/[id]/print`
 
 > **Owner decisions (2026-11-13):** the label's sender phone and pickup address come from the new `shop_settings` table (filled on Settings, A26; until then only the shop name prints). The "নোট" box prints the new `orders.courier_note`, edited on order detail ("কুরিয়ারের জন্য নোট", auto-save). A "ছাড়" row appears when the order has a discount. Bulk printing from the list's "লেবেল প্রিন্ট" uses `/orders/print?ids=…`. Consignment ID still needs storage (Steadfast). The page has no app shell; print uses named `@page` sizes (A4 slip, 4×6 label).
 
-| Board                                        | File                         |
-| -------------------------------------------- | ---------------------------- |
-| প্যাকিং স্লিপ / লেবেল · Print (desktop only) | `OrderPrint-Desktop.dc.html` |
+| Board                                          | File                         |
+| ---------------------------------------------- | ---------------------------- |
+| প্যাকিং স্লিপ / লেবেল · Print (desktop only)   | `OrderPrint-Desktop.dc.html` |
+| প্যাকিং স্লিপ · Phone / tablet bar (owner fix) | `OrderPrint-Phone.dc.html`   |
 
 ### A6 · Stock — `/stock`
 
-> **Notes (2026-11-13):** the low-stock limit stays the fixed 10 with "needs storage", as the boards show. Saving writes a size only if its count didn't change elsewhere meanwhile (a sale or another admin); those sizes are reported in a toast and shown fresh. A size going from 0 to in stock with open requests sends the owner a "restock" notification; a size set to 0 sends "stock" (sold out), the same as checkout. No 1194 board: 1024–1439 keeps the desktop layout with tablet padding.
+> **Notes (2026-11-13):** the low-stock limit is saved in `shop_settings.low_stock_limit` (default 10, migration 0026; owner edits it on blur / Enter, staff see it read-only) and drives Stock, the Dashboard and the menu badge. Saving writes a size only if its count didn't change elsewhere meanwhile (a sale or another admin); those sizes are reported in a toast and shown fresh. A size going from 0 to in stock with open requests sends the owner a "restock" notification; a size set to 0 sends "stock" (sold out), the same as checkout. No 1194 board: 1024–1439 keeps the desktop layout with tablet padding.
 
 | Board             | File                    |
 | ----------------- | ----------------------- |
@@ -395,6 +408,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A7 · Products list — `/products`
 
+> **Owner decisions (2026-11-13):** the desktop row "…" menu holds "লুকান" / "চালু করুন" (with an undo toast) and "স্টোরে দেখুন" (opens `/pickles/[slug]` on the storefront). The 834 "ফিল্টার" opens a right-side sheet like Orders (status and category, live "{n}টি পণ্য দেখুন"). Owner only. "নতুন পণ্য" and "এডিট" link to `/products/new` and `/products/[id]` (A8).
+
 | Board             | File                       |
 | ----------------- | -------------------------- |
 | পণ্য · Desktop    | `Products-Desktop.dc.html` |
@@ -403,6 +418,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A8 · Product edit — `/products/[id]`
 
+> **Owner decisions (2026-11-14):** photo uploads go to Cloudflare R2 (Hostinger deploys overwrite app folders; admin is a separate subdomain app). R2_* env vars are optional; without them the upload box shows "needs storage · R2". Sizes get `product_variants.sort_order` (migration 0018) used by the storefront product page. A size that was ever ordered can't be deleted, only turned off. Cost per size is saved in `product_variants.cost_price` (paisa, optional, migration 0026); the strip shows profit per unit as "৳X · Y%" of the price, red when negative. `/products/new` uses the same form.
+
 | Board                                  | File                          |
 | -------------------------------------- | ----------------------------- |
 | পণ্য এডিট · Desktop (unsaved + errors) | `ProductEdit-Desktop.dc.html` |
@@ -410,6 +427,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 | পণ্য এডিট · Phone (saving)             | `ProductEdit-Phone.dc.html`   |
 
 ### A9 · Categories — `/categories`
+
+> **Owner decisions (2026-11-14):** phones show a tap-to-edit list with a "ক্রম বদলান" button that opens the board's arrows mode ("হয়ে গেছে" saves the order); `?edit=<id|new>` opens CategoryEdit-Phone. Order saves at once on drop (tablet / desktop). Deleting a category with products is allowed; its products keep selling with no category. Category photos upload to R2 like product photos. Owner only.
 
 | Board                  | File                         |
 | ---------------------- | ---------------------------- |
@@ -428,6 +447,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A11 · Customers list — `/customers`
 
+> **Owner decisions (2026-11-14):** shop accounts only (guest buyers stay findable from Orders by phone). Sort menu: শেষ অর্ডার · মোট খরচ · অর্ডার সংখ্যা · নতুন সাইন আপ. মোট খরচ counts delivered orders only. In the 1194 split view the ban switch lifts a ban at once; turning it on opens the customer page (A12) for reason and end date. The preview adds "পুরো পেজে খুলুন" + close in a slim row above the header (split-view rule). "ফেরতের হার বেশি" shows from 2 returns. Notes are stored (customer_notes, added with A12). Phones use "আরও দেখুন" (20 more) like Orders. Owner only.
+
 | Board                             | File                           |
 | --------------------------------- | ------------------------------ |
 | গ্রাহক · Desktop                  | `Customers-Desktop.dc.html`    |
@@ -437,6 +458,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A12 · Customer detail — `/customers/[id]`
 
+> **Owner decisions (2026-11-14):** the ban card has a "সংরক্ষণ" button at every width (the tablet and phone boards show none). The switch shows reason + "কবে পর্যন্ত" (shadcn Calendar, today onward; empty = permanent); saving bans until the end of that day in Bangladesh time and signs the customer out everywhere. Switching a saved ban off lifts it at once. `?ban=1` opens with the switch on. Notes are stored in a new `customer_notes` table (migration 0020), newest first, owner only; they also show in the 1194 split preview. 1024–1439 uses the desktop layout (no 1194 board). Owner only.
+
 | Board                         | File                             |
 | ----------------------------- | -------------------------------- |
 | গ্রাহক বিস্তারিত · Desktop    | `CustomerDetail-Desktop.dc.html` |
@@ -444,6 +467,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 | গ্রাহক বিস্তারিত · Phone      | `CustomerDetail-Phone.dc.html`   |
 
 ### A13 · Reviews — `/reviews`
+
+> **Owner decisions (2026-11-14):** "আচারকুঠির উত্তর" is stored (`reply`, `reply_at` on `reviews` and `site_reviews`, migration 0021) and shown on the shop under approved reviews (product page `.rv-rep`, home `.vc-rep`, styled in `design-pages.css`; no artboard). "লুকান" on an approved review sends it back to "অনুমোদন বাকি"; on a pending review it deletes it after a confirm. The phone filter button opens a bottom sheet with product + rating. Build notes: the phone board's reply box has no save button, so phones get a full-width "উত্তর সংরক্ষণ" (same as the ban card decision); pending reviews show "অনুমোদন" + "লুকান", approved ones only "লুকান"; the desktop help line follows that ("লুকালে রিভিউটি মুছে যায়" on pending). Owner only.
 
 | Board                            | File                         |
 | -------------------------------- | ---------------------------- |
@@ -454,6 +479,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A14 · Messages — `/messages`
 
+> **Owner decisions (2026-11-14):** read/unread, archive, phone notes and email replies are stored (migration 0022: `read_at`, `archived_at` on `contact_messages`; `message_replies` table). "উত্তর পাঠান" emails the customer from the shop's SMTP address and keeps the reply in the thread; without SMTP the email tab shows "needs setup · SMTP" and only phone notes can be saved. Phones and the 834 tablet open a message on `/messages/[id]` (built from the 1194 board's right pane). Build notes: only a message someone picks (or opens on its page) is marked read, not the one shown first by default; the unread count shows in the menu and on the Dashboard's মেসেজ card; the phone swipe (left archive, right read/unread) is built for touch only. The নিউজলেটার tab links to `/messages/subscribers` (A15). Staff and owner.
+
 | Board                            | File                          |
 | -------------------------------- | ----------------------------- |
 | মেসেজ · Desktop                  | `Messages-Desktop.dc.html`    |
@@ -462,6 +489,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 | মেসেজ · Phone                    | `Messages-Phone.dc.html`      |
 
 ### A15 · Newsletter subscribers — `/messages/subscribers`
+
+> **Build notes (2026-11-14):** "CSV এক্সপোর্ট" downloads everyone in the current search from `/messages/subscribers/export` (email, ISO sign-up time; UTF-8 with BOM for Excel; cells starting with = + - @ are quoted so spreadsheets don't run them). Desktop and 834 page by 10; phones load 30 more with "আরও দেখুন" (like Orders). The page sits under মেসেজ in the sidebar, breadcrumb and bottom nav, as on the boards. Tabs are shared with Messages (`message-tabs.tsx`). No unsubscribe or delete: the boards show none. Staff and owner.
 
 | Board                  | File                          |
 | ---------------------- | ----------------------------- |
@@ -519,6 +548,10 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A22 · Coupons — `/coupons`
 
+> **Owner decisions (2026-11-15), per person:** every coupon is one use per person unless "প্রতি জনে ব্যবহার" is raised (empty = no per-person limit; existing coupons got 1). A person is the same phone, account or device cookie (`ak_did`), or the same browser fingerprint on the same network (fingerprint alone could match strangers with the same phone model). Every use is recorded in `coupon_redemptions` (migrations 0024–0025): phone, order name, account, device cookie, fingerprint, the IP (as written, plus a keyed hash for matching) and the browser user agent, all shown in the editor and is never given back, even if the order is cancelled. Checkout re-checks inside the order transaction with the coupon row locked; admin manual orders check by phone. Also added: "সর্বোচ্চ ছাড়" cap for percent coupons, "শুধু প্রথম অর্ডারে", a "কে ব্যবহার করেছেন" list in the editor (flags repeat devices), wrong-code limiting (15 per 15 minutes per device + network), and a live code check at checkout while typing ("কোডটি ঠিক আছে" / not valid / already used / first order only), re-checked once the phone number is complete. The new fields and messages have no board.
+>
+> **Owner decisions (2026-11-14):** a coupon can be deleted only if no order has used it (otherwise switch it off). Build notes: `?edit=<id|new>` opens the desktop drawer (≥1024) or the full-page editor below 1024 (bottom nav hidden on phones). The desktop drawer has no delete button because the board shows none; delete is on the tablet and phone editors. Dates are Bangladesh days (start of day → end of day); a coupon shows "মেয়াদ শেষ" once ended or used up. Owner only.
+
 | Board                        | File                        |
 | ---------------------------- | --------------------------- |
 | কুপন · Desktop (editor open) | `Coupons-Desktop.dc.html`   |
@@ -553,6 +586,8 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 
 ### A26 · Settings — `/settings`
 
+> **Owner decisions (2026-11-14):** delivery charges and the COD switch are real (migration 0023 on `shop_settings`). Storefront checkout, order tracking and the admin new-order / address-edit screens read the saved fees (`getShopRules()` in `@repo/db`); with COD off, checkout shows "এখন অর্ডার নেওয়া বন্ধ আছে" (no artboard; reuses the checkout error card) and the server refuses orders. Steadfast is integrated: keys are tested (`GET /get_balance` on portal.packzy.com) and stored AES-GCM encrypted (key derived from BETTER_AUTH_SECRET); "সংযোগ পরীক্ষা" refreshes the balance; a Bearer webhook token is made on first connect. The webhook `/api/webhooks/steadfast` logs every authorised call (`steadfast_events`) and matches orders by invoice = order number; it only moves a shipped order to delivered (status `delivered`) or returned (`cancelled`). Steadfast's exact webhook payload isn't documented publicly; check the event log after the first real deliveries. Booking from the order page is not built yet. Tablet saves shop details + fees from one bar, as on the board. Owner only.
+
 | Board               | File                       |
 | ------------------- | -------------------------- |
 | সেটিংস · Desktop    | `Settings-Desktop.dc.html` |
@@ -566,6 +601,13 @@ Also read `States.dc.html` (desktop) and `States-Tablet.dc.html` for every task:
 | আমার অ্যাকাউন্ট · Desktop (user menu open) | `Account-Desktop.dc.html` |
 | আমার অ্যাকাউন্ট · Tablet 834               | `Account-Tablet.dc.html`  |
 | আমার অ্যাকাউন্ট · Phone                    | `Account-Phone.dc.html`   |
+
+> **Owner decisions (2026-11-22):** email "বদলান" is on for the owner (Better Auth change-email:
+> the link goes to the new address over SMTP; staff see "ইমেইল বদলাতে মালিককে বলুন।"). Profile
+> photos upload to R2 (`avatars/`) and show in the top bar, user menu and More. Devices show no
+> city (no IP lookup): "এখন সক্রিয়" or the last-active time. Google-only admins get the same
+> password card without "বর্তমান পাসওয়ার্ড"; its button reads "পাসওয়ার্ড দিন" and sets a first
+> password.
 
 ### A28 · Reports — `/reports`
 

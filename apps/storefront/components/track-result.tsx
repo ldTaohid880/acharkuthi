@@ -1,60 +1,82 @@
 import Link from "next/link";
 import { formatTaka } from "@repo/ui/lib/utils";
-import { formatBnDate, statusView, type TrackedOrder } from "@/lib/track";
+import { placeName } from "@repo/validators";
+import { getDict } from "@/lib/i18n/dict";
+import { localePath, type Lang } from "@/lib/i18n/lang";
+import { formatDate, statusView, type TrackedOrder } from "@/lib/track";
 import { Icon } from "./icon";
 
-/** Track.dc.html result view. No hooks: rendered by the server page (owner) and by the lookup form (guest). */
-export function TrackResult({ order, fromAccount }: { order: TrackedOrder; fromAccount: boolean }) {
-  const v = statusView(order.status);
+/**
+ * Track.dc.html result view. No hooks: rendered by the server page (owner) and by the lookup form
+ * (guest), so the page language comes in as a prop.
+ */
+export function TrackResult({
+  order,
+  fromAccount,
+  lang,
+}: {
+  order: TrackedOrder;
+  fromAccount: boolean;
+  lang: Lang;
+}) {
+  const t = getDict(lang).track;
+  const to = (path: string) => localePath(lang, path);
+  const v = statusView(order.status, order.handedOver, lang);
+  const en = lang === "en";
   return (
     <div>
       {fromAccount && (
         <div className="acctbar">
-          <span lang="bn">আপনার অ্যাকাউন্টের অর্ডার</span>
-          <Link className="back" href={"/account/orders" as never}>
+          <span lang={lang}>{t.yourOrder}</span>
+          <Link className="back" href={to("/account/orders")}>
             <Icon name="arrow" />
-            <span lang="bn">আমার অর্ডারে ফিরুন</span>
+            <span lang={lang}>{t.backOrders}</span>
           </Link>
         </div>
       )}
       <div className="tk-sumbar">
         <dl>
           <div>
-            <dt lang="bn">অর্ডার নম্বর</dt>
+            <dt lang={lang}>{t.orderNo}</dt>
             <dd>{order.orderNumber}</dd>
           </div>
           <div>
-            <dt lang="bn">অর্ডারের তারিখ</dt>
-            <dd lang="bn">{formatBnDate(new Date(order.createdAt))}</dd>
+            <dt lang={lang}>{t.date}</dt>
+            <dd lang={lang}>{formatDate(new Date(order.createdAt), lang)}</dd>
           </div>
           <div>
-            <dt lang="bn">পেমেন্ট</dt>
-            <dd lang="bn">{order.cod ? "ক্যাশ অন ডেলিভারি" : "অনলাইন পেমেন্ট"}</dd>
+            <dt lang={lang}>{t.payment}</dt>
+            <dd lang={lang}>{order.cod ? t.cod : t.online}</dd>
           </div>
           <div>
-            <dt lang="bn">আনুমানিক ডেলিভারি</dt>
-            <dd lang="bn">{v.showsEta && order.etaDate ? formatBnDate(order.etaDate) : "–"}</dd>
+            <dt lang={lang}>{t.eta}</dt>
+            <dd lang={lang}>
+              {v.showsEta && order.etaDate ? formatDate(order.etaDate, lang) : "–"}
+            </dd>
           </div>
         </dl>
-        <span className={`badge ${v.badge}`.trim()} lang="bn" role="status">
+        <span className={`badge ${v.badge}`.trim()} lang={lang} role="status">
           {v.title}
         </span>
       </div>
-      <p className="tk-next" lang="bn">
+      <p className="tk-next" lang={lang}>
         <b>{v.lead}</b> {v.next}
       </p>
       {v.stages && (
-        <ol className="tl" aria-label="অর্ডারের ধাপ">
+        <ol className="tl" aria-label={t.steps}>
           {v.stages.map((s) => (
             <li key={s.en} className={s.cls} aria-current={s.current ? "step" : undefined}>
               <span className="mk" aria-hidden="true">
                 {s.mark}
               </span>
-              <div className="lb" lang="bn">
-                {s.bn}
+              {/* Both step names show, the page language first (as product names do). */}
+              <div className="lb" lang={lang}>
+                {en ? s.en : s.bn}
               </div>
-              <div className="en">{s.en}</div>
-              <div className="nt2" lang="bn">
+              <div className="en" lang={en ? "bn" : "en"}>
+                {en ? s.bn : s.en}
+              </div>
+              <div className="nt2" lang={lang}>
                 {s.note}
               </div>
             </li>
@@ -63,18 +85,18 @@ export function TrackResult({ order, fromAccount }: { order: TrackedOrder; fromA
       )}
       {v.exception && (
         <div className={v.exception.soft ? "exc soft" : "exc"} role="status">
-          <h3 lang="bn">{v.exception.title}</h3>
-          <p lang="bn">{v.exception.body}</p>
-          <p lang="bn">
-            <Link href={v.exception.href}>{v.exception.link}</Link>
+          <h3 lang={lang}>{v.exception.title}</h3>
+          <p lang={lang}>{v.exception.body}</p>
+          <p lang={lang}>
+            <Link href={to(v.exception.href)}>{v.exception.link}</Link>
           </p>
         </div>
       )}
       <div className="tk-cols">
         <div>
           <section className="tk-sec" aria-labelledby="od-h">
-            <h2 id="od-h" lang="bn">
-              অর্ডারের পণ্য
+            <h2 id="od-h" lang={lang}>
+              {t.items}
             </h2>
             <ul className="ti">
               {order.items.map((it, i) => (
@@ -84,9 +106,12 @@ export function TrackResult({ order, fromAccount }: { order: TrackedOrder; fromA
                     <img src={it.image ?? "/jar.svg"} alt="" />
                   </span>
                   <div>
-                    <b lang="bn">{it.name}</b>
-                    <small lang="bn">
-                      {[it.detail, `${formatTaka(it.unitPrice)} × ${it.quantity}`]
+                    <b lang={en ? "en" : "bn"}>{en ? it.nameEn : it.name}</b>
+                    <small lang={lang}>
+                      {[
+                        en ? it.detailEn : it.detail,
+                        `${formatTaka(it.unitPrice)} × ${it.quantity}`,
+                      ]
                         .filter(Boolean)
                         .join(" · ")}
                     </small>
@@ -96,22 +121,22 @@ export function TrackResult({ order, fromAccount }: { order: TrackedOrder; fromA
               ))}
             </ul>
             <dl className="tot">
-              <div lang="bn">
-                <dt>পণ্যের মোট</dt>
+              <div lang={lang}>
+                <dt>{t.subtotal}</dt>
                 <dd>{formatTaka(order.subtotal)}</dd>
               </div>
               {order.discount > 0 && (
-                <div lang="bn">
-                  <dt>ডিসকাউন্ট</dt>
+                <div lang={lang}>
+                  <dt>{t.discount}</dt>
                   <dd>−{formatTaka(order.discount)}</dd>
                 </div>
               )}
-              <div lang="bn">
-                <dt>ডেলিভারি চার্জ</dt>
+              <div lang={lang}>
+                <dt>{t.fee}</dt>
                 <dd>{formatTaka(order.shippingFee)}</dd>
               </div>
-              <div className="f" lang="bn">
-                <dt>মোট</dt>
+              <div className="f" lang={lang}>
+                <dt>{t.total}</dt>
                 <dd>{formatTaka(order.total)}</dd>
               </div>
             </dl>
@@ -119,39 +144,39 @@ export function TrackResult({ order, fromAccount }: { order: TrackedOrder; fromA
         </div>
         <div>
           <section className="tk-sec" aria-labelledby="dl-h">
-            <h2 id="dl-h" lang="bn">
-              ডেলিভারির তথ্য
+            <h2 id="dl-h" lang={lang}>
+              {t.deliveryInfo}
             </h2>
             <dl className="di">
               <div>
-                <dt lang="bn">এলাকা</dt>
-                <dd lang="bn">
-                  {order.district ? `${order.district} জেলা` : "–"}{" "}
-                  <small className="tk-muted">(পুরো ঠিকানা নিরাপত্তার জন্য দেখানো হয় না)</small>
+                <dt lang={lang}>{t.area}</dt>
+                <dd lang={lang}>
+                  {order.district ? t.district(placeName(order.district, lang)) : "–"}{" "}
+                  <small className="tk-muted">{t.hidden}</small>
                 </dd>
               </div>
               <div>
-                <dt lang="bn">পদ্ধতি</dt>
-                <dd lang="bn">{order.inDhaka ? "ঢাকার ভেতরে ডেলিভারি" : "ঢাকার বাইরে ডেলিভারি"}</dd>
+                <dt lang={lang}>{t.method}</dt>
+                <dd lang={lang}>{order.inDhaka ? t.inDhaka : t.outDhaka}</dd>
               </div>
               <div>
-                <dt lang="bn">কুরিয়ার</dt>
-                <dd lang="bn">{order.courierName ?? "এখনও নির্ধারিত হয়নি"}</dd>
+                <dt lang={lang}>{t.courier}</dt>
+                <dd lang={lang}>{order.courierName ?? t.noCourier}</dd>
               </div>
               <div>
-                <dt lang="bn">ট্র্যাকিং রেফারেন্স</dt>
-                <dd lang="bn">{order.trackingRef ?? "নেই"}</dd>
+                <dt lang={lang}>{t.ref}</dt>
+                <dd lang={lang}>{order.trackingRef ?? t.noRef}</dd>
               </div>
             </dl>
           </section>
           <div className="help2">
-            <h2 lang="bn">অর্ডার নিয়ে কোনো সমস্যা?</h2>
+            <h2 lang={lang}>{t.helpTitle}</h2>
             <div className="acts">
-              <Link className="ak-btn ak-btn--line" href="/contact" lang="bn">
-                যোগাযোগ করুন
+              <Link className="ak-btn ak-btn--line" href={to("/contact")} lang={lang}>
+                {t.contactUs}
               </Link>
-              <Link className="ak-btn ak-btn--text" href="/shop" lang="bn">
-                আরও আচার দেখুন
+              <Link className="ak-btn ak-btn--text" href={to("/shop")} lang={lang}>
+                {t.keep}
               </Link>
             </div>
           </div>

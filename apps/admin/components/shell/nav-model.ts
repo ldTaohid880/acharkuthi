@@ -52,8 +52,10 @@ export const NAV: { group: NavGroup; items: NavItem[] }[] = [
 /** Other routes that belong to a menu entry (for the active state and breadcrumb). */
 export const EXTRA_ROUTES: { href: string; key: NavKey }[] = [
   { href: "/account", key: "account" },
+  // Subscribers-* boards: the page sits under মেসেজ (sidebar, breadcrumb, bottom nav). The first
+  // match wins in activeKey; the "subscribers" entry keeps hrefOf("subscribers") for the More page.
+  { href: "/messages/subscribers", key: "messages" },
   { href: "/messages/subscribers", key: "subscribers" },
-  { href: "/restock-requests", key: "restock" },
 ];
 
 export function navFor(role: AdminRole) {

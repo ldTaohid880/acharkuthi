@@ -3,7 +3,8 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { auth } from "@repo/auth";
 import { and, asc, db, desc, eq, schema } from "@repo/db";
-import { formatBnDate } from "@/lib/track";
+import { localePath, type Lang } from "@/lib/i18n/lang";
+import { formatDate } from "@/lib/track";
 
 /** Account data for the signed-in customer (Account.dc.html). Server only. */
 
@@ -14,9 +15,10 @@ export const getSessionUser = cache(async () => {
 
 /** Every account page and action calls this. Signed-out visitors go to sign in. */
 /** `next` is the page to come back to after signing in. */
-export async function requireUser(next?: string) {
+export async function requireUser(next?: string, lang: Lang = "bn") {
   const user = await getSessionUser();
-  if (!user) redirect(next ? `/login?next=${encodeURIComponent(next)}` : "/login");
+  if (!user)
+    redirect(localePath(lang, next ? `/login?next=${encodeURIComponent(next)}` : "/login"));
   return user;
 }
 
@@ -32,9 +34,19 @@ const STATUS: Record<(typeof schema.ORDER_STATUSES)[number], { label: string; cl
   cancelled: { label: "বাতিল", cls: "p" },
   returned: { label: "ফেরত", cls: "p" },
 };
+/** The English site's chip labels (memory: storefront-bilingual). */
+const STATUS_EN: Record<(typeof schema.ORDER_STATUSES)[number], string> = {
+  pending: "Processing",
+  confirmed: "Processing",
+  processing: "Processing",
+  shipped: "On the way",
+  delivered: "Delivered",
+  cancelled: "Cancelled",
+  returned: "Returned",
+};
 
 /** Dates as the tracking page shows them (Track.dc.html "1 নভেম্বর 2026"), in Dhaka time. */
-const dateFmt = { format: formatBnDate };
+const dateIn = (lang: Lang) => ({ format: (d: Date) => formatDate(d, lang) });
 
 export interface AccountOrder {
   number: string;
@@ -48,15 +60,28 @@ export interface AccountOrder {
 }
 
 export const getAccountOrders = cache(
-  async (userId: string, limit?: number): Promise<AccountOrder[]> => {
+  async (userId: string, limit?: number, lang: Lang = "bn"): Promise<AccountOrder[]> => {
+    const dateFmt = dateIn(lang);
     const rows = await db.query.orders.findMany({
       where: eq(schema.orders.userId, userId),
-      columns: { orderNumber: true, createdAt: true, total: true, status: true },
+      columns: {
+        orderNumber: true,
+        createdAt: true,
+        total: true,
+        status: true,
+        consignmentId: true,
+      },
       orderBy: [desc(schema.orders.createdAt), desc(schema.orders.id)],
       ...(limit ? { limit } : {}),
     });
     return rows.map((o) => {
-      const st = STATUS[o.status];
+      // Booked with the courier: "handed over to courier" (owner, 2026-11-15).
+      const st =
+        o.status === "shipped" && o.consignmentId !== null
+          ? { label: lang === "en" ? "With the courier" : "কুরিয়ারে হস্তান্তর", cls: "s" as const }
+          : lang === "en"
+            ? { ...STATUS[o.status], label: STATUS_EN[o.status] }
+            : STATUS[o.status];
       const open = o.status !== "delivered" && o.status !== "cancelled" && o.status !== "returned";
       return {
         number: o.orderNumber,
@@ -110,7 +135,8 @@ export interface AccountReview {
   approved: boolean;
 }
 
-export const getAccountReviews = cache(async (userId: string) => {
+export const getAccountReviews = cache(async (userId: string, lang: Lang = "bn") => {
+  const dateFmt = dateIn(lang);
   const [prod, site] = await Promise.all([
     db.query.reviews.findMany({
       where: eq(schema.reviews.userId, userId),
@@ -132,7 +158,7 @@ export const getAccountReviews = cache(async (userId: string) => {
   }));
   const overall: AccountReview[] = site.map((r) => ({
     id: r.id,
-    title: "Acharkuthi নিয়ে আপনার অভিজ্ঞতা",
+    title: lang === "en" ? "Your experience with Acharkuthi" : "Acharkuthi নিয়ে আপনার অভিজ্ঞতা",
     rating: r.rating,
     text: r.body,
     date: dateFmt.format(r.createdAt),

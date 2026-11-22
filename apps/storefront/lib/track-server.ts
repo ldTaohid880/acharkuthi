@@ -1,11 +1,15 @@
 // Server only: imports @repo/db. Never import from a "use client" file.
 import { asc, db, eq, inArray, schema } from "@repo/db";
-import { DELIVERY_FEES } from "@/lib/checkout-pricing";
 import { heatOf } from "@/lib/product-view";
 import { districtFromAddress, type TrackedOrder } from "@/lib/track";
 export type { LookupResult, TrackedOrder } from "@/lib/track";
 
-const HEAT_BN = { Mild: "কম ঝাল", Medium: "মাঝারি ঝাল", Hot: "বেশি ঝাল" } as const;
+const HEAT_BN = {
+  "Not spicy": "ঝাল নেই",
+  Mild: "কম ঝাল",
+  Medium: "মাঝারি ঝাল",
+  Hot: "বেশি ঝাল",
+} as const;
 
 export const lastDigits = (phone: string) => phone.replace(/\D/g, "").slice(-11);
 
@@ -52,17 +56,23 @@ export async function present(order: OrderRow): Promise<TrackedOrder> {
     cod: (payment?.method ?? "cod") === "cod",
     etaDate: order.etaDate,
     district: districtFromAddress(order.shippingAddress),
-    inDhaka: order.shippingFee === DELIVERY_FEES.in,
+    // The zone chosen at checkout (stored since A3), not the fee, which Settings can change.
+    inDhaka: order.deliveryZone === "in",
     courierName: order.courierName,
     trackingRef: order.trackingRef,
+    handedOver: order.consignmentId !== null,
     items: items.map((i) => {
       const v = i.variantId === null ? undefined : byVariant.get(i.variantId);
-      const heat = v ? HEAT_BN[heatOf(v.spice).word] : null;
+      const word = v ? heatOf(v.spice).word : null;
+      const heat = word ? HEAT_BN[word] : null;
       return {
         id: i.id,
         // Same name as the basket: Bangla when the product has one, else the name saved on the order.
         name: v?.nameBn ?? i.productName,
         detail: [i.variantLabel, heat].filter(Boolean).join(" · "),
+        // The order keeps the English name it was sold under.
+        nameEn: i.productName,
+        detailEn: [i.variantLabel, word].filter(Boolean).join(" · "),
         unitPrice: i.unitPrice,
         quantity: i.quantity,
         image: (v && images.find((im) => im.productId === v.productId)?.url) ?? null,

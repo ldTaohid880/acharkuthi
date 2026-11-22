@@ -1,0 +1,49 @@
+name: Deploy to Hostinger
+
+# Every push to main deploys both apps: the storefront first (its Hostinger build runs the
+# database migrations), then the admin. Run it by hand from the Actions tab to deploy one app.
+# Needs the repository secret HOSTINGER_API_TOKEN (hPanel → Account → API).
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+    inputs:
+      app:
+        description: Which app to deploy
+        type: choice
+        options: [all, storefront, admin]
+        default: all
+
+concurrency:
+  group: deploy-production
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: production
+    timeout-minutes: 45
+    env:
+      APP: ${{ inputs.app || 'all' }}
+      HOSTINGER_API_TOKEN: ${{ secrets.HOSTINGER_API_TOKEN }}
+      DEPLOY_MESSAGE: ${{ github.event.head_commit.message || format('Manual deploy {0}', github.sha) }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      # Hoisted node_modules: Next.js standalone output then contains plain folders, not pnpm links.
+      - run: |
+          printf '\nnodeLinker: hoisted\n' >> pnpm-workspace.yaml
+      - run: pnpm install --frozen-lockfile
+      # Lint, types, unit tests, standalone builds and .deploy/<app>.tar.gz bundles.
+      - run: node scripts/deploy/prepare.mjs "$APP" --in-place
+      - uses: actions/upload-artifact@v4
+        with:
+          name: bundles
+          path: .deploy/*.tar.gz
+          retention-days: 7
+      - name: Upload and build on Hostinger
+        run: node scripts/deploy/hostinger.mjs push "$APP"

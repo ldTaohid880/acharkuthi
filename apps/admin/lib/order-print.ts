@@ -12,6 +12,8 @@ export interface PrintOrder {
   zone: "in" | "out" | null;
   courier: string;
   tracking: string;
+  /** Steadfast consignment ID, once booked. */
+  consignment: string;
   note: string;
   items: { id: number; bn: string | null; en: string; size: string; qty: number; total: number }[];
   subtotal: number;
@@ -61,6 +63,7 @@ export async function getPrintOrders(ids: number[]): Promise<PrintOrder[]> {
         zone: o.deliveryZone,
         courier: o.courierName ?? "",
         tracking: o.trackingRef ?? "",
+        consignment: o.consignmentId ?? "",
         note: o.courierNote ?? "",
         items: o.items.map((i) => ({
           id: i.id,

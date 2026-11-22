@@ -1,7 +1,10 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
 import { getCategories } from "@/lib/queries";
+import { getDict } from "@/lib/i18n/dict";
+import { localePath, type Lang } from "@/lib/i18n/lang";
 import { shopHref } from "@/lib/routes";
+import { RECIPES_LIVE } from "@/lib/features";
 
 const ICON = {
   fill: "none",
@@ -25,17 +28,24 @@ const ROW = {
   lineHeight: 1.5,
 } as const;
 
-export async function SiteFooter() {
+/** Site footer in the page language (memory: storefront-bilingual). */
+export async function SiteFooter({ lang }: { lang: Lang }) {
+  const t = getDict(lang).footer;
+  const shelf = getDict(lang).shelf.label;
+  const nav = getDict(lang).nav;
+  const to = (path: string) => localePath(lang, path);
   const shelves = await getCategories();
+  const shelfName = (s: { slug: string; name: string; nameBn: string | null }) =>
+    lang === "bn" ? (shelf[s.slug] ?? s.nameBn ?? s.name) : s.name;
   return (
-    <footer className="ft" id="footer">
+    <footer className="ft" id="footer" lang={lang}>
       <div className="ak-deckle deck-t" aria-hidden="true" />
       <div className="wrap ft-news">
         <div>
-          <h2 className="h-m">Letters from the kitchen</h2>
+          <h2 className="h-m">{t.newsTitle}</h2>
           <p>
-            New pickles and recipes, now and then.
-            <span className="only-desk"> Never more than we would want to read ourselves.</span>
+            {t.newsText}
+            <span className="only-desk">{t.newsMore}</span>
           </p>
         </div>
         <NewsletterForm />
@@ -43,58 +53,60 @@ export async function SiteFooter() {
       <div className="wrap ft-grid">
         <div className="ft-brand">
           {/* eslint-disable-next-line @next/next/no-img-element -- static brand art */}
-          <img src="/brand/logo-256.png" alt="Acharkuthi" />
-          <div className="ak-aside">The taste of tradition.</div>
+          <img src="/brand/logo-256.png" alt={t.brand} />
+          <div className="ak-aside">{t.tagline}</div>
         </div>
-        <nav aria-label="Shop">
-          <h3>Shop</h3>
+        <nav aria-label={t.shop}>
+          <h3>{t.shop}</h3>
           <ul>
             <li>
-              <Link href={shopHref()}>All pickles</Link>
+              <Link href={to(shopHref())}>{t.allPickles}</Link>
             </li>
             {shelves.map((s) => (
               <li key={s.slug}>
-                <Link href={shopHref(s.slug)}>{s.name}</Link>
+                <Link href={to(shopHref(s.slug))}>{shelfName(s)}</Link>
               </li>
             ))}
           </ul>
         </nav>
-        <nav aria-label="Acharkuthi">
-          <h3>Acharkuthi</h3>
+        <nav aria-label={t.about}>
+          <h3>{t.about}</h3>
           <ul>
             <li>
-              <Link href="/our-story">Our story</Link>
+              <Link href={to("/our-story")}>{nav.ourStory}</Link>
             </li>
+            {RECIPES_LIVE ? (
+              <li>
+                <Link href={to("/recipes")}>{nav.recipes}</Link>
+              </li>
+            ) : null}
             <li>
-              <Link href="/recipes">Recipes</Link>
-            </li>
-            <li>
-              <Link href="/contact">Contact</Link>
+              <Link href={to("/contact")}>{nav.contact}</Link>
             </li>
           </ul>
         </nav>
-        <nav aria-label="Help">
-          <h3>Legal &amp; Support</h3>
+        <nav aria-label={t.helpNav}>
+          <h3>{t.help}</h3>
           <ul>
             <li>
-              <Link href="/faq">FAQ</Link>
+              <Link href={to("/faq")}>{t.faq}</Link>
             </li>
             <li>
-              <Link href="/shipping-policy">Shipping Policy</Link>
+              <Link href={to("/shipping-policy")}>{t.shipping}</Link>
             </li>
             <li>
-              <Link href="/return-refund-policy">Refund Policy</Link>
+              <Link href={to("/return-refund-policy")}>{t.returns}</Link>
             </li>
             <li>
-              <Link href="/privacy-policy">Privacy Policy</Link>
+              <Link href={to("/privacy-policy")}>{t.privacy}</Link>
             </li>
             <li>
-              <Link href="/terms-and-conditions">Terms of Use</Link>
+              <Link href={to("/terms-and-conditions")}>{t.terms}</Link>
             </li>
           </ul>
         </nav>
         <div>
-          <h3>Contact Us</h3>
+          <h3>{t.contact}</h3>
           <ul>
             <li>
               <span style={ROW}>
@@ -102,7 +114,7 @@ export async function SiteFooter() {
                   <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
                   <circle cx="12" cy="9.5" r="2.5" />
                 </svg>
-                <span>529, Dhonia, Jatrabari, Dhaka</span>
+                <span>{t.address}</span>
               </span>
             </li>
             <li>
@@ -110,7 +122,7 @@ export async function SiteFooter() {
                 <svg {...ICON}>
                   <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
                 </svg>
-                <span>01624607294</span>
+                <span lang="en">01624607294</span>
               </a>
             </li>
             <li>
@@ -119,7 +131,9 @@ export async function SiteFooter() {
                   <rect x="3" y="5" width="18" height="14" rx="2" />
                   <path d="m3 7 9 6 9-6" />
                 </svg>
-                <span style={{ overflowWrap: "anywhere" }}>info@acharkuthi.store</span>
+                <span lang="en" style={{ overflowWrap: "anywhere" }}>
+                  info@acharkuthi.store
+                </span>
               </a>
             </li>
           </ul>
@@ -128,69 +142,71 @@ export async function SiteFooter() {
       <div className="ft-acc">
         <div className="ft-brand">
           {/* eslint-disable-next-line @next/next/no-img-element -- static brand art */}
-          <img src="/brand/logo-256.png" alt="Acharkuthi" />
-          <div className="ak-aside">The taste of tradition.</div>
+          <img src="/brand/logo-256.png" alt={t.brand} />
+          <div className="ak-aside">{t.tagline}</div>
         </div>
         <div className="acc-list">
           <details>
             <summary>
-              Shop
+              {t.shop}
               <i className="ak-i i-plus" aria-hidden="true" />
             </summary>
             <ul>
               <li>
-                <Link href={shopHref()}>All pickles</Link>
+                <Link href={to(shopHref())}>{t.allPickles}</Link>
               </li>
               {shelves.map((s) => (
                 <li key={s.slug}>
-                  <Link href={shopHref(s.slug)}>{s.name}</Link>
+                  <Link href={to(shopHref(s.slug))}>{shelfName(s)}</Link>
                 </li>
               ))}
             </ul>
           </details>
           <details>
             <summary>
-              Acharkuthi
+              {t.about}
               <i className="ak-i i-plus" aria-hidden="true" />
             </summary>
             <ul>
               <li>
-                <Link href="/our-story">Our story</Link>
+                <Link href={to("/our-story")}>{nav.ourStory}</Link>
               </li>
+              {RECIPES_LIVE ? (
+                <li>
+                  <Link href={to("/recipes")}>{nav.recipes}</Link>
+                </li>
+              ) : null}
               <li>
-                <Link href="/recipes">Recipes</Link>
-              </li>
-              <li>
-                <Link href="/contact">Contact</Link>
+                <Link href={to("/contact")}>{nav.contact}</Link>
               </li>
             </ul>
           </details>
           <details open>
             <summary>
-              Legal &amp; Support
+              {t.help}
               <i className="ak-i i-plus" aria-hidden="true" />
             </summary>
             <ul>
               <li>
-                <Link href="/faq">FAQ</Link>
+                <Link href={to("/faq")}>{t.faq}</Link>
               </li>
               <li>
-                <Link href="/shipping-policy">Shipping Policy</Link>
+                <Link href={to("/shipping-policy")}>{t.shipping}</Link>
               </li>
               <li>
-                <Link href="/return-refund-policy">Refund Policy</Link>
+                <Link href={to("/return-refund-policy")}>{t.returns}</Link>
               </li>
               <li>
-                <Link href="/privacy-policy">Privacy Policy</Link>
+                <Link href={to("/privacy-policy")}>{t.privacy}</Link>
               </li>
               <li>
-                <Link href="/terms-and-conditions">Terms of Use</Link>
+                <Link href={to("/terms-and-conditions")}>{t.terms}</Link>
               </li>
             </ul>
           </details>
           <details>
             <summary>
-              Contact Us
+              {t.contact}
               <i className="ak-i i-plus" aria-hidden="true" />
             </summary>
             <ul>
@@ -200,7 +216,7 @@ export async function SiteFooter() {
                     <path d="M12 21s-7-6.2-7-11.5a7 7 0 0 1 14 0C19 14.8 12 21 12 21z" />
                     <circle cx="12" cy="9.5" r="2.5" />
                   </svg>
-                  <span>529, Dhonia, Jatrabari, Dhaka</span>
+                  <span>{t.address}</span>
                 </span>
               </li>
               <li>
@@ -208,7 +224,7 @@ export async function SiteFooter() {
                   <svg {...ICON}>
                     <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
                   </svg>
-                  <span>01624607294</span>
+                  <span lang="en">01624607294</span>
                 </a>
               </li>
               <li>
@@ -217,7 +233,9 @@ export async function SiteFooter() {
                     <rect x="3" y="5" width="18" height="14" rx="2" />
                     <path d="m3 7 9 6 9-6" />
                   </svg>
-                  <span style={{ overflowWrap: "anywhere" }}>info@acharkuthi.store</span>
+                  <span lang="en" style={{ overflowWrap: "anywhere" }}>
+                    info@acharkuthi.store
+                  </span>
                 </a>
               </li>
             </ul>
@@ -226,21 +244,18 @@ export async function SiteFooter() {
       </div>
       <div className="wrap ft-bot">
         <span>
-          © {new Date().getFullYear()} Acharkuthi
-          <span className="only-mob"> · Dhaka, Bangladesh</span>
+          {t.copyright(new Date().getFullYear())}
+          <span className="only-mob">{t.place}</span>
         </span>
         <div className="ft-bot-r">
           {/* Privacy and Terms live in the "Legal & Support" column above; this row is social only. */}
-          <nav className="ft-soc" aria-label="Social">
-            <a href="https://www.facebook.com/acharkuthi" aria-label="Acharkuthi on Facebook">
+          <nav className="ft-soc" aria-label={t.social}>
+            <a href="https://www.facebook.com/acharkuthi" aria-label={t.facebook}>
               <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
                 <path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4V10.5H8v3h2.6V21h2.9z" />
               </svg>
             </a>
-            <a
-              href="https://www.instagram.com/acharkuthi_store"
-              aria-label="Acharkuthi on Instagram"
-            >
+            <a href="https://www.instagram.com/acharkuthi_store" aria-label={t.instagram}>
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"
@@ -253,7 +268,7 @@ export async function SiteFooter() {
                 <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
               </svg>
             </a>
-            <a href="https://wa.me/8801624607294" aria-label="Chat with Acharkuthi on WhatsApp">
+            <a href="https://wa.me/8801624607294" aria-label={t.whatsapp}>
               <svg
                 viewBox="0 0 24 24"
                 aria-hidden="true"

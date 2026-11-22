@@ -11,6 +11,16 @@
       "port": 3000
     },
     {
+      "name": "storefront",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@acharkuthi/storefront",
+        "dev"
+      ],
+      "port": 3000
+    },
+    {
       "name": "storefront-alt",
       "runtimeExecutable": "pnpm",
       "runtimeArgs": [
@@ -38,6 +48,60 @@
         "dev"
       ],
       "port": 3001
+    },
+    {
+      "name": "storefront-prod",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@acharkuthi/storefront",
+        "exec",
+        "next",
+        "start",
+        "--port",
+        "3006"
+      ],
+      "port": 3006
+    },
+    {
+      "name": "storefront-prod-3000",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@acharkuthi/storefront",
+        "exec",
+        "next",
+        "start",
+        "--port",
+        "3000"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "storefront-dev-webpack",
+      "runtimeExecutable": "pnpm",
+      "runtimeArgs": [
+        "--filter",
+        "@acharkuthi/storefront",
+        "exec",
+        "next",
+        "dev",
+        "--webpack",
+        "--port",
+        "3000"
+      ],
+      "port": 3000
+    },
+    {
+      "name": "storefront-bundle",
+      "runtimeExecutable": "node",
+      "runtimeArgs": [
+        "--env-file=apps/storefront/.env",
+        "scripts/deploy/run-bundle.mjs",
+        "storefront",
+        "3007"
+      ],
+      "port": 3007
     }
   ]
 }

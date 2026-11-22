@@ -1,7 +1,7 @@
 "use client";
 
 import { cn, formatTaka } from "@repo/ui/lib/utils";
-import { DELIVERY_FEES, zoneForDistrict } from "@repo/validators";
+import { zoneForDistrict } from "@repo/validators";
 import { Pencil } from "lucide-react";
 import { Dialog } from "radix-ui";
 import { useState, useTransition } from "react";
@@ -26,11 +26,13 @@ export function AddressDialog({
   id,
   initial,
   fees,
+  zoneFees,
   t,
 }: {
   id: number;
   initial: AddressValue;
   fees: { base: number; shippingFee: number; total: number };
+  zoneFees: { in: number; out: number };
   t: OT;
 }) {
   const d = t.detail;
@@ -42,7 +44,7 @@ export function AddressDialog({
   const [pending, start] = useTransition();
 
   const zone = zoneForDistrict(value.district || undefined);
-  const newFee = zone ? DELIVERY_FEES[zone] : fees.shippingFee;
+  const newFee = zone ? zoneFees[zone] : fees.shippingFee;
   const feeChanges = zone !== null && newFee !== fees.shippingFee;
   const newTotal = fees.base + newFee;
 
@@ -100,7 +102,9 @@ export function AddressDialog({
               {d.editAddress}
             </Dialog.Title>
           </div>
-          <ScrollArea className="min-h-0 flex-auto">
+          {/* Dialog max 100dvh − 32px, minus the title (~64px) and the button row (~84px): the
+              fields scroll, Save stays reachable (owner scrolling rule, 2026-11-13). */}
+          <ScrollArea className="min-h-0 flex-auto" viewportClassName="max-h-[calc(100dvh-180px)]">
             <div className="max-tab:px-5 flex flex-col gap-4 px-6 pb-2">
               <AddressFields
                 value={value}

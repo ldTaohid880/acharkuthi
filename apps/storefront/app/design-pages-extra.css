@@ -136,3 +136,65 @@
   border-radius: 2px;
   background: var(--brand);
 }
+
+/* Header shop menu (owner, 2026-11-21): always rendered, fades and slides in and out; it closes
+   on Escape, on a click outside the header and on navigation (header-client.tsx). */
+.mega {
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-8px);
+  pointer-events: none;
+  transition:
+    opacity var(--dur-base) var(--ease-settle),
+    transform var(--dur-base) var(--ease-settle),
+    visibility 0s linear var(--dur-base);
+}
+.mega.is-open {
+  opacity: 1;
+  visibility: visible;
+  transform: none;
+  pointer-events: auto;
+  transition:
+    opacity var(--dur-base) var(--ease-settle),
+    transform var(--dur-base) var(--ease-settle),
+    visibility 0s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .mega,
+  .mega.is-open {
+    transform: none;
+  }
+}
+
+/* Shelf discs with the admin category image (owner, 2026-11-21): the whole illustration, its own
+   background included, fills the disc and is clipped to the blot shape. */
+.db:has(.shelf-img) {
+  overflow: hidden;
+}
+.db .shelf-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: inherit;
+  display: block;
+}
+/* Featured card in the shop menu: the product photo instead of the drawn jar. */
+.mfeat img.is-photo {
+  width: 96px;
+  height: 96px;
+  object-fit: cover;
+  border-radius: 14px;
+  flex: none;
+}
+
+/* Home story photo (owner, 2026-11-21): fills the drawn slot shape. */
+.page-home .story-ph picture.slot {
+  display: block;
+  overflow: hidden;
+}
+.page-home .story-ph picture.slot img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}

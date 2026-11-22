@@ -1,5 +1,9 @@
 "use client";
 
+import { usePathname } from "next/navigation";
+import { getDict } from "@/lib/i18n/dict";
+import { splitLangPath } from "@/lib/i18n/lang";
+
 /** Last-resort fallback when the root layout itself fails. Styles are inline: the app CSS may not have loaded. */
 export default function GlobalError({
   reset,
@@ -7,8 +11,10 @@ export default function GlobalError({
   error: Error & { digest?: string };
   reset: () => void;
 }) {
+  const lang = splitLangPath(usePathname()).lang;
+  const t = getDict(lang).errors;
   return (
-    <html lang="bn">
+    <html lang={lang}>
       <body
         style={{
           margin: 0,
@@ -23,8 +29,8 @@ export default function GlobalError({
         }}
       >
         <div>
-          <h1 style={{ fontWeight: 400, fontSize: 32, margin: 0 }}>কিছু একটা সমস্যা হয়েছে।</h1>
-          <p style={{ margin: "12px 0 24px" }}>Something went wrong on our side.</p>
+          <h1 style={{ fontWeight: 400, fontSize: 32, margin: 0 }}>{t.title}</h1>
+          <p style={{ margin: "12px 0 24px" }}>{lang === "en" ? t.msg : t.accent}</p>
           <button
             type="button"
             onClick={reset}
@@ -39,7 +45,7 @@ export default function GlobalError({
               cursor: "pointer",
             }}
           >
-            আবার চেষ্টা করুন
+            {t.retry}
           </button>
         </div>
       </body>

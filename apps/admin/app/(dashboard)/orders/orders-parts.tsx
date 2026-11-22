@@ -15,9 +15,10 @@ import type { Route } from "next";
 import Link from "next/link";
 import { Dialog } from "radix-ui";
 import { useState, useTransition } from "react";
+import { settleOrders } from "@/app/actions/courier";
 import { cancelOrder } from "@/app/actions/orders";
 import { btn } from "@/components/btn";
-import { DateRangeCalendar } from "@/components/date-range-calendar";
+import { DateCalendar, DateRangeCalendar } from "@/components/date-range-calendar";
 import { useToast } from "@/components/toast";
 import { digits, fill, orderDate } from "@/lib/format";
 import type { Dict } from "@/lib/i18n/dict";
@@ -396,7 +397,7 @@ export function Pager({
   page: number;
   pages: number;
   href: (p: number) => string;
-  t: OT;
+  t: Pick<OT, "pages" | "prev" | "next">;
   large?: boolean;
 }) {
   if (pages <= 1) return null;
@@ -440,5 +441,112 @@ export function Pager({
         </Link>
       ) : null}
     </nav>
+  );
+}
+
+/**
+ * "টাকা পাওয়া গেছে" for delivered orders (owner, manual, in bulk; owner decision 2026-11-11):
+ * optional payout reference and the day the money came in (shadcn Calendar, not a date input).
+ */
+export function SettleDialog({
+  ids,
+  t,
+  lang,
+  onClose,
+  onDone,
+}: {
+  /** Open while non-empty. */
+  ids: number[];
+  t: OT;
+  lang: AdminLang;
+  onClose: () => void;
+  onDone?: () => void;
+}) {
+  const toast = useToast();
+  const [ref, setRef] = useState("");
+  const [day, setDay] = useState<string | undefined>(undefined);
+  const [calOpen, setCalOpen] = useState(false);
+  const [pending, start] = useTransition();
+  const save = () =>
+    start(async () => {
+      try {
+        const r = await settleOrders({
+          ids,
+          ...(ref.trim() ? { payoutRef: ref.trim() } : {}),
+          ...(day ? { paidOn: day } : {}),
+        });
+        toast({ tone: "ok", title: fill(t.toastSettled, { n: digits(r.settled, lang) }) });
+        setRef("");
+        setDay(undefined);
+        onDone?.();
+        onClose();
+      } catch {
+        toast({ tone: "err", title: t.saveFailed, sub: t.saveFailedSub });
+      }
+    });
+  return (
+    <Dialog.Root open={ids.length > 0} onOpenChange={(v) => (v ? undefined : onClose())}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-50 bg-black/50" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className="border-border fixed top-1/2 left-1/2 z-50 flex w-[380px] max-w-[calc(100vw-32px)] -translate-x-1/2 -translate-y-1/2 flex-col gap-4 rounded-xl border bg-white p-5 shadow-lg"
+        >
+          <div>
+            <Dialog.Title className="text-base leading-6 font-semibold">{t.settleTitle}</Dialog.Title>
+            <p className="text-muted-foreground text-[13px] leading-5">
+              {fill(t.settleBody, { n: digits(ids.length, lang) })}
+            </p>
+          </div>
+          <label className="flex flex-col gap-2 text-sm font-medium">
+            {t.payoutRef}
+            <input
+              value={ref}
+              maxLength={80}
+              onChange={(e) => setRef(e.target.value)}
+              className={cn(inputCls, "h-11 font-normal")}
+            />
+            <span className="text-muted-foreground text-xs leading-4 font-normal">
+              {t.payoutRefHelp}
+            </span>
+          </label>
+          <div className="flex flex-col gap-2 text-sm font-medium">
+            <span id="settle-day">{t.paidOn}</span>
+            <Popover open={calOpen} onOpenChange={setCalOpen}>
+              <PopoverTrigger
+                aria-labelledby="settle-day"
+                className={cn(inputCls, "flex h-11 items-center justify-between font-normal")}
+              >
+                <span>{day ? orderDate(new Date(`${day}T12:00:00+06:00`), lang, false) : t.paidOnToday}</span>
+                <Calendar className="text-muted-foreground size-4" aria-hidden />
+              </PopoverTrigger>
+              <PopoverContent align="start" className="w-auto rounded-lg p-0 shadow-md">
+                <DateCalendar
+                  value={day}
+                  lang={lang}
+                  onChange={(v) => {
+                    setDay(v);
+                    setCalOpen(false);
+                  }}
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          <div className="flex gap-2">
+            <Dialog.Close className={btn({ variant: "outline", size: "lg", className: "flex-1 basis-0" })}>
+              {t.settleClose}
+            </Dialog.Close>
+            <button
+              type="button"
+              disabled={pending}
+              onClick={save}
+              className={btn({ size: "lg", className: "flex-1 basis-0" })}
+            >
+              {t.settleConfirm}
+            </button>
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
   );
 }

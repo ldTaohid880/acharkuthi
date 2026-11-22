@@ -6,7 +6,6 @@ import type { Metadata, Route } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { btn } from "@/components/btn";
-import { NeedsStorage } from "@/components/needs-storage";
 import { Crumb } from "@/components/shell/shell-context";
 import { StatusChip } from "@/components/status-chip";
 import { digits, fill, orderDate } from "@/lib/format";
@@ -15,11 +14,13 @@ import { initialsOf } from "@/lib/initials";
 import { getOrderDetail, type OrderDetail } from "@/lib/order-detail";
 import { statusLabel, statusTone, type StatusTone } from "@/lib/order-status";
 import { requireAdmin } from "@/lib/require-admin";
+import { getShopRules } from "@repo/db";
 import type { OT } from "../orders-parts";
 import { body, card, CardHead, kv, Wide } from "../card";
 import { AddressDialog } from "./address-dialog";
 import {
   CopyButton,
+  CourierActions,
   CourierNoteField,
   NoteForm,
   OrderActions,
@@ -36,16 +37,20 @@ type DbStatus = OrderDetail["status"];
  * board's section order. The header (and the 834 / phone action bars) stay fixed; the body scrolls.
  */
 export default async function OrderDetailPage({ params }: { params: Promise<{ id: string }> }) {
-  await requireAdmin();
+  const { role } = await requireAdmin();
   const { id: raw } = await params;
   const id = Number(raw);
   if (!Number.isSafeInteger(id) || id <= 0) notFound();
-  const [o, { lang, t: dict }] = await Promise.all([getOrderDetail(id), getDict()]);
+  const [o, { lang, t: dict }, rules] = await Promise.all([
+    getOrderDetail(id),
+    getDict(),
+    getShopRules(),
+  ]);
   if (!o) notFound();
   const t = dict.orders;
   const d = t.detail;
 
-  const tone = statusTone(o.status);
+  const tone = statusTone(o.status, { booked: o.booked, settled: o.settledAt !== null });
   const method = o.payment ? t.methods[o.payment.method] : "";
   const placed = orderDate(o.createdAt, lang);
   const meta = [placed, d.sources[o.source], method].filter(Boolean).join(" · ");
@@ -137,7 +142,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
           {/* Right column */}
           <div className="desk:flex desk:min-w-0 desk:flex-[1_1_0] desk:flex-col desk:gap-4 wide:flex-[1_1_340px] contents">
             <PhoneStatus tone={tone} lang={lang} />
-            <CustomerCard o={o} t={t} lang={lang} addressText={addressText} />
+            <CustomerCard o={o} t={t} lang={lang} addressText={addressText} zoneFees={rules.fees} />
             <PaymentCard o={o} t={t} />
             <section className={cn(card, "max-tab:order-6 order-5")}>
               <CardHead title={d.trackTitle} desc={d.trackDesc} phoneSub={d.trackDescShort} />
@@ -145,7 +150,7 @@ export default async function OrderDetailPage({ params }: { params: Promise<{ id
                 <TrackingFields id={o.id} initial={o.tracking} t={t} lang={lang} />
               </div>
             </section>
-            <CourierCard o={o} t={t} cod={cod} />
+            <CourierCard o={o} t={t} cod={cod} lang={lang} owner={role === "owner"} />
           </div>
         </div>
       </ScrollArea>
@@ -325,14 +330,26 @@ function timeline(o: OrderDetail, t: OT, lang: AdminLang): Step[] {
   const steps: Step[] = [];
   FLOW.forEach((f, i) => {
     if (ended && i > rank) return;
-    const done = i <= rank && !(i === rank + 1);
-    const now = !ended && i === rank + 1;
+    let done = i <= rank && !(i === rank + 1);
+    let now = !ended && i === rank + 1;
     let sub = "";
+    // Booked = handed to Steadfast; cash received = the owner's "টাকা পাওয়া গেছে".
+    if (f.tone === "book") {
+      done = o.booked;
+      now = !ended && o.status === "processing" && !o.booked;
+      if (o.booked && o.courier.bookedAt) sub = orderDate(o.courier.bookedAt, lang);
+      if (o.courier.consignmentId && done) sub = [sub, o.courier.consignmentId].filter(Boolean).join(" · ");
+    }
+    if (f.tone === "settled") {
+      done = o.settledAt !== null;
+      now = o.status === "delivered" && o.settledAt === null;
+      if (o.settledAt) sub = [orderDate(o.settledAt, lang, false), o.payoutRef].filter(Boolean).join(" · ");
+    }
     if (f.status === "pending") sub = `${orderDate(o.createdAt, lang)} · ${d.sources[o.source]}`;
     else if (done && f.status) sub = when(last.get(f.status));
-    else if (now && f.tone !== "transit" && f.tone !== "settled") sub = d.stepNow;
+    else if (now && f.tone !== "transit" && f.tone !== "settled" && !sub) sub = d.stepNow;
     if (!done && f.tone === "transit") sub = d.transitWhen;
-    if (!done && f.tone === "settled") sub = d.settledWhen;
+    if (!done && f.tone === "settled" && !sub) sub = d.settledWhen;
     steps.push({
       key: f.tone,
       label: d.steps[f.tone as keyof typeof d.steps],
@@ -395,9 +412,6 @@ function TimelineCard({ o, t, lang }: { o: OrderDetail; t: OT; lang: AdminLang }
                       <span className="bg-muted text-foreground inline-flex h-[18px] items-center rounded-sm px-2 text-[11px] font-medium">
                         {d.adminOnly}
                       </span>
-                      <span className="max-tab:hidden contents">
-                        <NeedsStorage />
-                      </span>
                     </>
                   ) : null}
                 </span>
@@ -450,11 +464,14 @@ function CustomerCard({
   t,
   lang,
   addressText,
+  zoneFees,
 }: {
   o: OrderDetail;
   t: OT;
   lang: AdminLang;
   addressText: string;
+  /** Settings "ডেলিভারি চার্জ" (paisa), for the fee change shown in the address dialog. */
+  zoneFees: { in: number; out: number };
 }) {
   const d = t.detail;
   const history = fill(d.history, {
@@ -514,6 +531,7 @@ function CustomerCard({
                       shippingFee: o.shippingFee,
                       total: o.total,
                     }}
+                    zoneFees={zoneFees}
                     t={t}
                   />
                 ) : null}
@@ -713,52 +731,93 @@ function PaymentCard({ o, t }: { o: OrderDetail; t: OT }) {
   );
 }
 
-/** Steadfast booking needs storage (admin data-model gaps): shown, but nothing is sent. */
-function CourierCard({ o, t, cod }: { o: OrderDetail; t: OT; cod: number }) {
+/** Steadfast booking, status and the owner's "টাকা পাওয়া গেছে" (owner decisions, 2026-11-15). */
+function CourierCard({
+  o,
+  t,
+  cod,
+  lang,
+  owner,
+}: {
+  o: OrderDetail;
+  t: OT;
+  cod: number;
+  lang: AdminLang;
+  owner: boolean;
+}) {
   const d = t.detail;
+  const sf = o.courier;
   return (
     <section
       id="courier"
       className={cn(card, "max-tab:order-5 order-6 scroll-mt-4 border-[#c7d2fe]")}
     >
-      <CardHead title={t.courierTitle} desc={t.notBooked} aside={<NeedsStorage />} />
+      <CardHead
+        title={t.courierTitle}
+        desc={o.booked ? `${t.consignmentLabel} ${sf.consignmentId}` : t.notBooked}
+      />
       <div className={cn(body, "desk:max-wide:gap-3 gap-3.5")}>
-        <dl className={cn(kv, "max-tab:hidden text-xs leading-4")}>
+        <dl className={cn(kv, "text-xs leading-4")}>
           <dt>{d.invoice}</dt>
           <dd className="font-mono">{o.number}</dd>
-          <dt>{d.recipient}</dt>
-          <dd>{o.name}</dd>
-          <dt className="desk:max-wide:hidden">{d.phone}</dt>
-          <dd className="desk:max-wide:hidden font-mono">{o.phone}</dd>
-          <dt className="wide:block hidden">{d.shipTo}</dt>
-          <dd className="wide:block hidden">{o.address}</dd>
+          {o.booked ? (
+            <>
+              <dt>{t.trackingCode}</dt>
+              <dd className="font-mono">{o.tracking.ref || "—"}</dd>
+              <dt>{t.courierStatusLabel}</dt>
+              <dd>{sf.status ? (t.sfStatus[sf.status] ?? sf.status) : "—"}</dd>
+              {sf.bookedAt ? (
+                <>
+                  <dt>{t.bookedAt}</dt>
+                  <dd>{orderDate(sf.bookedAt, lang)}</dd>
+                </>
+              ) : null}
+              {sf.syncedAt ? (
+                <>
+                  <dt>{t.lastSync}</dt>
+                  <dd>{orderDate(sf.syncedAt, lang)}</dd>
+                </>
+              ) : null}
+            </>
+          ) : (
+            <>
+              <dt className="max-tab:hidden">{d.recipient}</dt>
+              <dd className="max-tab:hidden">{o.name}</dd>
+              <dt className="desk:max-wide:hidden max-tab:hidden">{d.phone}</dt>
+              <dd className="desk:max-wide:hidden max-tab:hidden font-mono">{o.phone}</dd>
+              <dt className="wide:block hidden">{d.shipTo}</dt>
+              <dd className="wide:block hidden">{o.address}</dd>
+            </>
+          )}
           <dt>{d.cod}</dt>
           <dd className="font-medium">{formatTaka(cod)}</dd>
         </dl>
-        <p className="text-muted-foreground tab:hidden text-sm">{t.notBooked}</p>
-        <div className="max-tab:hidden flex flex-col gap-2">
-          <label htmlFor="od-sf" className="text-sm leading-5 font-medium">
-            {t.courierNote}
-          </label>
-          <CourierNoteField id={o.id} initial={o.courierNote} t={t} />
-          <span className="text-muted-foreground desk:max-wide:hidden text-xs leading-4">
-            {d.riderHelp}
-          </span>
-        </div>
-        <button
-          type="button"
-          disabled
-          className={btn({
-            size: "lg",
-            block: true,
-            className: "wide:h-10 wide:text-sm tab:max-desk:hidden",
-          })}
-        >
-          {t.bookSf}
-        </button>
-        <p className="text-muted-foreground wide:block hidden text-center text-[11px] leading-[14px]">
-          {d.bookedHelp}
-        </p>
+        {o.booked ? null : (
+          <div className="max-tab:hidden flex flex-col gap-2">
+            <label htmlFor="od-sf" className="text-sm leading-5 font-medium">
+              {t.courierNote}
+            </label>
+            <CourierNoteField id={o.id} initial={o.courierNote} t={t} />
+            <span className="text-muted-foreground desk:max-wide:hidden text-xs leading-4">
+              {d.riderHelp}
+            </span>
+          </div>
+        )}
+        <CourierActions
+          id={o.id}
+          status={o.status}
+          booked={o.booked}
+          settledAt={o.settledAt}
+          payoutRef={o.payoutRef}
+          owner={owner}
+          t={t}
+          lang={lang}
+        />
+        {o.booked ? null : (
+          <p className="text-muted-foreground wide:block hidden text-center text-[11px] leading-[14px]">
+            {d.bookedHelp}
+          </p>
+        )}
       </div>
     </section>
   );

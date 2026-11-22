@@ -2,6 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import { useBasketUi } from "@/lib/basket-ui";
+import { splitLangPath } from "@/lib/i18n/lang";
+import { useLang } from "@/lib/i18n/lang-context";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
 import { Icon } from "./icon";
 
@@ -9,16 +11,22 @@ import { Icon } from "./icon";
 export function BasketBar() {
   const { count } = useHydratedCart();
   const openBasket = useBasketUi((s) => s.openBasket);
-  const pathname = usePathname();
+  const { lang, t } = useLang();
+  const pathname = splitLangPath(usePathname()).path;
   // Product pages have their own sticky add bar and "added" snackbar (BasketStates: one snackbar).
-  if (count === 0 || pathname === "/basket" || pathname === "/checkout" || pathname.startsWith("/pickles/"))
+  if (
+    count === 0 ||
+    pathname === "/basket" ||
+    pathname === "/checkout" ||
+    pathname.startsWith("/pickles/")
+  )
     return null;
   return (
-    <div className="bbar" role="status">
+    <div className="bbar" role="status" lang={lang}>
       <Icon name="basket" />
       <span className="t">
-        {count} in your basket
-        <small>Pay in cash when it arrives</small>
+        {t.basketBar.count(count)}
+        <small>{t.basketBar.note}</small>
       </span>
       <button
         type="button"
@@ -26,7 +34,7 @@ export function BasketBar() {
         onClick={openBasket}
         style={{ minHeight: 44 }}
       >
-        View basket
+        {t.basketBar.view}
       </button>
     </div>
   );

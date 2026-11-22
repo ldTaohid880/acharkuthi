@@ -8,7 +8,6 @@ import type { Route } from "next";
 import Link from "next/link";
 import { useState, useSyncExternalStore } from "react";
 import { btn } from "@/components/btn";
-import { NeedsStorage } from "@/components/needs-storage";
 import { digits, fill } from "@/lib/format";
 import type { Dict } from "@/lib/i18n/dict";
 import type { PrintOrder, ShopInfo } from "@/lib/order-print";
@@ -184,10 +183,7 @@ function Slip({
           <div className="text-muted-foreground text-xs leading-4">{t.courier}</div>
           <div className="font-medium">{o.courier || "—"}</div>
           <div className="flex items-center gap-1.5 text-xs leading-4">
-            {t.consignment} <span className="font-mono">—</span>
-            <span className="print:hidden">
-              <NeedsStorage />
-            </span>
+            {t.consignment} <span className="font-mono">{o.consignment || "—"}</span>
           </div>
           <div className="text-xs leading-4">
             {t.tracking} <span className="font-mono">{o.tracking || "—"}</span>
@@ -285,10 +281,7 @@ function Label({ o, t, shop }: { o: PrintViewOrder; t: Dict["print"]; shop: Shop
           {o.tracking || "—"}
         </div>
         <div className="flex items-center gap-1.5 text-xs leading-4">
-          {t.consignment} <span className="font-mono font-medium">—</span>
-          <span className="print:hidden">
-            <NeedsStorage />
-          </span>
+          {t.consignment} <span className="font-mono font-medium">{o.consignment || "—"}</span>
         </div>
       </div>
       <div className="border-t border-[#0a0a0a] pt-2.5">

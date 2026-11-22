@@ -22,13 +22,43 @@ export interface ProductLike {
   category?: { slug: string; name: string; nameBn: string | null } | null;
 }
 
-export type HeatWord = "Mild" | "Medium" | "Hot";
+export type HeatWord = "Not spicy" | "Mild" | "Medium" | "Hot";
+export type HeatKey = "none" | "mild" | "medium" | "hot";
 
-/** Spice level 0-5 maps onto the design's three heat pods. */
-export function heatOf(spiceLevel: number): { word: HeatWord; pods: 1 | 2 | 3 } {
-  if (spiceLevel >= 4) return { word: "Hot", pods: 3 };
-  if (spiceLevel >= 2) return { word: "Medium", pods: 2 };
-  return { word: "Mild", pods: 1 };
+const HEAT: { word: HeatWord; key: HeatKey }[] = [
+  { word: "Not spicy", key: "none" },
+  { word: "Mild", key: "mild" },
+  { word: "Medium", key: "medium" },
+  { word: "Hot", key: "hot" },
+];
+
+/**
+ * Owner decision (2026-11-14): spice level 0–3 is the number of red chillies of three
+ * (0 = all grey, "Not spicy").
+ */
+export function heatOf(spiceLevel: number): { word: HeatWord; key: HeatKey; pods: 0 | 1 | 2 | 3 } {
+  const pods = Math.max(0, Math.min(3, Math.round(spiceLevel))) as 0 | 1 | 2 | 3;
+  const h = HEAT[pods] ?? { word: "Not spicy", key: "none" };
+  return { ...h, pods };
+}
+
+export type FeaturedBadge = "bestseller" | "new" | "hot";
+
+const NEW_DAYS = 30;
+
+/**
+ * The one pill on a Home featured card (owner, 2026-11-21): the top seller, else a product added in
+ * the last 30 days, else a 3-chilli pickle. Null when none applies.
+ */
+export function featuredBadge(
+  product: { id: number; spiceLevel: number; createdAt: Date },
+  bestsellerId: number | undefined,
+  now: Date = new Date(),
+): FeaturedBadge | null {
+  if (bestsellerId !== undefined && product.id === bestsellerId) return "bestseller";
+  if (now.getTime() - product.createdAt.getTime() < NEW_DAYS * 86_400_000) return "new";
+  if (heatOf(product.spiceLevel).pods === 3) return "hot";
+  return null;
 }
 
 /** The variant a card sells by default: cheapest active one in stock, else cheapest active. */
@@ -76,8 +106,8 @@ export function matchesSearch(p: ProductLike, q: string): boolean {
 export function applyShopQuery<P extends ProductLike>(items: P[], query: ShopQuery): P[] {
   let out = items.filter((p) => defaultVariant(p.variants));
   if (query.heat.length > 0) {
-    const wanted = new Set<string>(query.heat.map((h) => h.toLowerCase()));
-    out = out.filter((p) => wanted.has(heatOf(p.spiceLevel).word.toLowerCase()));
+    const wanted = new Set<string>(query.heat);
+    out = out.filter((p) => wanted.has(heatOf(p.spiceLevel).key));
   }
   if (query.inStock) out = out.filter((p) => isInStock(p.variants));
   if (query.minPrice !== undefined) {

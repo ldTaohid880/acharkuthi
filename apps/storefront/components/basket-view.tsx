@@ -7,16 +7,15 @@ import { quoteBasket } from "@/app/actions/basket";
 import type { BasketQuote } from "@/lib/basket-quote";
 import { type CartLine, useCart } from "@/lib/cart-store";
 import { heatOf } from "@/lib/product-view";
+import { useLang } from "@/lib/i18n/lang-context";
 import { productHref } from "@/lib/routes";
 import { useHydratedCart } from "@/lib/use-cart-hydrated";
+import { EmptyBasketArt } from "./empty-basket-art";
 import { Icon } from "./icon";
 
 /** A thrown error (offline, server down) counts as a failed update, the same as { ok: false }. */
 const fetchQuotes = (lines: CartLine[]) =>
   quoteBasket({ variantIds: lines.map((l) => l.variantId) }).catch(() => ({ ok: false as const }));
-
-/** Heat words as the basket boards write them. */
-const HEAT_BN = { Mild: "কম ঝাল", Medium: "মাঝারি ঝাল", Hot: "বেশি ঝাল" } as const;
 
 type Quotes = Record<number, BasketQuote>;
 interface Notice {
@@ -41,6 +40,9 @@ export function BasketView() {
   const remove = useCart((s) => s.remove);
   const restore = useCart((s) => s.restore);
   const acceptPrice = useCart((s) => s.acceptPrice);
+  // Every label in the page language (memory: storefront-bilingual).
+  const { lang, t: all, href } = useLang();
+  const t = all.basket;
 
   const [quotes, setQuotes] = useState<Quotes | null>(null);
   const [busy, setBusy] = useState<Record<number, true>>({});
@@ -121,9 +123,12 @@ export function BasketView() {
       overStock,
       atMax,
       isBusy: !!busy[line.variantId],
-      name: q?.productName ? (q.productNameBn ?? q.productName) : line.productName,
-      hasBn: !!(q?.productName && q.productNameBn),
-      meta: [label, heatWord ? HEAT_BN[heatWord] : null].filter(Boolean).join(" · "),
+      name:
+        lang === "bn" && q?.productName
+          ? (q.productNameBn ?? q.productName)
+          : q?.productName || line.productName,
+      hasBn: lang === "bn" && !!(q?.productName && q.productNameBn),
+      meta: [label, heatWord ? all.heat[heatWord] : null].filter(Boolean).join(" · "),
       img: q?.imageUrl ?? "/jar.svg",
       lineTotal: ok && q ? q.unitPrice * line.quantity : null,
     };
@@ -135,15 +140,19 @@ export function BasketView() {
   const blocked =
     lines.length === 0 || quotes === null || issueCount > 0 || Object.keys(busy).length > 0;
   const noticeQuote = notice ? quotes?.[notice.line.variantId] : undefined;
-  const noticeName = notice ? (noticeQuote?.productNameBn ?? notice.line.productName) : "";
+  const noticeName = notice
+    ? lang === "bn"
+      ? (noticeQuote?.productNameBn ?? notice.line.productName)
+      : (noticeQuote?.productName ?? notice.line.productName)
+    : "";
 
   return (
     <>
       {loading ? (
         <div className="bk-grid">
-          <section aria-label="ঝুড়ি">
-            <div role="status" aria-label="ঝুড়ি লোড হচ্ছে">
-              <span className="sr">ঝুড়ি লোড হচ্ছে…</span>
+          <section aria-label={t.section}>
+            <div role="status" aria-label={t.loading}>
+              <span className="sr">{t.loadingSr}</span>
               {[0, 1].map((i) => (
                 <div className="sk-row" key={i}>
                   <div className="skl a" />
@@ -157,18 +166,18 @@ export function BasketView() {
               ))}
             </div>
           </section>
-          <aside className="bk-side" aria-label="অর্ডারের হিসাব">
+          <aside className="bk-side" aria-label={t.summary}>
             <section className="sum" aria-labelledby="sm-skel-h">
-              <h2 id="sm-skel-h" lang="bn">
-                অর্ডারের হিসাব
+              <h2 id="sm-skel-h" lang={lang}>
+                {t.summary}
               </h2>
               <div style={{ display: "grid", gap: 12 }}>
                 <div className="skl" style={{ height: 18 }} />
                 <div className="skl" style={{ height: 18, width: "70%" }} />
                 <div className="skl" style={{ height: 28, marginTop: 8 }} />
               </div>
-              <span className="ak-btn ak-btn--sun go" aria-disabled="true" lang="bn">
-                চেকআউটে এগিয়ে যান
+              <span className="ak-btn ak-btn--sun go" aria-disabled="true" lang={lang}>
+                {t.checkout}
               </span>
             </section>
           </aside>
@@ -177,26 +186,22 @@ export function BasketView() {
 
       {!loading && empty ? (
         <div className="empty" role="status">
-          <div className="art" aria-hidden="true">
-            <div className="ak-blot v2 b" />
-            {/* eslint-disable-next-line @next/next/no-img-element -- local SVG still-life */}
-            <img src="/jar.svg" alt="" />
-          </div>
-          <h2 lang="bn">ঝুড়িটা এখনো খালি!</h2>
-          <p lang="bn">চলুন, পছন্দের কিছু আচার খুঁজে নেওয়া যাক।</p>
-          <Link className="ak-btn ak-btn--sun" href="/shop" lang="bn">
-            আচার দেখুন
+          <EmptyBasketArt />
+          <h2 lang={lang}>{all.mini.emptyTitle}</h2>
+          <p lang={lang}>{all.mini.emptyText}</p>
+          <Link className="ak-btn ak-btn--sun" href={href("/shop")} lang={lang}>
+            {all.mini.browse}
           </Link>
           {notice ? (
             <div
               className="nt"
               role="status"
-              lang="bn"
+              lang={lang}
               style={{ margin: "22px 0 0", textAlign: "left" }}
             >
-              <span>{noticeName} সরিয়ে ফেলা হয়েছে।</span>
+              <span>{all.mini.removed(noticeName)}</span>
               <button type="button" onClick={undo}>
-                পূর্বাবস্থায় ফেরান
+                {all.mini.undo}
               </button>
             </div>
           ) : null}
@@ -205,29 +210,30 @@ export function BasketView() {
 
       {!loading && !empty && (showSum || failed || notice) ? (
         <div className="bk-grid">
-          <section aria-label="ঝুড়ি">
+          <section aria-label={t.section}>
             {failed ? (
-              <div className="nt err" role="alert" lang="bn">
+              <div className="nt err" role="alert" lang={lang}>
                 <span>
-                  <b>ঝুড়ি হালনাগাদ করা যায়নি।</b> আপনার আগের সংখ্যা ঠিক আছে। আবার চেষ্টা করুন।
+                  <b>{t.failTitle}</b>
+                  {t.failText}
                 </span>
                 <button type="button" onClick={() => void reprice(useCart.getState().lines)}>
-                  আবার চেষ্টা করুন
+                  {t.retry}
                 </button>
               </div>
             ) : null}
 
             {notice ? (
-              <div className="nt" role="status" lang="bn">
-                <span>{noticeName} সরিয়ে ফেলা হয়েছে।</span>
+              <div className="nt" role="status" lang={lang}>
+                <span>{all.mini.removed(noticeName)}</span>
                 <button type="button" onClick={undo}>
-                  পূর্বাবস্থায় ফেরান
+                  {all.mini.undo}
                 </button>
               </div>
             ) : null}
 
             {showSum ? (
-              <ul className="lines" aria-label="ঝুড়ির পণ্য">
+              <ul className="lines" aria-label={all.mini.lines}>
                 {rows.map((r) => {
                   const { line, q } = r;
                   const was = q && r.ok && q.compareAtPrice ? q.compareAtPrice : null;
@@ -240,33 +246,33 @@ export function BasketView() {
                     .join(" ");
                   return (
                     <li className={cls} key={line.variantId}>
-                      <div className={`bk-th ${r.index % 2 ? "t2" : ""}`}>
+                      <div className={`bk-th ${r.index % 2 ? "t2" : ""} ${r.img === "/jar.svg" ? "" : "ph"}`}>
                         {/* eslint-disable-next-line @next/next/no-img-element -- product photos and the local jar SVG */}
                         <img src={r.img} alt="" />
                       </div>
                       <div>
-                        <p className="bk-nm" lang={r.hasBn ? "bn" : undefined}>
+                        <p className="bk-nm" lang={r.hasBn ? "bn" : "en"}>
                           {r.name}
                         </p>
-                        <div className="bk-mt" lang="bn">
+                        <div className="bk-mt" lang={lang}>
                           {r.meta}
                         </div>
-                        <div className="bk-un" lang="bn">
+                        <div className="bk-un" lang={lang}>
                           {q && r.ok ? formatTaka(q.unitPrice) : "—"}
                           {was !== null ? <s>{formatTaka(was)}</s> : null}
-                          {q && r.ok ? " / প্রতিটি" : null}
+                          {q && r.ok ? t.each : null}
                         </div>
                       </div>
-                      <div className="bk-lt" aria-live="polite" lang="bn">
+                      <div className="bk-lt" aria-live="polite" lang={lang}>
                         {r.lineTotal !== null ? formatTaka(r.lineTotal) : "—"}
-                        {r.isBusy ? <small>হালনাগাদ হচ্ছে…</small> : null}
+                        {r.isBusy ? <small>{t.updating}</small> : null}
                       </div>
                       <div className="bk-ctl">
                         {canQty ? (
-                          <div className="stp" role="group" aria-label={`${r.name}, সংখ্যা`}>
+                          <div className="stp" role="group" aria-label={all.mini.qty(r.name)}>
                             <button
                               type="button"
-                              aria-label="কমান"
+                              aria-label={all.mini.less}
                               aria-disabled={decDis}
                               onClick={() => {
                                 if (!decDis) void changeQty(line.variantId, line.quantity - 1);
@@ -277,7 +283,7 @@ export function BasketView() {
                             <output aria-live="polite">{line.quantity}</output>
                             <button
                               type="button"
-                              aria-label="বাড়ান"
+                              aria-label={all.mini.more}
                               aria-disabled={incDis}
                               onClick={() => {
                                 if (!incDis) void changeQty(line.variantId, line.quantity + 1);
@@ -291,9 +297,10 @@ export function BasketView() {
                           type="button"
                           className="bk-rm"
                           onClick={() => removeLine(line, r.index)}
-                          lang="bn"
+                          lang={lang}
                         >
-                          সরিয়ে ফেলুন<span className="sr">: {r.name}</span>
+                          {all.mini.remove}
+                          <span className="sr">: {r.name}</span>
                         </button>
                       </div>
                       {r.atMax ? (
@@ -301,58 +308,59 @@ export function BasketView() {
                           className="bk-help"
                           style={{ gridColumn: "2 / -1" }}
                           role="status"
-                          lang="bn"
+                          lang={lang}
                         >
-                          এই পণ্যের সর্বোচ্চ {stock}টি নেওয়া যায়।
+                          {t.max(stock)}
                         </div>
                       ) : null}
                       {r.priceChanged && q ? (
-                        <div className="flag" role="status" lang="bn">
+                        <div className="flag" role="status" lang={lang}>
                           <span>
-                            <b>দাম বদলেছে।</b> আগে {formatTaka(line.unitPrice)}, এখন{" "}
-                            {formatTaka(q.unitPrice)}।
+                            <b>{t.priceTitle}</b>
+                            {t.priceText(formatTaka(line.unitPrice), formatTaka(q.unitPrice))}
                           </span>
                           <button
                             type="button"
                             onClick={() => acceptPrice(line.variantId, q.unitPrice)}
                           >
-                            বুঝেছি
+                            {t.ok}
                           </button>
                         </div>
                       ) : null}
                       {q?.kind === "novariant" ? (
-                        <div className="flag err" role="alert" lang="bn">
+                        <div className="flag err" role="alert" lang={lang}>
                           <span>
-                            <b>এই সাইজটি এখন নেই।</b> মোট থেকে বাদ রাখা হয়েছে। অন্য সাইজ বেছে নিন,
-                            অথবা সরিয়ে ফেলুন।
+                            <b>{t.noSizeTitle}</b>
+                            {t.noSizeText}
                           </span>
                           <Link
                             className="ak-btn ak-btn--line"
-                            href={q.slug ? productHref(q.slug) : "/shop"}
+                            href={href(q.slug ? productHref(q.slug) : "/shop")}
                             style={{ minHeight: 44 }}
                           >
-                            সাইজ বদলান
+                            {t.changeSize}
                           </Link>
                         </div>
                       ) : null}
                       {q?.kind === "gone" ? (
-                        <div className="flag err" role="alert" lang="bn">
+                        <div className="flag err" role="alert" lang={lang}>
                           <span>
-                            <b>পণ্যটি এখন পাওয়া যাচ্ছে না।</b> মোট থেকে বাদ রাখা হয়েছে। সরিয়ে
-                            ফেলে এগিয়ে যান।
+                            <b>{t.goneTitle}</b>
+                            {t.goneText}
                           </span>
                         </div>
                       ) : null}
                       {r.overStock && q ? (
-                        <div className="flag err" role="alert" lang="bn">
+                        <div className="flag err" role="alert" lang={lang}>
                           <span>
-                            <b>মজুতে আছে মাত্র {stock}টি।</b> আপনি {line.quantity}টি নিয়েছেন।
+                            <b>{t.overTitle(stock)}</b>
+                            {t.overText(line.quantity)}
                           </span>
                           <button
                             type="button"
                             onClick={() => void changeQty(line.variantId, stock)}
                           >
-                            {stock}টি করুন
+                            {t.setTo(stock)}
                           </button>
                         </div>
                       ) : null}
@@ -363,60 +371,61 @@ export function BasketView() {
             ) : null}
 
             {showSum ? (
-              <Link className="keep" href="/shop" lang="bn">
+              <Link className="keep" href={href("/shop")} lang={lang}>
                 <Icon name="arrow" />
-                আরও আচার দেখুন
+                {t.keep}
               </Link>
             ) : null}
           </section>
 
           {showSum ? (
-            <aside className="bk-side" aria-label="অর্ডারের হিসাব">
+            <aside className="bk-side" aria-label={t.summary}>
               <section className="sum" aria-labelledby="sm-h">
-                <h2 id="sm-h" lang="bn">
-                  অর্ডারের হিসাব
+                <h2 id="sm-h" lang={lang}>
+                  {t.summary}
                 </h2>
                 <dl>
-                  <div className="r" lang="bn">
-                    <dt>পণ্যের মোট ({count}টি)</dt>
+                  <div className="r" lang={lang}>
+                    <dt>{t.items(count)}</dt>
                     <dd>{quotes ? formatTaka(sub) : "—"}</dd>
                   </div>
-                  <div className="r soft" lang="bn">
-                    <dt>ডেলিভারি চার্জ</dt>
-                    <dd>চেকআউটে হিসাব হবে</dd>
+                  <div className="r soft" lang={lang}>
+                    <dt>{t.delivery}</dt>
+                    <dd>{t.deliveryLater}</dd>
                   </div>
-                  <div className="r soft" lang="bn">
-                    <dt>কুপন</dt>
-                    <dd>চেকআউটে দেওয়া যাবে</dd>
+                  <div className="r soft" lang={lang}>
+                    <dt>{t.coupon}</dt>
+                    <dd>{t.couponLater}</dd>
                   </div>
-                  <div className="r tot" lang="bn">
+                  <div className="r tot" lang={lang}>
                     <dt>
-                      ডেলিভারি ছাড়া মোট<span className="est">আনুমানিক</span>
+                      {t.total}
+                      <span className="est">{t.est}</span>
                     </dt>
                     <dd>{quotes ? formatTaka(sub) : "—"}</dd>
                   </div>
                 </dl>
                 <Link
                   className="ak-btn ak-btn--sun go"
-                  href={"/checkout"}
+                  href={href("/checkout")}
                   aria-disabled={blocked}
                   onClick={(e) => {
                     if (blocked) e.preventDefault();
                   }}
-                  lang="bn"
+                  lang={lang}
                 >
-                  চেকআউটে এগিয়ে যান
+                  {t.checkout}
                 </Link>
                 {quotes && issueCount > 0 ? (
-                  <p className="why" role="status" lang="bn">
-                    এগিয়ে যেতে ঝুড়ির {issueCount}টি বিষয় ঠিক করে নিন।
+                  <p className="why" role="status" lang={lang}>
+                    {t.why(issueCount)}
                   </p>
                 ) : null}
-                <Link className="ak-btn ak-btn--line sec2" href="/shop" lang="bn">
-                  আরও আচার দেখুন
+                <Link className="ak-btn ak-btn--line sec2" href={href("/shop")} lang={lang}>
+                  {t.keep}
                 </Link>
-                <p className="fine" lang="bn">
-                  চূড়ান্ত মোট চেকআউটে দেখা যাবে। ক্যাশ অন ডেলিভারি: পণ্য হাতে পেয়ে টাকা দিন।
+                <p className="fine" lang={lang}>
+                  {t.fine}
                 </p>
               </section>
             </aside>
@@ -425,20 +434,21 @@ export function BasketView() {
       ) : null}
 
       {showSum ? (
-        <div className="bar" lang="bn">
+        <div className="bar" lang={lang}>
           <div className="t">
-            ডেলিভারি ছাড়া মোট<b>{quotes ? formatTaka(sub) : "—"}</b>
+            {t.total}
+            <b>{quotes ? formatTaka(sub) : "—"}</b>
           </div>
           <Link
             className="ak-btn ak-btn--sun"
-            href={"/checkout"}
+            href={href("/checkout")}
             aria-disabled={blocked}
             onClick={(e) => {
               if (blocked) e.preventDefault();
             }}
-            lang="bn"
+            lang={lang}
           >
-            চেকআউটে এগিয়ে যান
+            {t.checkout}
           </Link>
         </div>
       ) : null}
