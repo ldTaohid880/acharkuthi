@@ -821,6 +821,9 @@ export const adminCategoryInput = z.object({
   /** English; `descriptionBn` is its Bangla twin (bilingual storefront). */
   description: z.string().trim().max(2000),
   descriptionBn: z.string().trim().max(2000),
+  /** Short line under the name in the header menu; `taglineBn` is its Bangla twin. */
+  tagline: z.string().trim().max(80),
+  taglineBn: z.string().trim().max(80),
   imageUrl: z.string().trim().max(500).nullable(),
   /** Shop page header photo for this shelf; null uses the default. */
   headerImageUrl: z.string().trim().max(500).nullable(),

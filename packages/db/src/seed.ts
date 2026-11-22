@@ -13,10 +13,24 @@ import {
 import { withEnglish } from "./sample-recipes-en";
 
 const SHELVES = [
-  { name: "Mango", nameBn: "আম", slug: "mango", sortOrder: 1 },
-  { name: "Lemon", nameBn: "লেবু", slug: "lemon", sortOrder: 2 },
-  { name: "Special", nameBn: "বিশেষ", slug: "special", sortOrder: 3 },
-  { name: "Mixed", nameBn: "মিশ্র", slug: "mixed", sortOrder: 4 },
+  { name: "Mango", nameBn: "আম", slug: "mango", sortOrder: 1, tagline: "Raw mango", taglineBn: "কাঁচা আম" },
+  { name: "Lemon", nameBn: "লেবু", slug: "lemon", sortOrder: 2, tagline: "Gently sour", taglineBn: "হালকা টক" },
+  {
+    name: "Special",
+    nameBn: "বিশেষ",
+    slug: "special",
+    sortOrder: 3,
+    tagline: "Olive, tamarind, garlic",
+    taglineBn: "জলপাই, তেঁতুল, রসুন",
+  },
+  {
+    name: "Mixed",
+    nameBn: "মিশ্র",
+    slug: "mixed",
+    sortOrder: 4,
+    tagline: "A little of everything",
+    taglineBn: "সব কিছুর একটু করে",
+  },
 ] as const;
 
 type Shelf = (typeof SHELVES)[number]["slug"];

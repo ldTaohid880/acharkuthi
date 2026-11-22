@@ -28,6 +28,8 @@ export async function SiteHeader({ lang }: { lang: Lang }) {
           name: c.name,
           nameBn: c.nameBn,
           imageUrl: c.imageUrl,
+          // Admin category tagline, in the page language (owner, 2026-11-22).
+          tagline: (lang === "bn" ? c.taglineBn : c.tagline) ?? null,
         }))}
         feature={
           top && topVariant

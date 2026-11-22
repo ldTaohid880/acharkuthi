@@ -35,6 +35,10 @@ export const categories = mysqlTable("categories", {
   description: text("description"),
   /** Bangla twin of `description` (bilingual storefront, migration 0028). */
   descriptionBn: text("description_bn"),
+  /** Short line under the shelf name in the header menu (English; owner, 2026-11-22). */
+  tagline: varchar("tagline", { length: 80 }),
+  /** Bangla twin of `tagline`. */
+  taglineBn: varchar("tagline_bn", { length: 80 }),
   imageUrl: varchar("image_url", { length: 500 }),
   /** Wide photo for this shelf's Shop page header (owner, 2026-11-22). Null: the default photo. */
   headerImageUrl: varchar("header_image_url", { length: 500 }),

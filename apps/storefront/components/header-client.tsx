@@ -19,6 +19,8 @@ interface Shelf {
   name: string;
   nameBn: string | null;
   imageUrl: string | null;
+  /** Short line under the name, from the admin category editor. */
+  tagline: string | null;
 }
 interface Feature {
   slug: string;
@@ -163,7 +165,7 @@ export function HeaderClient({ shelves, feature }: { shelves: Shelf[]; feature: 
                 <span>
                   {/* Short shelf names, like the English "Mango" (the menu tiles use the longer labels). */}
                   <b>{lang === "bn" ? (s.nameBn ?? t.shelf.label[s.slug] ?? s.name) : s.name}</b>
-                  <small>{t.shelf.blurb[s.slug] ?? ""}</small>
+                  <small>{s.tagline ?? ""}</small>
                 </span>
               </Link>
             ))}

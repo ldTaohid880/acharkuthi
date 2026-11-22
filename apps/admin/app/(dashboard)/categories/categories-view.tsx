@@ -534,6 +534,8 @@ function Editor({
     slug: cat?.slug ?? "",
     description: cat?.description ?? "",
     descriptionBn: cat?.descriptionBn ?? "",
+    tagline: cat?.tagline ?? "",
+    taglineBn: cat?.taglineBn ?? "",
     imageUrl: cat?.imageUrl ?? null,
     imageSrc: cat?.imageSrc ?? null,
     headerImageUrl: cat?.headerImageUrl ?? null,
@@ -543,6 +545,7 @@ function Editor({
   const [f, setF] = useState(init);
   const [slugTouched, setSlugTouched] = useState(!!cat);
   const [descLang, setDescLang] = useState<ContentLang>("bn");
+  const [tagLang, setTagLang] = useState<ContentLang>("bn");
   const [tried, setTried] = useState(false);
   const [slugTaken, setSlugTaken] = useState(false);
   /** Which picture is uploading: the shelf image or the Shop header photo. */
@@ -575,6 +578,8 @@ function Editor({
           slug: f.slug,
           description: f.description,
           descriptionBn: f.descriptionBn,
+          tagline: f.tagline,
+          taglineBn: f.taglineBn,
           imageUrl: f.imageUrl,
           headerImageUrl: f.headerImageUrl,
           isActive: f.isActive,
@@ -687,6 +692,31 @@ function Editor({
         />,
         show ? err.slug : "",
         t.slugHelp,
+      )}
+      {field(
+        "c-tag",
+        t.tagline,
+        <div className="flex min-w-0 flex-col gap-2">
+          <ContentLangSwitch
+            value={tagLang}
+            onChange={setTagLang}
+            missing={{ bn: !f.taglineBn.trim(), en: !f.tagline.trim() }}
+            label={t.contentLang}
+            missingLabel={t.contentLangEmpty}
+          />
+          <input
+            id="c-tag"
+            lang={tagLang}
+            value={tagLang === "bn" ? f.taglineBn : f.tagline}
+            maxLength={80}
+            onChange={(e) =>
+              set(tagLang === "bn" ? { taglineBn: e.target.value } : { tagline: e.target.value })
+            }
+            className={inputCls(false)}
+          />
+        </div>,
+        undefined,
+        t.taglineHelp,
       )}
       {field(
         "c-desc",

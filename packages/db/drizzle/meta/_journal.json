@@ -232,6 +232,13 @@
       "when": 1795334890786,
       "tag": "0032_product_image_featured",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1795367631832,
+      "tag": "0033_category_tagline",
+      "breakpoints": true
     }
   ]
 }

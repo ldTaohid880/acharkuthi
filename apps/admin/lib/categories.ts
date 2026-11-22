@@ -11,6 +11,9 @@ export interface CategoryRow {
   slug: string;
   description: string;
   descriptionBn: string;
+  /** Header menu line under the name (English / Bangla). */
+  tagline: string;
+  taglineBn: string;
   imageUrl: string | null;
   /** Address the browser can load (seed images are storefront paths). */
   imageSrc: string | null;
@@ -38,6 +41,8 @@ export async function listCategories(): Promise<{ rows: CategoryRow[]; uploads: 
       slug: c.slug,
       description: c.description ?? "",
       descriptionBn: c.descriptionBn ?? "",
+      tagline: c.tagline ?? "",
+      taglineBn: c.taglineBn ?? "",
       imageUrl: c.imageUrl,
       imageSrc: storefrontAsset(c.imageUrl),
       headerImageUrl: c.headerImageUrl,

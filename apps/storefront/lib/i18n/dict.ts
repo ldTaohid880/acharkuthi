@@ -41,19 +41,13 @@ const bn = {
     privacy: "গোপনীয়তা",
     terms: "শর্তাবলি",
   },
-  /** Shelf labels and taglines by shelf slug (design copy). */
+  /** Shelf labels by shelf slug (design copy). Menu taglines come from admin categories. */
   shelf: {
     label: {
       mango: "আমের আচার",
       lemon: "লেবুর আচার",
       special: "বিশেষ আচার",
       mixed: "মিশ্র আচার",
-    } as Record<string, string>,
-    blurb: {
-      mango: "কাঁচা আম",
-      lemon: "হালকা টক",
-      special: "জলপাই, তেঁতুল, রসুন",
-      mixed: "সব কিছুর একটু করে",
     } as Record<string, string>,
   },
   header: {
@@ -1069,12 +1063,6 @@ const en: Dict = {
       lemon: "Lemon pickles",
       special: "Special pickles",
       mixed: "Mixed pickles",
-    },
-    blurb: {
-      mango: "Raw mango",
-      lemon: "Gently sour",
-      special: "Olive, tamarind, garlic",
-      mixed: "A little of everything",
     },
   },
   header: {

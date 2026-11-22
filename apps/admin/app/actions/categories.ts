@@ -38,6 +38,8 @@ export async function saveCategory(input: unknown): Promise<CategorySaveResult> 
     slug: d.slug,
     description: d.description || null,
     descriptionBn: d.descriptionBn || null,
+    tagline: d.tagline || null,
+    taglineBn: d.taglineBn || null,
     imageUrl: d.imageUrl,
     headerImageUrl: d.headerImageUrl,
     isActive: d.isActive,
