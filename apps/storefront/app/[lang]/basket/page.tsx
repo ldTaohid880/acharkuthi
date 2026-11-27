@@ -3,15 +3,15 @@ import Link from "next/link";
 import { BasketView } from "@/components/basket-view";
 import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 
 interface Params {
   params: Promise<{ lang: string }>;
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  const t = getDict(await langOf(params)).basket;
-  return { title: t.metaTitle, robots: { index: false } };
+  const lang = await langOf(params);
+  return pageMeta({ title: getDict(lang).basket.metaTitle, path: "/basket", lang, noindex: true });
 }
 
 /** Basket (Basket.dc.html desktop, BasketMobile.dc.html phone). The cart is on the device; prices come from the database. */

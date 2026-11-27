@@ -995,3 +995,77 @@ export const orderSettleInput = z.object({
 export const orderUnsettleInput = z.object({ id: z.number().int().positive() });
 /** Stock "সীমা". */
 export const lowStockLimitInput = z.object({ limit: z.number().int().min(1).max(10_000) });
+
+/**
+ * Share Studio "শেয়ার প্রিভিউ" save (docs/future/og-sharing.md §5). Image URLs must be in the
+ * shop's R2 bucket, so pass the app's R2_PUBLIC_URL: `shareCardInput(env.R2_PUBLIC_URL)`.
+ */
+export const shareCardInput = (r2PublicUrl: string) => {
+  const base = r2PublicUrl.replace(/\/+$/, "") + "/";
+  const r2Url = z
+    .string()
+    .trim()
+    .max(500)
+    .refine((u) => u.startsWith(base), "Upload the image first");
+  const focal = z.number().min(0).max(1);
+  return z
+    .object({
+      kind: z.enum(["product", "category", "page", "site"]),
+      refId: z.number().int().nonnegative().default(0),
+      pageKey: z.enum(["", "home", "shop", "story", "contact", "faq", "policies"]).default(""),
+      lang: z.enum(["bn", "en"]),
+      mode: z.enum(["auto", "custom"]),
+      template: z.enum(["studio"]).default("studio"),
+      title: z.string().trim().max(120).optional(),
+      description: z.string().trim().max(300).optional(),
+      sourceImageUrl: r2Url.optional(),
+      focalX: focal.default(0.5),
+      focalY: focal.default(0.5),
+    })
+    .refine((v) => (v.kind === "product" || v.kind === "category") === v.refId > 0, {
+      message: "Products and categories need their id; pages and the site don't",
+      path: ["refId"],
+    })
+    .refine((v) => (v.kind === "page") === (v.pageKey !== ""), {
+      message: "Page cards need a page",
+      path: ["pageKey"],
+    })
+    .refine((v) => v.mode === "auto" || !!v.sourceImageUrl, {
+      message: "Choose a photo for নিজের ছবি",
+      path: ["sourceImageUrl"],
+    });
+};
+export type ShareCardInput = z.infer<ReturnType<typeof shareCardInput>>;
+
+/** Site pages that can carry their own share card (Share Studio "পাতা"). */
+export const SHARE_PAGE_KEYS = ["home", "shop", "story", "contact", "faq", "policies"] as const;
+export const sharePageKey = z.enum(SHARE_PAGE_KEYS);
+
+/** Which share cards to (re)render: one product, shelf or page, or every card ("সব কার্ড"). */
+export const shareCardJobsInput = z.object({
+  kind: z.enum(["product", "category", "page"]).optional(),
+  id: z.number().int().positive().optional(),
+  pageKey: sharePageKey.optional(),
+  /** Only cards whose inputs changed since they were rendered (or never rendered). */
+  onlyStale: z.boolean().default(true),
+});
+/** The fields of a rendered card upload; the two JPEGs travel as files beside them. */
+export const shareCardUploadInput = z
+  .object({
+    kind: z.enum(["product", "category", "page"]),
+    refId: z.coerce.number().int().nonnegative(),
+    pageKey: z.union([sharePageKey, z.literal("")]).default(""),
+    lang: z.enum(["bn", "en"]),
+    /** The card inputs' hash the browser rendered from; must still match the database. */
+    hash: z.string().regex(/^[a-f0-9]{32}$/),
+  })
+  .refine((v) => (v.kind === "page" ? v.pageKey !== "" && v.refId === 0 : v.refId > 0), {
+    message: "Page cards need a page; products and shelves need their id",
+  });
+/** /api/og-source?u=…: the photo a share card is drawn from (admin only, our own photos only). */
+export const ogSourceQuery = z.object({ u: z.url().max(600) });
+/** /content/share/[kind]/[key]: a product or shelf id, or a site page key. */
+export const shareStudioParams = z.discriminatedUnion("kind", [
+  z.object({ kind: z.literal("page"), key: sharePageKey }),
+  z.object({ kind: z.enum(["product", "category"]), key: z.string().regex(/^[1-9]\d{0,9}$/) }),
+]);

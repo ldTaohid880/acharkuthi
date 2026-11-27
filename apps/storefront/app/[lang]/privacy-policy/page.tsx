@@ -4,6 +4,7 @@ import { DocPage } from "@/components/doc-page";
 import { html } from "@/content/privacy";
 import { html as htmlEn } from "@/content/privacy-en";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -17,6 +18,7 @@ export async function generateMetadata({
     description,
     path: "/privacy-policy",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "policies"),
   });
 }
 

@@ -4,6 +4,7 @@ import { DocPage } from "@/components/doc-page";
 import { html } from "@/content/returns";
 import { html as htmlEn } from "@/content/returns-en";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -17,6 +18,7 @@ export async function generateMetadata({
     description,
     path: "/return-refund-policy",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "policies"),
   });
 }
 

@@ -10,6 +10,7 @@ import { shopHref } from "@/lib/routes";
 import { getDict } from "@/lib/i18n/dict";
 import { pickString } from "@/lib/i18n/pick";
 import { breadcrumbJsonLd, langOf, pageMeta, realCopy } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 interface Props {
   params: Promise<{ lang: string; category: string }>;
@@ -31,6 +32,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : `${shelf.name} pickles from Acharkuthi, made in small batches in Dhaka with stone-ground spices. Sizes and prices in taka, cash on delivery across Bangladesh.`),
     path: shopHref(shelf.slug),
     lang,
+    // The shelf's rendered card, else the Shop page's, else the site card. Its header photo is a
+    // WebP upload, so it waits for the card renderer (docs/future/og-sharing.md phase 2).
+    card: await getShareCard(lang, undefined, shelf.id, "shop"),
   });
 }
 

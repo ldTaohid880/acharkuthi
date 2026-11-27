@@ -1,8 +1,11 @@
 import type { Metadata } from "next";
 import { ContactForm } from "@/components/contact-form";
 import { Icon } from "@/components/icon";
+import { SocialIcon } from "@/components/social-icon";
 import { getDict } from "@/lib/i18n/dict";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
+import { OFFICIAL_SOCIAL, REL_ME, SITE_WHATSAPP, SOCIAL_ORDER } from "@/lib/social";
 
 export async function generateMetadata({
   params,
@@ -16,17 +19,15 @@ export async function generateMetadata({
     description,
     path: "/contact",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "contact"),
   });
 }
 
-const PHONE = "01624607294";
 const EMAIL = "info@acharkuthi.store";
-// Bangladesh country code + the number without its leading zero.
-const WHATSAPP = `https://wa.me/880${PHONE.slice(1)}`;
+const WHATSAPP = SITE_WHATSAPP;
 
 const svg = { viewBox: "0 0 24 24", "aria-hidden": true } as const;
-const FACEBOOK = "https://www.facebook.com/acharkuthi";
-const INSTAGRAM = "https://www.instagram.com/acharkuthi_store";
+// Messenger chat with the official Facebook page (OFFICIAL_SOCIAL.facebook).
 const MESSENGER = "https://m.me/acharkuthi";
 
 const mailIcon = (
@@ -40,29 +41,24 @@ const messengerIcon = (
     <path d="M12 2C6.36 2 2 6.13 2 11.7c0 2.91 1.19 5.44 3.14 7.17.16.14.26.35.27.57l.05 1.78c.02.57.6.94 1.13.71l1.98-.87c.17-.08.36-.09.53-.04.91.25 1.88.38 2.9.38 5.64 0 10-4.13 10-9.7S17.64 2 12 2zm6 7.46l-2.94 4.66c-.47.74-1.47.93-2.17.4l-2.34-1.75a.6.6 0 00-.72 0l-3.16 2.4c-.42.32-.97-.18-.69-.63l2.94-4.66c.47-.74 1.47-.93 2.17-.4l2.34 1.75a.6.6 0 00.72 0l3.16-2.4c.42-.32.97.18.69.63z" />
   </svg>
 );
-const fbIcon = (
-  <svg {...svg} fill="currentColor">
-    <path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4V10.5H8v3h2.6V21h2.9z" />
-  </svg>
-);
-const igIcon = (
-  <svg {...svg} fill="none" stroke="currentColor" strokeWidth="1.8">
-    <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-    <circle cx="12" cy="12" r="4" />
-    <circle cx="17.2" cy="6.8" r="1" fill="currentColor" stroke="none" />
-  </svg>
-);
-
 const IMG = "/images/contact";
 
 /**
  * Contact (owner redesign, 2026-11-21, from the owner reference): photo header, a list of ways to
  * reach us (WhatsApp chat with no visible number, email, Messenger), the form, and a separate
- * "follow us" photo band for Facebook and Instagram. No map, no phone number, no help strip.
+ * "follow us" photo band for the official profiles (lib/social.ts) (owner, 2026-11-27).
+ * No map, no phone number, no help strip.
  */
 export default async function ContactPage({ params }: { params: Promise<{ lang: string }> }) {
   const lang = await langOf(params);
-  const t = getDict(lang).contact;
+  const all = getDict(lang);
+  const t = all.contact;
+  const follow = {
+    facebook: t.followFb,
+    instagram: t.followIg,
+    tiktok: t.followTt,
+    youtube: t.followYt,
+  };
   const ways = [
     { href: WHATSAPP, label: t.wa, note: t.chat, noteLang: lang, icon: <Icon name="chat" /> },
     { href: `mailto:${EMAIL}`, label: t.mail, note: EMAIL, noteLang: "en", icon: mailIcon },
@@ -143,14 +139,19 @@ export default async function ContactPage({ params }: { params: Promise<{ lang: 
             </h2>
             <p className="cx-follow-text">{t.followText}</p>
             <div className="cx-follow-btns">
-              <a className="ak-btn cx-sbtn" href={FACEBOOK} target="_blank" rel="noopener">
-                {fbIcon}
-                {t.followFb}
-              </a>
-              <a className="ak-btn cx-sbtn" href={INSTAGRAM} target="_blank" rel="noopener">
-                {igIcon}
-                {t.followIg}
-              </a>
+              {SOCIAL_ORDER.map((n) => (
+                <a
+                  key={n}
+                  className="ak-btn cx-sbtn"
+                  href={OFFICIAL_SOCIAL[n]}
+                  target="_blank"
+                  rel={REL_ME}
+                  aria-label={`${follow[n]} · ${all.footer[n]}`}
+                >
+                  <SocialIcon name={n} />
+                  {follow[n]}
+                </a>
+              ))}
             </div>
           </div>
         </section>

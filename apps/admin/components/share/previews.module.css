@@ -1,0 +1,318 @@
+/*
+ * Share Studio previews: approximations of how each app lays out a shared link
+ * (docs/design/share-studio/2-editor-desktop.png). These imitate other apps' own interfaces,
+ * so they use those apps' colours and type, not the admin theme.
+ */
+.img {
+  background-size: cover;
+  background-repeat: no-repeat;
+  background-color: #ececec;
+}
+.wide {
+  aspect-ratio: 1200 / 630;
+}
+.fbRatio {
+  aspect-ratio: 1.91 / 1;
+}
+.clamp1,
+.clamp2,
+.clamp3 {
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+.clamp1 {
+  -webkit-line-clamp: 1;
+}
+.clamp2 {
+  -webkit-line-clamp: 2;
+}
+.clamp3 {
+  -webkit-line-clamp: 3;
+}
+
+/* WhatsApp */
+.waChat {
+  background: #efeae2;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+.waBubble {
+  width: 300px;
+  max-width: 100%;
+  background: #d9fdd3;
+  border-radius: 8px;
+  padding: 3px;
+  font-size: 14px;
+  box-shadow: 0 1px 0.5px rgba(11, 20, 26, 0.13);
+}
+.waCard {
+  background: #d1f4cc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+.waText {
+  padding: 6px 10px 8px;
+}
+.waTitle {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 19px;
+  color: #111b21;
+}
+.waDesc {
+  font-size: 13px;
+  line-height: 17px;
+  color: #54656f;
+}
+.waDomain {
+  font-size: 12px;
+  color: #54656f;
+  margin-top: 2px;
+}
+.waLink {
+  color: #027eb5;
+  padding: 5px 7px 0;
+  font-size: 14px;
+  line-height: 19px;
+  word-break: break-all;
+}
+.waTime {
+  font-size: 11px;
+  color: #667781;
+  text-align: right;
+  padding: 0 6px 2px;
+}
+
+/* Facebook feed */
+.fb {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+  font-family: Helvetica, Arial, var(--font-anek), sans-serif;
+}
+.fbPost {
+  padding: 12px 16px;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.fbAvatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: #3d4a12;
+  color: #fff;
+  display: grid;
+  place-items: center;
+  font-weight: 700;
+}
+.fbText {
+  background: #f0f2f5;
+  padding: 10px 12px;
+}
+.fbDomain {
+  font-size: 12px;
+  line-height: 16px;
+  color: #65676b;
+  text-transform: uppercase;
+}
+.fbTitle {
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 20px;
+  color: #050505;
+}
+.fbDesc {
+  font-size: 14px;
+  line-height: 18px;
+  color: #65676b;
+}
+
+/* Messenger / iMessage bubbles */
+.plainChat {
+  background: #fff;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  justify-content: flex-end;
+  border: 1px solid #ececec;
+}
+.msBubble {
+  width: 260px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #f0f0f0;
+}
+.imBubble {
+  width: 250px;
+  border-radius: 18px;
+  overflow: hidden;
+  background: #e9e9eb;
+  font-family: -apple-system, var(--font-inter), var(--font-anek), sans-serif;
+}
+.bubbleText {
+  padding: 8px 12px 10px;
+}
+.bubbleTitle {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 18px;
+}
+.bubbleDomain {
+  font-size: 12px;
+  color: #65676b;
+}
+
+/* Telegram */
+.tgChat {
+  background: #d6e3c8;
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  justify-content: flex-end;
+}
+.tgBubble {
+  width: 320px;
+  max-width: 100%;
+  background: #effdde;
+  border-radius: 12px;
+  padding: 7px 10px 6px;
+  font-size: 14px;
+  line-height: 19px;
+}
+.tgQuote {
+  border-left: 3px solid #4fae4e;
+  padding: 2px 0 2px 8px;
+  margin-top: 4px;
+  background: rgba(79, 174, 78, 0.08);
+  border-radius: 0 4px 4px 0;
+}
+.tgSite {
+  color: #3a9b39;
+  font-weight: 600;
+  font-size: 13px;
+}
+.tgDesc {
+  font-size: 13px;
+  line-height: 17px;
+}
+.tgImg {
+  border-radius: 6px;
+  margin: 6px 8px 4px 0;
+}
+
+/* X */
+.xCard {
+  border-radius: 16px;
+  box-shadow: 0 0 0 1px #cfd9de;
+  position: relative;
+}
+.xLabel {
+  position: absolute;
+  left: 12px;
+  bottom: 12px;
+  background: rgba(0, 0, 0, 0.77);
+  color: #fff;
+  font-size: 13px;
+  line-height: 16px;
+  border-radius: 4px;
+  padding: 2px 6px;
+  max-width: 80%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.xFrom {
+  font-size: 13px;
+  color: #536471;
+  margin-top: 4px;
+}
+
+/* LinkedIn */
+.lk {
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 0 0 1px #e0e0e0;
+  overflow: hidden;
+}
+.lkText {
+  padding: 8px 12px;
+}
+.lkTitle {
+  font-weight: 600;
+  font-size: 14px;
+  line-height: 20px;
+}
+.lkDomain {
+  font-size: 12px;
+  color: #666;
+}
+
+/* Discord */
+.dc {
+  background: #313338;
+  border-radius: 8px;
+  padding: 12px;
+}
+.dcEmbed {
+  max-width: 432px;
+  background: #2b2d31;
+  border-left: 4px solid #e8e5d5;
+  border-radius: 4px;
+  padding: 8px 16px 16px 12px;
+  color: #dbdee1;
+  font-size: 14px;
+  line-height: 18px;
+}
+.dcSite {
+  font-size: 12px;
+  color: #b5bac1;
+  margin-top: 4px;
+}
+.dcTitle {
+  color: #00a8fc;
+  font-weight: 600;
+  margin-top: 6px;
+}
+.dcDesc {
+  font-size: 13px;
+  margin-top: 6px;
+}
+.dcImg {
+  border-radius: 4px;
+  margin-top: 12px;
+}
+
+/* Slack */
+.sl {
+  background: #fff;
+  border-radius: 8px;
+  padding: 12px;
+  border: 1px solid #ececec;
+}
+.slAttach {
+  border-left: 4px solid #dddddd;
+  padding: 0 12px;
+  font-size: 14px;
+  line-height: 20px;
+}
+.slSite {
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+.slTitle {
+  color: #1264a3;
+  font-weight: 700;
+}
+.slImg {
+  border-radius: 6px;
+  margin-top: 8px;
+  max-width: 360px;
+}

@@ -7,7 +7,7 @@ import { TrackResult } from "@/components/track-result";
 import { TrackView } from "@/components/track-view";
 import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 import { ownedOrder } from "@/lib/track-server";
 
 export async function generateMetadata({
@@ -15,7 +15,9 @@ export async function generateMetadata({
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  return { title: getDict(await langOf(params)).track.metaTitle, robots: { index: false } };
+  const lang = await langOf(params);
+  // Shared tracking links get the neutral site card and the page's own URL: never order details.
+  return pageMeta({ title: getDict(lang).track.metaTitle, path: "/track", lang, noindex: true });
 }
 
 /**

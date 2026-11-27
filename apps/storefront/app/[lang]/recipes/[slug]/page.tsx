@@ -41,7 +41,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       description: realCopy(rt.summary?.text) ?? rt.accent?.text ?? recipe.subtitle,
       path: recipeHref(recipe.slug),
       lang,
-      image: recipe.imageUrl ? { url: recipe.imageUrl } : undefined,
       type: "article",
     }),
     // The design's placeholder recipes stay out of search engines and AI until real ones replace them.

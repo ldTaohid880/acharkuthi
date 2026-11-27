@@ -18,11 +18,13 @@ import {
   type SteadfastResult,
 } from "@/app/actions/settings";
 import { btn } from "@/components/btn";
+import { ShareCardsCard } from "@/components/share-cards";
 import { useBreakpoint } from "@/components/shell/shell-context";
 import { useToast } from "@/components/toast";
 import { fill, relativeTime } from "@/lib/format";
 import type { Dict } from "@/lib/i18n/dict";
 import type { SettingsData } from "@/lib/settings";
+import type { ShareCardSummary } from "@/lib/share-cards";
 
 type ST = Dict["settings"];
 type BP = "phone" | "tab" | "desk";
@@ -94,7 +96,17 @@ function Switch({
   );
 }
 
-export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lang: AdminLang }) {
+export function SettingsView({
+  data,
+  t,
+  lang,
+  shareCards,
+}: {
+  data: SettingsData;
+  t: ST;
+  lang: AdminLang;
+  shareCards: ShareCardSummary;
+}) {
   const bp: BP = useBreakpoint();
   const toast = useToast();
   const [pending, start] = useTransition();
@@ -751,6 +763,8 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
     </>,
   );
 
+  const shareCard = <ShareCardsCard t={t.share} summary={shareCards} bp={bp} />;
+
   const dialogs = (
     <>
       <KeysDialog open={keysOpen} onOpenChange={setKeysOpen} t={t} onSaved={testToast} />
@@ -834,6 +848,7 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
             {feesCard}
             {courierPhone}
             {payCard}
+            {shareCard}
           </div>
         </ScrollArea>
         {dialogs}
@@ -854,6 +869,7 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
             {feesCard}
             {courierTab}
             {payCard}
+            {shareCard}
           </div>
         </ScrollArea>
         <div className="border-border flex flex-none items-center justify-end border-t bg-white px-6 py-3 shadow-[0_-4px_12px_rgba(0,0,0,.05)]">
@@ -884,7 +900,7 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
               aria-label={t.navAria}
               className="sticky top-0 flex flex-[0_0_180px] flex-col gap-0.5"
             >
-              {(["shop", "delivery", "courier", "cod"] as const).map((k) => (
+              {(["shop", "delivery", "courier", "cod", "share"] as const).map((k) => (
                 <a
                   key={k}
                   href={`#${k}`}
@@ -899,6 +915,7 @@ export function SettingsView({ data, t, lang }: { data: SettingsData; t: ST; lan
               {feesCard}
               {courierDesk}
               {payCard}
+              {shareCard}
             </div>
           </div>
         </div>

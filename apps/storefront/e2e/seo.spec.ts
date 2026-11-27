@@ -53,15 +53,14 @@ test.describe("SEO in the page language", () => {
     });
   }
 
-  test("JSON-LD: OnlineStore, Product, BreadcrumbList follow the page language", async ({
+  test("JSON-LD: Product and BreadcrumbList follow the page language", async ({
     page,
     lang,
   }) => {
     await page.goto(inLang(lang, "/pickles/raw-mango"));
     const ld = await jsonLd(page);
-    const store = ld.find((x) => x["@type"] === "OnlineStore");
-    expect(store?.name).toBe(lang === "bn" ? "আচারকুঠি" : "Acharkuthi");
-    expect(store?.url).toBe(abs(inLang(lang, "/")));
+    // The Organization lives on the home page only; products point at it by @id.
+    expect(ld.some((x) => x["@type"] === "OnlineStore")).toBe(false);
 
     const product = ld.find((x) => x["@type"] === "Product");
     expect(product?.name).toBe(lang === "bn" ? "কাঁচা আমের আচার" : "Raw Mango Pickle");
@@ -78,6 +77,30 @@ test.describe("SEO in the page language", () => {
     for (const i of items) expect(i.item.startsWith(abs(inLang(lang, "/")))).toBe(true);
     expect(items[0]?.name).toBe(lang === "bn" ? "হোম" : "Home");
     expect(items.at(-1)?.item).toBe(abs(inLang(lang, "/pickles/raw-mango")));
+  });
+
+  test("JSON-LD: one Organization with the official profiles, on the home page", async ({
+    page,
+    lang,
+  }) => {
+    await page.goto(inLang(lang, "/"));
+    const ld = await jsonLd(page);
+    const graph = ld.flatMap((x) => (x["@graph"] as Ld[] | undefined) ?? [x]);
+    const orgs = graph.filter((x) => x["@type"] === "OnlineStore" || x["@type"] === "Organization");
+    expect(orgs).toHaveLength(1);
+    expect(orgs[0]?.name).toBe("Acharkuthi");
+    expect(orgs[0]?.alternateName).toBe("আচারকুঠি");
+    expect(orgs[0]?.sameAs).toEqual([
+      "https://www.facebook.com/acharkuthi",
+      "https://www.instagram.com/acharkuthi_store",
+      "https://www.tiktok.com/@acharkuthi_store",
+      "https://www.youtube.com/@acharkuthi",
+    ]);
+    expect(graph.find((x) => x["@type"] === "WebSite")?.name).toBe("Acharkuthi");
+    await expect(page.locator('meta[property="og:site_name"]')).toHaveAttribute(
+      "content",
+      "Acharkuthi",
+    );
   });
 
   test("JSON-LD: FAQPage on the FAQ, in the page language", async ({ page, lang }) => {

@@ -41,6 +41,8 @@ export const NAV: { group: NavGroup; items: NavItem[] }[] = [
       item("legal", "/content/policies", true),
       item("faq", "/content/faq", true),
       item("story", "/content/our-story", true),
+      // Share Studio: owner and staff (owner, 2026-11-26).
+      item("share", "/content/share", false),
     ],
   },
   {

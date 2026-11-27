@@ -1,12 +1,14 @@
 import { describe, expect, it, vi } from "vitest";
 
 vi.mock("server-only", () => ({}));
+vi.mock("@repo/db", () => ({ db: {}, schema: {} }));
 vi.mock("@/lib/site-url", () => ({
   siteUrl: "https://shop.test",
   absolute: (p: string) => `https://shop.test${p === "/" ? "" : p}`,
 }));
 
-const { faqJsonLd, isPlaceholder, ldJson, pageMeta, productJsonLd } = await import("./seo");
+const { faqJsonLd, isPlaceholder, ldJson, pageMeta, productJsonLd, productOgTags } =
+  await import("./seo");
 
 describe("isPlaceholder", () => {
   it("flags design placeholders and empty copy", () => {
@@ -33,6 +35,93 @@ describe("pageMeta", () => {
       languages: { bn: "/faq", en: "/en/faq", "x-default": "/faq" },
     });
     expect(m.openGraph).toMatchObject({ url: "/en/faq", locale: "en_US" });
+  });
+  it("lists the wide and the square JPEG and asks for the large card", () => {
+    const m = pageMeta({ title: "FAQ", path: "/faq", lang: "en" });
+    expect(m.openGraph?.images).toEqual([
+      expect.objectContaining({
+        url: "/og/site-en-wide.jpg?v=1",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg",
+        secureUrl: "https://shop.test/og/site-en-wide.jpg?v=1",
+        alt: "FAQ | Acharkuthi",
+      }),
+      expect.objectContaining({ url: "/og/site-en-square.jpg?v=1", width: 1080, height: 1080 }),
+    ]);
+    expect(m.twitter).toMatchObject({ card: "summary_large_image" });
+  });
+  it("uses share-text overrides in the preview only, never in <title>", () => {
+    const card = {
+      wide: {
+        url: "https://img.test/w.jpg",
+        width: 1200,
+        height: 630,
+        type: "image/jpeg" as const,
+      },
+      square: {
+        url: "https://img.test/s.jpg",
+        width: 1080,
+        height: 1080,
+        type: "image/jpeg" as const,
+      },
+      title: "Share title",
+      description: "Share text",
+    };
+    const m = pageMeta({ title: "Mango", description: "Page text", path: "/x", lang: "en", card });
+    expect(m.title).toBe("Mango");
+    expect(m.description).toBe("Page text");
+    expect(m.openGraph).toMatchObject({ title: "Share title", description: "Share text" });
+  });
+  it("leaves og:type to the product page and keeps utility pages out of search", () => {
+    const product = pageMeta({
+      title: "Mango",
+      path: "/pickles/mango",
+      lang: "bn",
+      type: "product",
+    });
+    expect(product.openGraph).not.toHaveProperty("type");
+    const basket = pageMeta({ title: "Basket", path: "/basket", lang: "bn", noindex: true });
+    expect(basket.robots).toEqual({ index: false, follow: true });
+    expect(basket.alternates?.canonical).toBe("/basket");
+    expect(pageMeta({ title: "FAQ", path: "/faq", lang: "bn" })).not.toHaveProperty("robots");
+  });
+});
+
+describe("productOgTags", () => {
+  it("prices the cheapest size in taka and reports stock across sizes", () => {
+    const tags = productOgTags({
+      lang: "en",
+      variants: [
+        { sku: "M-500", price: 34000, stock: 0 },
+        { sku: "M-300", price: 22000, stock: 0 },
+      ],
+      category: "Mango",
+    });
+    expect(Object.fromEntries(tags)).toEqual({
+      "og:type": "product",
+      "product:price:amount": "220.00",
+      "product:price:currency": "BDT",
+      "product:availability": "out of stock",
+      "product:condition": "new",
+      "product:brand": "Acharkuthi",
+      "product:retailer_item_id": "M-300",
+      "product:category": "Mango",
+    });
+    expect(tags[0]).toEqual(["og:type", "product"]);
+  });
+  it("is in stock when any size is, and prints nothing without sizes", () => {
+    const tags = productOgTags({
+      lang: "bn",
+      variants: [
+        { sku: "A", price: 100, stock: 0 },
+        { sku: "B", price: 200, stock: 3 },
+      ],
+    });
+    expect(tags).toContainEqual(["product:availability", "in stock"]);
+    expect(tags).toContainEqual(["product:brand", "আচারকুঠি"]);
+    expect(tags.some(([k]) => k === "product:category")).toBe(false);
+    expect(productOgTags({ lang: "bn", variants: [] })).toEqual([]);
   });
 });
 

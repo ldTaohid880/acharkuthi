@@ -9,11 +9,11 @@ import {
   SITE_EMAIL,
   SITE_NAME,
   SITE_NAME_BN,
-  SITE_SOCIAL,
   SITE_WHATSAPP,
 } from "@/lib/seo";
 import { absolute } from "@/lib/site-url";
 import { RECIPES_LIVE } from "@/lib/features";
+import { OFFICIAL_SOCIAL, SOCIAL_NAME, SOCIAL_ORDER } from "@/lib/social";
 
 // Built from the live catalogue and settings on each request (the build has no database).
 export const dynamic = "force-dynamic";
@@ -89,7 +89,8 @@ export async function GET() {
     "",
     `- WhatsApp: ${SITE_WHATSAPP}`,
     `- Email: ${SITE_EMAIL}`,
-    ...SITE_SOCIAL.map((s) => `- ${s.includes("facebook") ? "Facebook" : "Instagram"}: ${s}`),
+    // Official profiles only (lib/social.ts): fake pages use our name.
+    ...SOCIAL_ORDER.map((n) => `- ${SOCIAL_NAME[n]} (official): ${OFFICIAL_SOCIAL[n]}`),
     `- Contact form: ${en("/contact")}`,
     "",
     "## Pages",

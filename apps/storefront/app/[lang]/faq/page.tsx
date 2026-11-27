@@ -6,6 +6,7 @@ import { html as htmlEn } from "@/content/faq-en";
 import { withDeliveryFees } from "@/lib/doc-fees";
 import { JsonLd } from "@/components/json-ld";
 import { faqJsonLd, langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -19,6 +20,7 @@ export async function generateMetadata({
     description,
     path: "/faq",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "faq"),
   });
 }
 

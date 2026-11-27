@@ -5,6 +5,7 @@ import { html } from "@/content/shipping";
 import { html as htmlEn } from "@/content/shipping-en";
 import { withDeliveryFees } from "@/lib/doc-fees";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -18,6 +19,7 @@ export async function generateMetadata({
     description,
     path: "/shipping-policy",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "policies"),
   });
 }
 

@@ -14,7 +14,9 @@ import {
 import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
 import { shopHref } from "@/lib/routes";
-import { langOf, pageMeta } from "@/lib/seo";
+import { JsonLd } from "@/components/json-ld";
+import { langOf, organizationJsonLd, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -29,6 +31,7 @@ export async function generateMetadata({
     description,
     path: "/",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "home"),
   });
 }
 
@@ -64,6 +67,8 @@ export default async function HomePage({ params }: { params: Promise<{ lang: str
 
   return (
     <main className="page-home">
+      {/* The site's only Organization block: brand identity and official profiles (lib/seo.ts). */}
+      <JsonLd data={organizationJsonLd(lang)} />
       {/* Hero: full-bleed still life (owner, 2026-11-20). Desktop image from 721px, phone image below. */}
       <section className="hero hero-photo" aria-labelledby="hero-h">
         <picture className="hero-bg">

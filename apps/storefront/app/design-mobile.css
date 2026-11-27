@@ -2871,8 +2871,9 @@
   .page-contact .cx-main {
     padding: 44px 0 56px;
   }
-  .page-contact .cx-main::before {
-    display: none;
+  /* The background scene, larger so it shows around the form (cropped at the right edge). */
+  .page-contact .cx-main::after {
+    background-size: 160% auto;
   }
   .page-contact .cx-follow {
     flex-direction: column;
@@ -2901,11 +2902,21 @@
    "all pickles" link under the lede, and the three cards scroll sideways, one and a bit in view.
    Desktop: design-pages.css "Home featured picks". */
 @media (max-width: 720px) {
-  /* The grid scrolls sideways on phones and would clip the art; no phone board shows it. */
+  /* The leaf branch shows on phones too (owner, 2026-11-27). The grid scrolls sideways and would
+     clip it, so the branch is placed on the section instead: top right, whole, behind the heading
+     and the cards. */
+  .fpk-grid {
+    position: static;
+  }
   .fpk-sprig {
-    display: none;
+    --sprig-w: min(48vw, 216px);
+    /* Placed on the .wrap; up into the section's 72px top padding, 16px under the section edge. */
+    top: -56px;
+    right: var(--space-3);
   }
   .fpk-head {
+    position: relative;
+    z-index: 1;
     flex-direction: column;
     align-items: flex-start;
     gap: var(--space-3);

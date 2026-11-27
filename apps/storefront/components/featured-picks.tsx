@@ -49,14 +49,14 @@ export function FeaturedPicks({
           </Link>
         </div>
         <div className="fpk-grid">
-          {/* The mockup's mango-leaf line art, redrawn whole in Gemini (owner: full leaves, no cut-outs). */}
+          {/* The mockup's mango-leaf line art, the owner's SVG (2026-11-27; full leaves, no cut-outs). */}
           {/* eslint-disable-next-line @next/next/no-img-element -- static decorative image */}
           <img
             className="fpk-sprig"
-            src="/images/home/featured-sprig.webp"
+            src="/images/home/featured-sprig.svg"
             alt=""
-            width={1000}
-            height={813}
+            width={2065}
+            height={1681}
           />
           {products.map((p) => (
             <PickCard key={p.id} product={p} bestsellerId={bestsellerId} lang={lang} />

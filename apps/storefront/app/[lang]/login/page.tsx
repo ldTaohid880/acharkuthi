@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { authNextPath } from "@repo/validators";
 import { getDict } from "@/lib/i18n/dict";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 import { AuthView, type AuthMode } from "./auth-view";
 
 export async function generateMetadata({
@@ -9,7 +9,8 @@ export async function generateMetadata({
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  return { title: getDict(await langOf(params)).auth.metaTitle, robots: { index: false } };
+  const lang = await langOf(params);
+  return pageMeta({ title: getDict(lang).auth.metaTitle, path: "/login", lang, noindex: true });
 }
 
 /**

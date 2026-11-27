@@ -85,6 +85,8 @@ const bn = {
     social: "সোশ্যাল মিডিয়া",
     facebook: "ফেসবুকে আচারকুঠি",
     instagram: "ইনস্টাগ্রামে আচারকুঠি",
+    tiktok: "টিকটকে আচারকুঠি",
+    youtube: "ইউটিউবে আচারকুঠি",
     whatsapp: "হোয়াটসঅ্যাপে আচারকুঠির সঙ্গে কথা বলুন",
   },
   newsletter: {
@@ -857,6 +859,8 @@ const bn = {
     followText: "নতুন স্বাদ, রেসিপি আর ঐতিহ্যের গল্পে আমাদের সঙ্গে থাকুন।",
     followFb: "Facebook-এ ফলো করুন",
     followIg: "Instagram-এ ফলো করুন",
+    followTt: "TikTok-এ ফলো করুন",
+    followYt: "YouTube-এ সাবস্ক্রাইব করুন",
     followAlt: "পরোটা, ডিম ভাজা আর চায়ের সঙ্গে বোম্বাই খাজার বয়াম ও মাটির বাটি",
     err: {} as Readonly<Record<string, string>>,
   },
@@ -1100,6 +1104,8 @@ const en: Dict = {
     social: "Social",
     facebook: "Acharkuthi on Facebook",
     instagram: "Acharkuthi on Instagram",
+    tiktok: "Acharkuthi on TikTok",
+    youtube: "Acharkuthi on YouTube",
     whatsapp: "Chat with Acharkuthi on WhatsApp",
   },
   newsletter: {
@@ -1930,6 +1936,8 @@ const en: Dict = {
     followText: "Follow along for new flavours, recipes and stories of our heritage.",
     followFb: "Follow on Facebook",
     followIg: "Follow on Instagram",
+    followTt: "Follow on TikTok",
+    followYt: "Subscribe on YouTube",
     followAlt: "A jar and a clay bowl of Bombai Khaja with parathas, a fried egg and tea",
     err: {
       "নামটি লিখুন": "Enter your name",

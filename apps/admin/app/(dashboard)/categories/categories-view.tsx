@@ -26,6 +26,7 @@ import {
   uploadCategoryImage,
 } from "@/app/actions/categories";
 import { btn } from "@/components/btn";
+import { refreshShareCards } from "@/components/share-cards";
 import { ContentLangSwitch, type ContentLang } from "@/components/content-lang-switch";
 import { NeedsStorage } from "@/components/needs-storage";
 import { useBreakpoint } from "@/components/shell/shell-context";
@@ -589,6 +590,7 @@ function Editor({
           return;
         }
         toast({ tone: "ok", title: t.saved });
+        void refreshShareCards({ kind: "category", id: r.id });
         onSaved(r.id);
         router.refresh();
       } catch {

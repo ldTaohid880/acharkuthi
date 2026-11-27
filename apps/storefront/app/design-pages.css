@@ -12500,20 +12500,22 @@ html[lang="en"] .steps li::before {
   position: relative;
   padding: 80px 0 96px;
 }
-/* The leaf sprig from the owner reference, faint, lower left. */
-.page-contact .cx-main::before {
+/* Village and palm scene (owner SVG, 2026-11-27; replaces the leaf sprig): faint, flush with the
+   bottom-left corner under the left column. Stacked layouts keep it as a full-width background. */
+.page-contact .cx-main::after {
   content: "";
   position: absolute;
-  left: max(0px, calc(50% - 760px));
-  bottom: 24px;
-  width: 240px;
-  height: 320px;
-  background: url("/images/contact/leaf-sprig.webp") no-repeat center / contain;
-  opacity: 0.55;
+  left: 0;
+  bottom: 0;
+  width: 54%;
+  height: 100%;
+  background: url("/images/contact/botanical.svg") no-repeat left bottom / 100% auto;
+  opacity: 0.4;
   pointer-events: none;
 }
 .page-contact .cx-main .ct-main {
   position: relative;
+  z-index: 1;
 }
 .page-contact .cx-ways .ct-h2 {
   margin-bottom: 28px;
@@ -12711,6 +12713,8 @@ html[lang="en"] .steps li::before {
 .page-contact .cx-main .ct-card {
   padding: 0 0 0 clamp(32px, 4vw, 64px);
   background: none;
+  /* The shared .fcard frosting would blur the background scene behind the form. */
+  backdrop-filter: none;
   border: 0;
   border-left: 1px solid var(--line);
   border-radius: 0;
@@ -12804,21 +12808,11 @@ html[lang="en"] .steps li::before {
   height: 26px;
 }
 
-/* The leaf sits in the left margin, clear of the copy, like the reference. */
-.page-contact .cx-main::before {
-  left: calc(max(0px, 50% - 720px) - 24px);
-  width: 170px;
-  height: 250px;
-  bottom: 8px;
-  opacity: 1;
-}
-@media (max-width: 1200px) {
-  .page-contact .cx-main::before {
-    display: none;
-  }
-}
-
 @media (max-width: 980px) {
+  /* One column: the scene stays a background behind the form, full width. */
+  .page-contact .cx-main::after {
+    width: 100%;
+  }
   .page-contact .cx-main .ct-main {
     grid-template-columns: minmax(0, 1fr);
     gap: 40px;
@@ -12900,14 +12894,17 @@ html[lang="en"] .steps li::before {
   overflow: hidden;
 }
 .fpk-sprig {
-  /* Mockup: faint mango-leaf branch in the top-right corner behind the header, whole (owner,
-     2026-11-21: full leaves, no cut-outs). It sits above the cards, never under them. */
+  /* The owner's leaf branch (SVG, 2026-11-27): a large, whole branch lying loose from the top-right
+     corner down behind the second and third cards (owner sketch). The cards cover its lower part,
+     and it stays clear of the section edges so nothing is cut off. */
+  /* 40% smaller than first drawn (owner, 2026-11-28). */
+  --sprig-w: clamp(264px, 27.6vw, 408px);
   position: absolute;
-  right: -72px;
-  bottom: calc(100% + 6px);
+  /* Out into the page margin, but never closer than 32px to the window edge. */
+  right: max(calc(var(--sprig-w) * -0.12), calc((100% - 100vw) / 2 + 32px));
+  top: calc(var(--sprig-w) * -0.4);
   z-index: 0;
-  /* Small enough that the whole branch fits between the section top and the cards. */
-  width: 336px;
+  width: var(--sprig-w);
   height: auto;
   opacity: 0.55;
   pointer-events: none;

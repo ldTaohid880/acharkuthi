@@ -1,7 +1,73 @@
 # Future: advanced link-preview (Open Graph) studio
 
-Status: **planned, not started** (owner request, 2026-11-22; "advanced, with preview, modern").
-It does not block launch.
+Status: **phases 1–3 built (2026-11-26)**, phases 4–6 planned (owner request, 2026-11-22; "advanced,
+with preview, modern"). It does not block launch.
+
+Owner answers (2026-11-26) to §10's questions: ship the **Studio** template first; **no price** on
+card images (price lives only in the `product:*` tags); cache refresh is the **Sharing Debugger link
+only** (no Facebook app, so no `FB_APP_ID` / `FB_APP_SECRET`).
+
+Phase 1, as built:
+
+- Static default cards in `apps/storefront/public/og/site-{bn,en}-{wide,square}.jpg` (Studio:
+  kacha field, mustard name, Home hero photo), rendered by `apps/storefront/scripts/og-default-cards.mjs`
+  (Playwright). Re-render after a design change and bump `SITE_CARD_VERSION` in `lib/share-card.ts`.
+- `share_cards` table (migration `0034_share_cards`). `ref_id` and `page_key` are NOT NULL
+  (0 / "") instead of null, so the unique key works in MySQL. Nothing writes it yet.
+- `lib/share-card.ts` `getShareCard()` resolves product → category → page → site row → static card.
+  Until phase 2 renders item cards, products and shelves show the site card.
+- `pageMeta()` lists both JPEGs (type, size, alt, `secure_url` on https), always
+  `summary_large_image`, takes share-text overrides, and `noindex` for utility pages (basket,
+  checkout, track, login, account, unavailable now have their own title, canonical and `og:url`).
+- Products print `og:type=product` and `product:*` tags from `components/product-og.tsx` (Next's
+  `other` field writes `name=`, not `property=`). `theme-color` is linen, the page ground.
+- `shareCardInput(r2PublicUrl)` in `@repo/validators` for the phase 3 save action.
+
+Phase 2, as built (2026-11-26):
+
+- `apps/admin/lib/share-cards.ts` builds each product/shelf card's inputs per language and a
+  hash of them (`CARD_DESIGN_VERSION` is in the hash: bump it after a design change and every
+  card goes stale). Products without a photo get no card (the shelf card is used).
+- `apps/admin/lib/og/render.ts` draws the card on a canvas in the owner's browser and exports
+  JPEG under 300 KB. Photos come through `/api/og-source` (owner only, our R2 / storefront photos
+  only), so **no R2 CORS rule is needed**.
+- `uploadShareCard` (owner, Zod) checks both JPEGs' size and dimensions, rebuilds the inputs and
+  refuses a stale hash, stores `og/<kind>/<slug>-<lang>-<size>-v<version>.jpg` in R2 and upserts
+  `share_cards`. Old versions stay in R2 (add a lifecycle rule on `og/` later, see §3.6).
+- Saving a product or shelf redraws its cards in the background. Settings › শেয়ার কার্ড shows how
+  many are out of date (e.g. after a price change on the Stock page) and remakes them.
+
+Phase 3, Share Studio, as built (2026-11-26). Design: `docs/design/share-studio/*.png` (owner
+approved draft 3; there is no admin canvas board for it):
+
+- Admin › কনটেন্ট › শেয়ার প্রিভিউ at `/content/share` (list) and `/content/share/<kind>/<key>`
+  (editor; kind `product` | `category` | `page`). **Owner and staff** both edit (owner).
+- One form (image অটো / নিজের ছবি with a draggable focal point, title, description, per language)
+  drives nine stacked, live previews: WhatsApp, Facebook, Messenger, Telegram, X, LinkedIn,
+  Discord, Slack, iMessage (approximate; brand marks bundled from Simple Icons).
+- **No automatic feedback** (owner): no truncation flags, scores, warnings or crop shading. The
+  person editing sees the previews update and decides. Plain facts only in the list.
+- **Share-only text** (owner): overrides change og/twitter tags, never `<title>` or the meta
+  description. Placeholders are the page's own text, read from the live storefront page.
+- নিজের ছবি is uploaded to R2 (`share/…`) and drawn into 1200×630 / 1080×1080 cards around the
+  focal point (layout "photo"); site pages in অটো keep the storefront's site card.
+- Not built: version history/restore (needs a `share_card_versions` table, §3.6) and the health
+  score of §3.4 (the owner does not want automatic feedback in the Studio).
+
+Phase 2 card design, approved by the owner 2026-11-26 (mockups rendered with Playwright):
+
+- Product and shelf cards use the **light** variant: linen ground (`--linen`), names in `--kacha`
+  (Anek Bangla 800 / Baloo 2 800), second name in `--moss` (Fraunces italic / Anek Bangla 600),
+  a short `--leaf` rule, footer = leaf jar mark + "আচারকুঠি · acharkuthi.store". Photo frame:
+  jar-shoulder radii (44 / 14), pale-olive hairline, soft shadow. The site cards stay dark (phase 1).
+- Product photo: the image flagged `is_featured` (the styled one), else the first image.
+- Under the names: the admin's ছোট লাইন (`tagline` / `tagline_en`) instead of the spice level;
+  left out when empty. No price.
+- Badges: **discount only**, when a size has a compare-at price ("১০% ছাড়" / "10% off"):
+  a frosted linen pill on the photo's top-left corner (Home featured-picks badge style), the
+  percent in `--chili` 800, the word in `--kacha`.
+- Shelf card: eyebrow "আচারকুঠির তাক" / "From the Acharkuthi shelves", shelf name, rule, footer,
+  shelf header photo (or the default Shop header). No product count.
 
 Goal: every shared link (WhatsApp, Messenger, Facebook, Instagram DM, Telegram, X, LinkedIn,
 Discord, Slack, iMessage, Google Chat) shows a large, sharp, on-brand card in the right language.

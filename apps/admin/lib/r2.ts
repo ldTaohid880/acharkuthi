@@ -24,6 +24,9 @@ const cfg =
       }
     : null;
 
+/** The bucket's public address (no trailing slash), or null when uploads are off. */
+export const r2PublicUrl = () => cfg?.publicUrl ?? null;
+
 export function uploadsEnabled(): boolean {
   return cfg !== null;
 }
@@ -56,10 +59,35 @@ export async function putProductImage(
   productSlug: string,
   bytes: ArrayBuffer,
   type: keyof typeof IMAGE_TYPES,
-  folder: "products" | "categories" | "avatars" = "products",
+  folder: "products" | "categories" | "avatars" | "share" = "products",
 ): Promise<string> {
   const safe = productSlug.replace(/[^a-z0-9-]/g, "").slice(0, 60) || "product";
   const key = `${folder}/${safe}-${randomUUID().slice(0, 8)}.${IMAGE_TYPES[type]}`;
+  return putObject(key, bytes, type);
+}
+
+/**
+ * Stores a rendered share card (docs/future/og-sharing.md) at
+ * og/<kind>/<slug>-<lang>-<size>-v<version>.jpg and returns its public address. Each version is
+ * a new file, so chat apps that cached the old one fetch the new one.
+ */
+export async function putShareCard(
+  kind: "product" | "category" | "page",
+  slug: string,
+  lang: "bn" | "en",
+  size: "wide" | "square",
+  version: number,
+  bytes: ArrayBuffer,
+): Promise<string> {
+  const safe = slug.replace(/[^a-z0-9-]/g, "").slice(0, 80) || kind;
+  return putObject(`og/${kind}/${safe}-${lang}-${size}-v${version}.jpg`, bytes, "image/jpeg");
+}
+
+async function putObject(
+  key: string,
+  bytes: ArrayBuffer,
+  type: keyof typeof IMAGE_TYPES,
+): Promise<string> {
   const { cfg: c, aws } = r2();
   // Hostinger's network rejects a streamed body (R2 answered 411 Length Required): sign the
   // request, then send the bytes as one buffer with an explicit Content-Length.

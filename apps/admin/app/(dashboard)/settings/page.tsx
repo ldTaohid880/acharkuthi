@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { getDict } from "@/lib/i18n/server";
 import { requireRole } from "@/lib/require-admin";
+import { uploadsEnabled } from "@/lib/r2";
 import { getSettings } from "@/lib/settings";
+import { shareCardSummary } from "@/lib/share-cards";
 import { SettingsView } from "./settings-view";
 
 export const metadata: Metadata = { title: "Settings" };
@@ -13,6 +15,10 @@ export const metadata: Metadata = { title: "Settings" };
  */
 export default async function SettingsPage() {
   await requireRole("owner");
-  const [{ lang, t }, data] = await Promise.all([getDict(), getSettings()]);
-  return <SettingsView data={data} t={t.settings} lang={lang} />;
+  const [{ lang, t }, data, shareCards] = await Promise.all([
+    getDict(),
+    getSettings(),
+    shareCardSummary(uploadsEnabled()),
+  ]);
+  return <SettingsView data={data} t={t.settings} lang={lang} shareCards={shareCards} />;
 }

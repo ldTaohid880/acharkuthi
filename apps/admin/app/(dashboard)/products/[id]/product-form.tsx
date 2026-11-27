@@ -33,6 +33,7 @@ import { useRouter } from "next/navigation";
 import { Dialog } from "radix-ui";
 import { useEffect, useRef, useState, useTransition } from "react";
 import { saveProduct, uploadProductImage, type SaveErrors } from "@/app/actions/product-edit";
+import { refreshShareCards } from "@/components/share-cards";
 import { btn } from "@/components/btn";
 import { ContentLangSwitch, type ContentLang } from "@/components/content-lang-switch";
 import { NeedsStorage } from "@/components/needs-storage";
@@ -400,6 +401,7 @@ export function ProductForm({
           return;
         }
         toast({ tone: "ok", title: t.saved });
+        void refreshShareCards({ kind: "product", id: r.id });
         router.replace(`/products/${r.id}?saved=1` as Route);
         router.refresh();
       } catch {

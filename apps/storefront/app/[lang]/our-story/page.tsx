@@ -8,6 +8,7 @@ import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
 import { productHref, shopHref } from "@/lib/routes";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -21,6 +22,7 @@ export async function generateMetadata({
     description,
     path: "/our-story",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "story"),
   });
 }
 

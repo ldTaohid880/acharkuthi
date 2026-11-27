@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import {
   Anek_Bangla,
   Baloo_2,
@@ -16,12 +16,12 @@ import "../design-reviews.css";
 import "../design-mobile.css";
 import "../design-drawer.css";
 import { BasketBar } from "@/components/basket-bar";
-import { JsonLd } from "@/components/json-ld";
 import { MetaPixel } from "@/components/meta-pixel";
 import { MiniBasket } from "@/components/mini-basket";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { DEFAULT_IMAGE, langOf, SITE_NAME, SITE_NAME_BN, storeJsonLd } from "@/lib/seo";
+import { langOf, SITE_NAME } from "@/lib/seo";
+import { siteCard } from "@/lib/share-card";
 import { getDict } from "@/lib/i18n/dict";
 import { isLang, OG_LOCALE, type Lang } from "@/lib/i18n/lang";
 import { LangProvider } from "@/lib/i18n/lang-context";
@@ -80,6 +80,7 @@ export async function generateMetadata({
   const lang = await langOf(params);
   const m = getDict(lang).meta;
   const [siteTitle, siteDescription] = m.home;
+  const card = siteCard(lang);
   return {
     metadataBase: new URL(siteUrl),
     title: { default: siteTitle, template: `%s | ${m.site}` },
@@ -87,16 +88,25 @@ export async function generateMetadata({
     applicationName: SITE_NAME,
     openGraph: {
       type: "website",
-      siteName: `${SITE_NAME_BN} · ${SITE_NAME}`,
+      siteName: SITE_NAME,
       locale: OG_LOCALE[lang],
       alternateLocale: [OG_LOCALE[lang === "bn" ? "en" : "bn"]],
       title: siteTitle,
       description: siteDescription,
-      images: [{ ...DEFAULT_IMAGE, alt: SITE_NAME }],
+      images: [
+        { ...card.wide, alt: siteTitle },
+        { ...card.square, alt: siteTitle },
+      ],
     },
-    twitter: { card: "summary", images: [DEFAULT_IMAGE.url] },
+    twitter: { card: "summary_large_image", images: [{ url: card.wide.url, alt: siteTitle }] },
   };
 }
+
+/**
+ * theme-color: chat apps and phone browsers tint with it. The page ground (linen) so a phone's
+ * address bar blends into the page rather than adding a colour the design doesn't show.
+ */
+export const viewport: Viewport = { themeColor: "#e8e5d5" };
 
 // The header reads the shelves from the database on every request.
 export const dynamic = "force-dynamic";
@@ -122,7 +132,6 @@ export default async function RootLayout({
     <html lang={lang} data-site-lang={lang} className={fontVars}>
       <body className="ak">
         <LangProvider lang={lang}>
-          <JsonLd data={storeJsonLd(lang)} />
           <SiteHeader lang={lang} />
           {children}
           <SiteFooter lang={lang} />

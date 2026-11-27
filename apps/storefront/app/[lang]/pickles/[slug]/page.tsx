@@ -25,6 +25,8 @@ import { localePath } from "@/lib/i18n/lang";
 import { pickString, pickText, type LocalText } from "@/lib/i18n/pick";
 import { breadcrumbJsonLd, langOf, pageMeta, productJsonLd, realCopy } from "@/lib/seo";
 import { JsonLd } from "@/components/json-ld";
+import { ProductOg } from "@/components/product-og";
+import { getShareCard } from "@/lib/share-card";
 import { PixelViewContent } from "@/components/pixel-view-content";
 import { formatTaka } from "@repo/ui/lib/utils";
 
@@ -43,7 +45,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const from = product.variants
     .filter((v) => v.isActive)
     .reduce((m, v) => Math.min(m, v.price), Number.POSITIVE_INFINITY);
-  const photo = [...product.images].sort((a, b) => a.sortOrder - b.sortOrder)[0];
   return pageMeta({
     // The page language's name first; both names, so searches in either script match.
     title: product.nameBn
@@ -58,9 +59,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         : `${product.name}, made the heritage way by Acharkuthi in Dhaka${Number.isFinite(from) ? `, from ${formatTaka(from)}` : ""}. Cash on delivery across Bangladesh.`),
     path: `/pickles/${product.slug}`,
     lang,
-    image: photo
-      ? { url: photo.url, width: photo.width ?? undefined, height: photo.height ?? undefined }
-      : undefined,
+    // Product photos are portrait WebP, which WhatsApp drops: the product's rendered card, else
+    // its shelf's, else the site card (lib/share-card.ts).
+    card: await getShareCard(lang, product.id, product.categoryId),
+    type: "product",
   });
 }
 
@@ -202,6 +204,11 @@ export default async function ProductPage({ params, searchParams }: Props) {
   return (
     <main className="page-product">
       <JsonLd data={jsonLd} />
+      <ProductOg
+        lang={lang}
+        variants={product.variants.filter((v) => v.isActive)}
+        category={product.category ? shelfName(product.category) : null}
+      />
       {variants[0] ? (
         <PixelViewContent
           variantId={variants[0].id}

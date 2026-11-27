@@ -4,6 +4,7 @@ import { DocPage } from "@/components/doc-page";
 import { html } from "@/content/terms";
 import { html as htmlEn } from "@/content/terms-en";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -17,6 +18,7 @@ export async function generateMetadata({
     description,
     path: "/terms-and-conditions",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "policies"),
   });
 }
 

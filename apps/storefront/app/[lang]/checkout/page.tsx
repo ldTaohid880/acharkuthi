@@ -5,14 +5,20 @@ import { asc, db, desc, eq, getShopRules, schema } from "@repo/db";
 import { CheckoutView, type CheckoutValues } from "@/components/checkout-view";
 import { isKnownLocation } from "@/lib/bd-locations";
 import { getDict } from "@/lib/i18n/dict";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 
 interface Params {
   params: Promise<{ lang: string }>;
 }
 
 export async function generateMetadata({ params }: Params): Promise<Metadata> {
-  return { title: getDict(await langOf(params)).checkout.metaTitle, robots: { index: false } };
+  const lang = await langOf(params);
+  return pageMeta({
+    title: getDict(lang).checkout.metaTitle,
+    path: "/checkout",
+    lang,
+    noindex: true,
+  });
 }
 
 /**

@@ -3,14 +3,20 @@ import Link from "next/link";
 import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
 import { shopHref } from "@/lib/routes";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  return { title: getDict(await langOf(params)).meta.unavailable, robots: { index: false } };
+  const lang = await langOf(params);
+  return pageMeta({
+    title: getDict(lang).meta.unavailable,
+    path: "/unavailable",
+    lang,
+    noindex: true,
+  });
 }
 
 /** The design's "temporarily unavailable" screen. Nothing links here yet; it is ready for when a feature is paused. */

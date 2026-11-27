@@ -4,14 +4,20 @@ import { AccountNav } from "@/components/account/account-nav";
 import { getAccountProfile, getSessionUser } from "@/lib/account";
 import { getDict } from "@/lib/i18n/dict";
 import { localePath } from "@/lib/i18n/lang";
-import { langOf } from "@/lib/seo";
+import { langOf, pageMeta } from "@/lib/seo";
 
 export async function generateMetadata({
   params,
 }: {
   params: Promise<{ lang: string }>;
 }): Promise<Metadata> {
-  return { title: getDict(await langOf(params)).account.metaTitle, robots: { index: false } };
+  const lang = await langOf(params);
+  return pageMeta({
+    title: getDict(lang).account.metaTitle,
+    path: "/account",
+    lang,
+    noindex: true,
+  });
 }
 
 const SIGN_OUT = "/account/settings?signout=1";

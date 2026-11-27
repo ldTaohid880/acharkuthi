@@ -47,12 +47,16 @@ export default async function MorePage() {
             { key: "legal" },
             { key: "faq" },
             { key: "story" },
+            { key: "share" },
           ],
         },
         { label: g.settings, items: [{ key: "staff" }, { key: "settings" }] },
       ]
     : // Staff: account, language, newsletter, sign out (Main.dc.html phone navigation card).
-      [{ label: g.customers, items: [{ key: "subscribers" }] }];
+      [
+        { label: g.customers, items: [{ key: "subscribers" }] },
+        { label: g.content, items: [{ key: "share" }] },
+      ];
 
   return (
     <>

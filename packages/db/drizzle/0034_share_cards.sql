@@ -1,0 +1,23 @@
+CREATE TABLE `share_cards` (
+	`id` serial AUTO_INCREMENT NOT NULL,
+	`kind` enum('product','category','page','site') NOT NULL,
+	`ref_id` int unsigned NOT NULL DEFAULT 0,
+	`page_key` varchar(40) NOT NULL DEFAULT '',
+	`lang` enum('bn','en') NOT NULL,
+	`mode` enum('auto','custom') NOT NULL DEFAULT 'auto',
+	`template` varchar(30) NOT NULL DEFAULT 'studio',
+	`title` varchar(120),
+	`description` varchar(300),
+	`source_image_url` varchar(500),
+	`focal_x` decimal(4,3) NOT NULL DEFAULT '0.500',
+	`focal_y` decimal(4,3) NOT NULL DEFAULT '0.500',
+	`wide_url` varchar(500),
+	`square_url` varchar(500),
+	`wide_bytes` int unsigned,
+	`square_bytes` int unsigned,
+	`version` int unsigned NOT NULL DEFAULT 0,
+	`rendered_from` varchar(64),
+	`updated_at` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `share_cards_id` PRIMARY KEY(`id`),
+	CONSTRAINT `share_cards_item_uq` UNIQUE(`kind`,`ref_id`,`page_key`,`lang`)
+);

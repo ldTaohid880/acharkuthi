@@ -1,10 +1,12 @@
 import Link from "next/link";
 import { NewsletterForm } from "./newsletter-form";
+import { SocialIcon } from "./social-icon";
 import { getCategories } from "@/lib/queries";
 import { getDict } from "@/lib/i18n/dict";
 import { localePath, type Lang } from "@/lib/i18n/lang";
 import { shopHref } from "@/lib/routes";
 import { RECIPES_LIVE } from "@/lib/features";
+import { OFFICIAL_SOCIAL, REL_ME, SITE_WHATSAPP, SOCIAL_ORDER } from "@/lib/social";
 
 const ICON = {
   fill: "none",
@@ -250,36 +252,14 @@ export async function SiteFooter({ lang }: { lang: Lang }) {
         <div className="ft-bot-r">
           {/* Privacy and Terms live in the "Legal & Support" column above; this row is social only. */}
           <nav className="ft-soc" aria-label={t.social}>
-            <a href="https://www.facebook.com/acharkuthi" aria-label={t.facebook}>
-              <svg viewBox="0 0 24 24" aria-hidden="true" fill="currentColor">
-                <path d="M13.5 21v-7.5h2.6l.4-3h-3V8.6c0-.9.3-1.5 1.6-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.9 1.4-3.9 4V10.5H8v3h2.6V21h2.9z" />
-              </svg>
-            </a>
-            <a href="https://www.instagram.com/acharkuthi_store" aria-label={t.instagram}>
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-              >
-                <rect x="3.5" y="3.5" width="17" height="17" rx="5" />
-                <circle cx="12" cy="12" r="4" />
-                <circle cx="17.3" cy="6.7" r="1" fill="currentColor" stroke="none" />
-              </svg>
-            </a>
-            <a href="https://wa.me/8801624607294" aria-label={t.whatsapp}>
-              <svg
-                viewBox="0 0 24 24"
-                aria-hidden="true"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinejoin="round"
-              >
-                <path d="M3.5 20.5l1.2-3.9A8.5 8.5 0 1 1 8 19.3l-4.5 1.2z" />
-                <path d="M9.2 8.6c.2-.4.5-.4.7-.1l.8 1.4c.1.2.1.4-.1.6l-.5.5c.6 1.2 1.5 2.1 2.7 2.7l.5-.5c.2-.2.4-.2.6-.1l1.4.8c.3.2.3.5-.1.7-.5.5-1.2.8-2 .4-2.3-1.1-3.7-2.5-4.6-4.7-.2-.6 0-1.1.1-1.4z" />
-              </svg>
+            {/* Official profiles only (lib/social.ts); rel="me" ties them to this site. */}
+            {SOCIAL_ORDER.map((n) => (
+              <a key={n} href={OFFICIAL_SOCIAL[n]} target="_blank" rel={REL_ME} aria-label={t[n]}>
+                <SocialIcon name={n} />
+              </a>
+            ))}
+            <a href={SITE_WHATSAPP} target="_blank" rel={REL_ME} aria-label={t.whatsapp}>
+              <SocialIcon name="whatsapp" />
             </a>
           </nav>
         </div>

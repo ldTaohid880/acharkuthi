@@ -3,6 +3,7 @@ import { shopQuery } from "@repo/validators";
 import { ShopView } from "@/components/shop-view";
 import { getCategories, getShopProducts } from "@/lib/queries";
 import { langOf, pageMeta } from "@/lib/seo";
+import { getShareCard } from "@/lib/share-card";
 
 export async function generateMetadata({
   params,
@@ -18,6 +19,7 @@ export async function generateMetadata({
         : "Every heritage Bengali pickle from Acharkuthi, with sizes and prices in taka. Cash on delivery across Bangladesh.",
     path: "/shop",
     lang,
+    card: await getShareCard(lang, undefined, undefined, "shop"),
   });
 }
 
