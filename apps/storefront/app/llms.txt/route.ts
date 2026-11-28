@@ -4,13 +4,7 @@ import { localePath } from "@/lib/i18n/lang";
 import { pickString } from "@/lib/i18n/pick";
 import { heatOf } from "@/lib/product-view";
 import { productHref } from "@/lib/routes";
-import {
-  realCopy,
-  SITE_EMAIL,
-  SITE_NAME,
-  SITE_NAME_BN,
-  SITE_WHATSAPP,
-} from "@/lib/seo";
+import { realCopy, SITE_EMAIL, SITE_NAME, SITE_NAME_BN, SITE_WHATSAPP } from "@/lib/seo";
 import { absolute } from "@/lib/site-url";
 import { RECIPES_LIVE } from "@/lib/features";
 import { OFFICIAL_SOCIAL, SOCIAL_NAME, SOCIAL_ORDER } from "@/lib/social";

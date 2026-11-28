@@ -53,10 +53,7 @@ test.describe("SEO in the page language", () => {
     });
   }
 
-  test("JSON-LD: Product and BreadcrumbList follow the page language", async ({
-    page,
-    lang,
-  }) => {
+  test("JSON-LD: Product and BreadcrumbList follow the page language", async ({ page, lang }) => {
     await page.goto(inLang(lang, "/pickles/raw-mango"));
     const ld = await jsonLd(page);
     // The Organization lives on the home page only; products point at it by @id.
